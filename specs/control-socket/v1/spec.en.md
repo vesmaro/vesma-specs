@@ -411,10 +411,18 @@ Transition rules:
    management happens only per the contract; parallel channels (TCP/HTTP
    control plane, sockets outside the layout) are forbidden by § 4.7.
 3. The old mechanisms may launch components that have not yet migrated
-   during the coexistence period; their retirement follows the directive
-   brief's list.
-4. Migration of the owner's laptop production server is strictly after
-   2026-10-16 (the B0 telemetry window; restarts segment the observation).
+   during the coexistence period; their retirement follows the founding
+   brief's list (founding context, `docs/`).
+4. Migration of the legacy deployment happens no earlier than the close
+   of the founding track's first observation window (founding context —
+   see `docs/`; restarts segment the observation).
+
+**Historical note.** The spec is intentionally genericized (owner
+decision 2026-10-04): the specifics of the founding environment — legacy
+names, the target machine, the first observation window details — are
+preserved in the founding docs pack (in particular, the directive brief
+`docs/brief-2026-10-04-archcom-founding.md`) and in the repository
+history; for story connectivity, read them together with this spec.
 
 ## 10. References
 

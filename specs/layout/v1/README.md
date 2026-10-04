@@ -42,11 +42,12 @@ Full English mirror: [spec.en.md](spec.en.md).
   `~/.local/state/vesma/logs/<component>/` — no other log locations exist.
 - **Cache is regenerable data only** — the cache API never accepts secret content.
 - **Legacy path migration** — the spec's migration section maps the legacy tree onto canonical roots:
-  `~/.config/mnemos-mesh/*.yaml` → `~/.config/vesma/{vesma.yaml, components.d/}` (legacy name),
-  scattered logs (`ops/*.log`, ad-hoc files) → journald or `state/logs`, the token-bearing ops env file →
-  `~/.config/vesma/env/<name>.env` (0600, fail-closed), legacy `venv-5.x` trees → `venvs/<name>/`;
-  K3s-era helm revisions and the nohup launcher are discarded, not migrated. Actual prod migration is gated
-  to after 2026-10-16 (B0 telemetry window) and lives in the engine track.
+  legacy configs under former names → `~/.config/vesma/{vesma.yaml, components.d/}` (legacy name),
+  scattered legacy file logs (ad-hoc files) → journald or `state/logs`, a token-bearing legacy env file
+  outside the canonical paths → `~/.config/vesma/env/<name>.env` (0600, fail-closed), legacy venv trees
+  with versions in the name → `venvs/<name>/`; artifacts of the retired orchestrator and ad-hoc launchers
+  (nohup scripts, sh wrappers) are discarded, not migrated. The actual legacy-deployment migration is gated
+  to after the first observation window (founding context — see `docs/`) and lives in the engine track.
 
 ## Validate
 

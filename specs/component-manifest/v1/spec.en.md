@@ -396,9 +396,18 @@ installation and highlights legacy leftovers.
 
 Order: a `doctor` inventory → the install flow generates manifests → a
 green MUST run of the component's suite → the old launch mechanisms are
-retired. Production-server migration is strictly after 2026-10-16 (the B0
-telemetry window; roadmap phase 3, the engine track); the specs and the CLI
-code are not subject to the window (as in specs/service-lifecycle/v1 §8).
+retired. Legacy-deployment migration is not before the first observation
+window of the founding track closes (founding context — see `docs/`;
+roadmap phase 3, the engine track); the specs and the CLI code are not
+subject to the window (as in specs/service-lifecycle/v1 §8).
+
+**Historical note.** This spec is deliberately genericized (owner's
+decision of 2026-10-04): the specifics of the founding environment — the
+legacy names, the target machine, the details of the first observation
+window — are preserved in the founding pack `docs/` (in particular, the
+directives brief `docs/brief-2026-10-04-archcom-founding.md`) and in the
+repository's history; for historical continuity, read them together with
+this spec.
 
 ## 10. References
 

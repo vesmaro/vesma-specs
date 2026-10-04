@@ -76,8 +76,9 @@ overlaps (the inventory is in the brief of the
   fixes the place and the permissions of the socket directories;
 - the contents of configs and the secrets inside them — the manifest's
   config schema (CM §3.9) and env files (CM §3.5);
-- the production migration implementation — the engine (card
-  `cli-service-management`), strictly after 2026-10-16 (the B0 window);
+- the legacy-deployment migration implementation — the engine (card
+  `cli-service-management`), not before the first observation window of
+  the founding track closes (founding context);
 - hash-pinning tooling (the mechanics of `pip --require-hashes`, lock
   tooling) — v2.
 
@@ -105,7 +106,7 @@ and are not redefined here. Contract terms:
 | user-site | the interpreter's per-user site-packages directory (PEP 370); a leak = user-site ending up in the process's `sys.path` |
 | history | the append-only journal of supervisor transitions: `~/.local/state/vesma/history/` |
 | doctor | the diagnostic command `vesma doctor --service`; the checklist DR-01…DR-11 (§3.10) |
-| B0 window | the telemetry window closing on 2026-10-16; the production migration is not executed before it closes (roadmap phase 3) |
+| first observation window | the founding track's first telemetry window (founding context); the legacy-deployment migration is not executed before it closes (roadmap phase 3; details — the founding pack `docs/`) |
 
 ## 3. Contract
 
@@ -165,8 +166,9 @@ Notes:
 
 ### 3.3 System profile (defined, the implementation deferred)
 
-**The system-profile implementation is deferred beyond the production
-migration — strictly after 2026-10-16 (the B0 window); v2 horizon**
+**The system-profile implementation is deferred beyond the
+legacy-deployment migration — not before the first observation window of
+the founding track closes (founding context); v2 horizon**
 ([ADR-0001](../../../adrs/0001-repo-structure-and-governance.md), v2
 horizon). The 1:1 XDG mapping table is normative as a design reference;
 the system profile's conformance items are `n/a (v2)`.
@@ -274,11 +276,11 @@ supervisor at spawn according to the MUST table:
 - **MUST**: exactly one mode is chosen: journald available → journald
   (file logs are not written); unavailable → files-under-state. Double
   writing to both places is forbidden.
-- **MUST NOT**: no other log places — neither legacy `ops/*.log`, nor
-  logs in the data directory, nor in the cache, nor `/var/log/vesma`
+- **MUST NOT**: no other log places — neither scattered legacy file logs,
+  nor logs in the data directory, nor in the cache, nor `/var/log/vesma`
   (§3.3). The appearance of a "third place" = a contract violation (it
-  closes the inventory chaos of "logs in 3 places": journald +
-  `ops/*.log` + misc).
+  closes the inventory chaos of "logs in 3 places": journald + scattered
+  legacy file logs + misc).
 - **MUST**: `~/.local/state/vesma/history/` — the append-only journal of
   supervisor transitions (`0700`); the contents are structural lines (the
   SL §3.4 domain); the layout fixes the path, the permissions, and the
@@ -460,13 +462,13 @@ inventory is in the brief of the `vesma-cli-service-management` directive,
 
 | Legacy path | Canonical path (layout v1) | Note |
 |---|---|---|
-| `~/.config/mnemos-mesh/*.yaml` | `~/.config/vesma/vesma.yaml` (shared config) + `~/.config/vesma/components.d/<name>.yaml` (per component) | the legacy name is not preserved: the content is disassembled by purpose — component configs vs shared settings |
-| `ops/*.log` + scattered logs ("logs in 3 places") | journald (systemd) / `~/.local/state/vesma/logs/<name>/` (non-systemd) | one place per mode (§3.7); the old files are archived by the operator and not continued |
-| an `ops/` env file with a token (`0600`) | `~/.config/vesma/env/<name>.env` (`0600`, fail-closed loading) | **SHOULD**: the token is rotated on transfer (ADR-0001 §6: rotate first) |
-| `mnemos-prod/` data with test names | `~/.local/share/vesma/<name>/` | renaming the test names is a separate engine wave, not part of this contract |
-| legacy `venv-5.1.1/`, `venv-5.3.0/` | `~/.local/share/vesma/venvs/<name>/` | one venv per python unit; versions in the venv name disappear; rebuilt from the lock, not a directory copy |
-| helm revisions under `ops/` | retired (not migrated) | — |
-| the nohup launcher `prod-laptop.sh` | retired (not migrated) | launching = the supervisor by manifests (SL) |
+| legacy configs under former names in `~/.config` | `~/.config/vesma/vesma.yaml` (shared config) + `~/.config/vesma/components.d/<name>.yaml` (per component) | the legacy name is not preserved: the content is disassembled by purpose — component configs vs shared settings |
+| scattered legacy file logs ("logs in 3 places") | journald (systemd) / `~/.local/state/vesma/logs/<name>/` (non-systemd) | one place per mode (§3.7); the old files are archived by the operator and not continued |
+| a legacy env file with a token (`0600`) outside the canonical paths | `~/.config/vesma/env/<name>.env` (`0600`, fail-closed loading) | **SHOULD**: the token is rotated on transfer (ADR-0001 §6: rotate first) |
+| the former deployment's data with test names | `~/.local/share/vesma/<name>/` | renaming the test names is a separate engine wave, not part of this contract |
+| legacy venv trees with versions in the name | `~/.local/share/vesma/venvs/<name>/` | one venv per python unit; versions in the venv name disappear; rebuilt from the lock, not a directory copy |
+| artifacts of the retired orchestrator | retired (not migrated) | — |
+| ad-hoc launchers (nohup scripts, sh wrappers) | retired (not migrated) | launching = the supervisor by manifests (SL) |
 
 **Migration order:** 1) a `doctor` inventory (DR-01…DR-11 + the
 legacy-path list) → 2) transfer per the table (the install flow creates
@@ -474,12 +476,21 @@ manifests / env / venvs; the data is moved with owner and permissions) →
 3) the component's green conformance → 4) retirement of the legacy
 mechanisms (disable + stop of the old units — SL §8).
 
-- **Production migration — strictly after 2026-10-16** (the B0 telemetry
-  window); the executor is the engine (card `cli-service-management`);
+- **Legacy-deployment migration — not before the first observation window
+  closes** (the founding track's telemetry window, founding context — see
+  `docs/`); the executor is the engine (card `cli-service-management`);
   the spec fixes the target paths, it does not execute the migration. The
   specs and the CLI code are not subject to the window (as in SL §8).
 - The migration point is single: the install flow; a manual transfer of
   directives and scripts is not provided.
+
+**Historical note.** This spec is deliberately genericized (owner's
+decision of 2026-10-04): the specifics of the founding environment — the
+legacy names, the target machine, the details of the first observation
+window — are preserved in the founding pack `docs/` (in particular, the
+directives brief `docs/brief-2026-10-04-archcom-founding.md`) and in the
+repository's history; for historical continuity, read them together with
+this spec.
 
 ## 10. References
 

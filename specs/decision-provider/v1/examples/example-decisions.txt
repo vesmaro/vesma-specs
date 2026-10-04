@@ -1,0 +1,37 @@
+# Иллюстративный пример decision-provider v1 (НЕ нормативный).
+#
+# Транспортная форма и формат ответа в v1 НЕ замораживаются (spec §5, §7):
+# строки ниже показывают тип содержимого — примитив, ответ, уверенность,
+# атрибуция — и обязательную семантику деградации/гейта (spec §3.5, §3.8).
+# Все значения — плейсхолдеры; никаких реальных путей, имён и секретов.
+#
+# Форма key=value выбрана для читаемости; реализация вправе использовать
+# свою внутреннюю форму, пока семантика spec §3 соблюдается.
+
+# --- Noul: калиброванное «да/нет» (прецедент: is-duplicate при дедупликации) ---
+request  primitive=noul question=<product-defined-criteria> state=<prepared-canon-state:2-records>
+response primitive=noul answer=yes confidence=0.93 provider=<impl-name> calibrated=true
+
+# --- Choice: выбор варианта по заданным критериям (прецедент: кандидат при дедупликации) ---
+request  primitive=choice question=<product-defined-criteria> options=<product-defined-set> state=<prepared-canon-state>
+response primitive=choice answer=<option-id> confidence=0.81 provider=<impl-name> calibrated=true
+
+# --- Score: оценка на упорядоченной шкале (прецедент: судейство релевантности записи) ---
+request  primitive=score question=<product-defined-scale> state=<prepared-canon-state:1-record>
+response primitive=score value=<scale-point> confidence=0.77 provider=<impl-name> calibrated=true
+
+# --- Деградация fail-open, уровень провайдера: дефект пина артефакта →
+#     реализация целиком переключается на baseline; инжест не блокируется ---
+warn code=<impl-namespace>-PIN reason=<fingerprint-mismatch> action=provider-degraded provider=<impl-name> fallback=deterministic
+
+# --- Деградация fail-open, уровень вердикта: отказ инференса на запросе →
+#     одиночный вердикт деградирует к детерминированному правилу ---
+warn code=<impl-namespace>-INFER reason=<inference-failure> action=verdict-degraded provider=<impl-name> fallback=deterministic-rule
+
+# --- Приватность-гейт: находка скана перед внешним вызовом → вызов
+#     останавливается ЦЕЛИКОМ, внешнего трафика нет ---
+warn code=<impl-namespace>-GATE reason=<pre-call-scan-hit> action=call-aborted provider=<external-impl-name>
+
+# --- Нарушение гейта включения внешнего адаптера (флаг без ключа):
+#     конфигурация отклонена, активной остаётся baseline ---
+warn code=<impl-namespace>-CONFIG reason=<gate-incomplete:flag-without-key> action=config-rejected provider=<external-impl-name> active=deterministic

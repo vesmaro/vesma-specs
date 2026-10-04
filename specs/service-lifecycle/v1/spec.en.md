@@ -47,7 +47,7 @@ components on the machine: launch, health, restart, stop, observability.
   `specs/layout/v1`;
 - the health-probe semantics of a specific component — the health section
   of its manifest;
-- server deployments (helm/docker/podman profiles) — the engine track.
+- server deployments (container/orchestrator profiles) — the engine track.
 
 The supervisor is implemented by the `vesma` engine (card
 `cli-service-management`); this contract is the source of requirements and
@@ -400,10 +400,18 @@ not provided; the single migration point is the generator.
 | 2 unit scopes, duplicate services (board ×2) | exactly one unit above the vesma process; systemd NEVER knows about the children; a duplicate = an install-validation error (§3.6) |
 | grep over log mush | `SYSLOG_IDENTIFIER=vesma-<component>`; `vesma service logs --component=X` = a journalctl filter (§3.4) |
 
-Migration of the laptop production server is strictly after 2026-10-16
-(the B0 telemetry window; restarts segment the observation) — roadmap phase
-3, the engine track. The specs and the CLI code are not subject to this
-window.
+Migration of the legacy deployment is not before the first observation
+window of the founding track closes (founding context — see `docs/`;
+restarts segment the observation) — roadmap phase 3, the engine track. The
+specs and the CLI code are not subject to this window.
+
+**Historical note.** This spec is deliberately genericized (owner's
+decision of 2026-10-04): the specifics of the founding environment — the
+legacy names, the target machine, the details of the first observation
+window — are preserved in the founding pack `docs/` (in particular, the
+directives brief `docs/brief-2026-10-04-archcom-founding.md`) and in the
+repository's history; for historical continuity, read them together with
+this spec.
 
 ## 9. References
 
