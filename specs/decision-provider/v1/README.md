@@ -26,9 +26,10 @@ engine edits.
 - **Privacy gate is uniform** — `no-federate` and secret-bearing records never leave the
   storage; before any external call a mechanical scan (`danger_detectors`,
   `secrets_detector`) runs and any hit aborts the whole call.
-- **Calibration before trust** — no implementation joins product decisions before
-  passing the canon (vitals) calibration; locality grants no discount; an uncalibrated
-  "confidence" is not a number.
+- **Calibration before trust** — no non-baseline implementation (b)/(c) joins product
+  decisions before passing the canon (vitals) calibration; locality grants no discount;
+  an uncalibrated "confidence" is not a number; the baseline (a) `deterministic` is
+  itself the calibration base — the gate does not extend to it.
 - **Fail-open degradation** — any provider failure degrades to the `deterministic`
   baseline (whole provider, or a single verdict) with a machine-parseable warn from the
   implementation's namespace (engine precedent: `CORTEX-E-*`); the product path is
@@ -56,10 +57,12 @@ joining product decisions.
 
 ## Status
 
-`1.0.0-draft.1` — living interface migrated from vesma-canon ADR-0004 (2026-10-04,
-roadmap phase 2; ADR ratified 2026-09-28). Becomes stable (`1.0.0`) with the first
-conformant implementation in the `vesma` engine. Experimental verdicts, preregistrations
-and measurements stay in vesma-canon (the evidentiary layer).
+`1.0.0-draft.2` — deep-review wave 2 normative amendments (2026-10-05, pre-implementation):
+calibration-gate scope (baseline excluded), action classes instead of literal tokens, fail-closed
+scanner, `no-federate` enforcement, confidence scale deferred. Living interface migrated from
+vesma-canon ADR-0004 (2026-10-04, roadmap phase 2; ADR ratified 2026-09-28). Becomes stable
+(`1.0.0`) with the first conformant implementation in the `vesma` engine. Experimental verdicts,
+preregistrations and measurements stay in vesma-canon (the evidentiary layer).
 
 ## See also
 

@@ -4,6 +4,8 @@
 # строки ниже показывают тип содержимого — примитив, ответ, уверенность,
 # атрибуция — и обязательную семантику деградации/гейта (spec §3.5, §3.8).
 # Все значения — плейсхолдеры; никаких реальных путей, имён и секретов.
+# Числа confidence — плейсхолдеры шкалы реализации: количественная шкала
+# контрактом не фиксируется, каждая реализация документирует свою (spec §3.6).
 #
 # Форма key=value выбрана для читаемости; реализация вправе использовать
 # свою внутреннюю форму, пока семантика spec §3 соблюдается.
@@ -21,17 +23,21 @@ request  primitive=score question=<product-defined-scale> state=<prepared-canon-
 response primitive=score value=<scale-point> confidence=0.77 provider=<impl-name> calibrated=true
 
 # --- Деградация fail-open, уровень провайдера: дефект пина артефакта →
-#     реализация целиком переключается на baseline; инжест не блокируется ---
-warn code=<impl-namespace>-PIN reason=<fingerprint-mismatch> action=provider-degraded provider=<impl-name> fallback=deterministic
+#     реализация целиком переключается на baseline; инжест не блокируется.
+#     Действие — КЛАСС из фиксированного контрактом множества (spec §3.8) ---
+warn code=<impl-namespace>-PIN reason=<fingerprint-mismatch> action-class=provider-class provider=<impl-name> fallback=deterministic
 
 # --- Деградация fail-open, уровень вердикта: отказ инференса на запросе →
 #     одиночный вердикт деградирует к детерминированному правилу ---
-warn code=<impl-namespace>-INFER reason=<inference-failure> action=verdict-degraded provider=<impl-name> fallback=deterministic-rule
+warn code=<impl-namespace>-INFER reason=<inference-failure> action-class=verdict-class provider=<impl-name> fallback=deterministic-rule
 
 # --- Приватность-гейт: находка скана перед внешним вызовом → вызов
-#     останавливается ЦЕЛИКОМ, внешнего трафика нет ---
-warn code=<impl-namespace>-GATE reason=<pre-call-scan-hit> action=call-aborted provider=<external-impl-name>
+#     останавливается ЦЕЛИКОМ, внешнего трафика нет. Тот же класс действия —
+#     у отказа самого сканера (fail-closed, spec §3.5) ---
+warn code=<impl-namespace>-GATE reason=<pre-call-scan-hit> action-class=call-class provider=<external-impl-name>
 
 # --- Нарушение гейта включения внешнего адаптера (флаг без ключа):
-#     конфигурация отклонена, активной остаётся baseline ---
-warn code=<impl-namespace>-CONFIG reason=<gate-incomplete:flag-without-key> action=config-rejected provider=<external-impl-name> active=deterministic
+#     конфигурация отклонена, активной остаётся baseline. Контрактный класс
+#     действия определён только для деградаций (spec §3.8); для отклонения
+#     конфигурации показан литерал — литерал за реализацией ---
+warn code=<impl-namespace>-CONFIG reason=<gate-incomplete:flag-without-key> action=<config-rejected:impl-literal> provider=<external-impl-name> active=deterministic

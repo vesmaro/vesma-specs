@@ -1,6 +1,6 @@
 ---
 contract: decision-provider
-version: 1.0.0-draft.1
+version: 1.0.0-draft.2
 status: draft (ratified by implementation)
 decisions: [ADR-0001, vesma-canon ADR-0004]
 language: en (informative mirror)
@@ -13,10 +13,9 @@ language: en (informative mirror)
 > prevails. The mirror is maintained in the same change as the Russian text
 > (single-commit sync policy).
 >
-> **Translation note.** Translation base: vesma-specs `main` HEAD
-> `f6f9d206ec8f3a0700574a91cca1f453b49571cb` (2026-10-04), the revision at
-> which this living contract was migrated from vesma-canon ADR-0004
-> (roadmap phase 2).
+> **Translation note.** Last sync: 2026-10-05. Synced with the Russian
+> spec.md in the same change (single-commit sync policy). In case of
+> divergence, the Russian text prevails.
 
 The keywords MUST / MUST NOT / SHOULD / MAY are to be interpreted per
 RFC 2119. The normative prose is Russian; identifiers, primitive names and
@@ -129,8 +128,8 @@ this document:
 - **MUST**: answers be typed — free text is not an answer; an
   implementation that can only answer in prose does not conform.
 - **MUST NOT**: the provider generate and/or rewrite memory record bodies;
-  the style canon stays with people and agents (the W5a addendum rule,
-  carried into §3.7).
+  the style canon stays with people and agents (ADR-0004, implementation
+  (c)).
 - New primitives are an additive contract change (a minor version, §7).
 
 ### 3.3 Policy lives at the product level
@@ -158,12 +157,20 @@ this document:
   never leave the storage — for every implementation, including local
   ones (the `no-federate` tag is a canon storage/federation rule and holds
   regardless of provider locality).
+- **MUST** (the `no-federate` enforcement point): records carrying the
+  `no-federate` marker are excluded from the prepared state before
+  request assembly and before scanning — state assembly is the first line
+  of defense, the scan is the second.
 - **MUST** (external calls): before any outbound call — a mandatory
   mechanical scan of the prepared state for secrets and dangerous
   content; the engine detectors are reused (`danger_detectors.detect`,
   `secrets_detector.detect_secrets`).
 - **MUST**: a hit of any class abort the entire call, not excise a
   fragment.
+- **MUST** (scanner fail-closed): a failure, exception or timeout of the
+  secrets scanner itself = the call is aborted with the `call-class`
+  action class (§3.8); continuing an external call with a broken scanner
+  is forbidden.
 - **SHOULD** (local implementations): the secrets scan as hygiene of
   calibration dataset export — the dataset is a separate copy of the
   data; records with secrets and `no-federate` never enter it (the
@@ -171,12 +178,12 @@ this document:
 
 ### 3.6 Calibration is mandatory before trust
 
-- **MUST NOT**: any implementation participate in product decisions
-  before passing calibration per the canon methodology (vitals):
-  preregistering the hypothesis and thresholds before the run, an honest
-  baseline against the current heuristics, measurement on ecosystem data.
-  The methodology and its artifacts belong to canon; the contract fixes
-  the gate.
+- **MUST NOT**: any non-baseline implementation (b)/(c) (§3.7) participate
+  in product decisions before passing calibration per the canon
+  methodology (vitals): preregistering the hypothesis and thresholds
+  before the run, an honest baseline against the current heuristics,
+  measurement on ecosystem data. The methodology and its artifacts belong
+  to canon; the contract fixes the gate.
 - **MUST**: locality grant no discount — "trust without evidence" is
   forbidden equally for local and external providers.
 - **MUST**: the "confidence" of an uncalibrated provider not be consumed
@@ -184,13 +191,24 @@ this document:
 - **MUST**: a calibrated provider make sense only where it measurably
   outperforms the baseline heuristic (the holdout superiority condition —
   per the frozen canon preregistration).
+- **MUST**: the quantitative confidence scale is not fixed in v1 (to be
+  fixed together with the machine form of the answer, as a minor version,
+  §7); until then every implementation MUST document its own scale in its
+  own documentation, and consumers MUST interpret confidence only within
+  a single implementation — cross-implementation comparison of the
+  numbers is forbidden.
+- The gate's scope is implementations (b) and (c) (§3.7). Implementation
+  (a) `deterministic` is itself the calibration base and the reference of
+  the honest measurement: the gate does not extend to it, and its
+  confidence is by definition not consumed as a calibrated number —
+  deterministic rules carry no uncertainty.
 
 ### 3.7 The family of implementations
 
 | Implementation | Status | Contract conditions |
 |---|---|---|
 | (a) `deterministic` — the engine's deterministic heuristics | the base, live since formalization | zero cost, zero external calls; the same primitives, deterministic rules; the calibration baseline for (b)/(c) and the degradation target (§3.8) |
-| (b) a local router (the `mnema` model family) | optional, flag-gated | local-first: weights on the machine, inference and calibration are **zero-network**; provenance — the weights fingerprint in the run report; retraining/a weight change = a recalibration event |
+| (b) a local router (an artifact of the engine's local family; the historical name — `mnema`, pre-rebrand) | optional, flag-gated | local-first: weights on the machine, inference and calibration are **zero-network**; provenance — the weights fingerprint in the run report; retraining/a weight change = a recalibration event |
 | (c) an external adapter (e.g. the Jev family) | optional, **off by default forever** | a double activation gate: an explicit owner flag in the config **and** an API key; once enabled, §3.4–§3.6 apply without exceptions; the state is billed in full per query (limits — the canon analysis) |
 
 - **MUST**: the default implementation be (a) `deterministic`; enabling
@@ -214,8 +232,13 @@ this document:
   deduplication, hints) — ever.
 - **MUST**: every degradation be logged machine-parseably, with a code
   from the implementation's namespace (precedent: `CORTEX-E-*` in the
-  engine implementation, W5d) and the action named
-  (`provider-degraded` / `verdict-degraded` / `call-aborted`).
+  engine implementation, W5d) and with the action class from the set
+  fixed by the contract: `provider-class` (the provider as a whole
+  switched to the baseline), `verdict-class` (the single verdict degraded
+  to the deterministic rule), `call-class` (the call aborted before
+  execution). The contract fixes action classes only; literal tokens
+  belong to the implementation's namespace (the same principle as the
+  error codes, §4).
 - **SHOULD**: a weights-pin defect (fingerprint mismatch) be treated
   loudly as a recalibration event — a load refusal with `code=`, never a
   silent artifact swap.
@@ -262,7 +285,7 @@ an implementation may refine codes within a class, but not the semantics:
 |---|---|---|---|
 | `<impl>-PIN` (class) | artifact defect: the weights/metadata/schema fingerprint did not match the pin | provider loader | full provider degradation → (a) `deterministic`; a loud machine-parseable warn; ingest not blocked; a recalibration event |
 | `<impl>-INFER` (class) | an inference or answer-schema failure on a specific request | provider execution | the single verdict degrades to the deterministic rule; a warn; the answer is attributed to the baseline implementation |
-| `<impl>-GATE` (class) | a privacy-gate hit before an external call (secret / dangerous content) | the pre-call scan pass | the external call is aborted entirely; no external traffic; a warn with the `call-aborted` action |
+| `<impl>-GATE` (class) | a privacy-gate hit before an external call (secret / dangerous content) | the pre-call scan pass | the external call is aborted entirely; no external traffic; a warn with the `call-class` action class |
 | `<impl>-CONFIG` (class) | an activation attempt violating the gate (flag without key, key without flag, unknown provider name) | config loader | the configuration is rejected; the active implementation remains `deterministic`; a warn |
 
 ## 5. Examples
@@ -284,12 +307,12 @@ v1 (§1, §7), so the v1 conformance suite is the human integrator checklist
 references to spec sections and verification methods. An executable suite
 arrives together with the machine form of the interface — as a separate
 minor contract change; until then a green checklist + the canon
-calibration report are the gate for an implementation to participate in
-product decisions (§3.6).
+calibration report are the gate for a non-baseline implementation to
+participate in product decisions (§3.6).
 
 ## 7. Compatibility
 
-- **SemVer**: `1.0.0-draft.1` → `1.0.0` upon ratification by an
+- **SemVer**: `1.0.0-draft.2` → `1.0.0` upon ratification by an
   implementation in the vesma engine. A breaking change = MAJOR + a
   deprecation window of `max(90 days, 2 minor releases)` with dual
   support (ADR-0001 §2); below 1.0 the window is 14 days.
@@ -303,10 +326,11 @@ product decisions (§3.6).
   (§3.10), the layout is not involved (local model weights are a package
   artifact; the shipping discipline belongs to the engine).
 - **Deliberately deferred beyond v1**: the transport shape and the
-  question/answer schema; an executable conformance suite; provider
-  artifact signatures (v1 provides only the weights fingerprint — the
-  pin precedent in the engine implementation); external adapter
-  quotas/limits.
+  question/answer schema; the quantitative confidence scale (until the
+  machine form of the answer the §3.6 rule applies); an executable
+  conformance suite; provider artifact signatures (v1 provides only the
+  weights fingerprint — the pin precedent in the engine implementation);
+  external adapter quotas/limits.
 
 ## 8. Threat model (mini-STRIDE)
 
@@ -363,7 +387,9 @@ connected by shipping an artifact and a config flag with no engine edits.
   canon keeps the history and the pointer).
 - vesma-canon, `docs/experiments/provider-calibration-v2-preregistration.md`
   and `docs/experiments/provider-baseline.json` — the calibration
-  methodology and artifacts (canon is their home; the §3.6 gate).
+  methodology and artifacts (canon is their home; the §3.6 gate). The
+  calibration methodology is internal canon; the public description of
+  the gate is §3.6.
 - [ADR-0001](../../../adrs/0001-repo-structure-and-governance.md) — layer
   structure and governance: SemVer, the conformance gate, i18n (§5), the
   secrets policy (§6).
