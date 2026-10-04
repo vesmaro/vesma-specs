@@ -1,0 +1,19 @@
+# Негативная фикстура (пара 2/2): дублирование имени в установке.
+# Валидный манифест с тем же именем dupcomp, что и в dup-name-a.yaml, —
+# вместе пара ловит dup-ветку name_kebab_unique (NAME_DUPLICATED).
+apiVersion: vesma.component/v1
+kind: child-process
+metadata:
+  name: dupcomp
+  version: 0.2.0
+  tier: optional
+  description: "Фикстура дублирования имени: dupcomp, файл B."
+  provenance:
+    repo: https://github.com/vesmaro/vesma-mesh
+    license: Apache-2.0
+launch:
+  argv: ["/usr/bin/dupcomp-b"]
+  cwd: "~/.local/share/vesma/dupcomp-b"
+stop:
+  signal: SIGTERM
+  grace_period: 10s

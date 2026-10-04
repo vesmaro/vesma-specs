@@ -34,4 +34,4 @@ stop:
   signal: SIGTERM
   grace_period: 10s
 config:
-  schema_file: ./config.schema.json
+  schema_file: ./config.schema.json   # резолвится от data-каталога компонента

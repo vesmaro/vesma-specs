@@ -1,5 +1,5 @@
 # Пример-минимум component-manifest v1: child-process Node-раннтайм (eyes).
-# {state_dir} — плейсхолдер allowlist; расширяется супервайзером при spawn.
+# {data_dir} — плейсхолдер allowlist (data-каталог компонента); расширяется супервайзером при spawn.
 apiVersion: vesma.component/v1
 kind: child-process
 metadata:
@@ -11,7 +11,7 @@ metadata:
     repo: https://github.com/vesmaro/vesma-eyes
     license: Apache-2.0
 launch:
-  argv: ["/usr/bin/node", "/usr/lib/vesma-eyes/index.mjs", "--state-dir", "{state_dir}"]
+  argv: ["/usr/bin/node", "/usr/lib/vesma-eyes/index.mjs", "--data-dir", "{data_dir}"]
   cwd: "~/.local/share/vesma/eyes"
   env:
     vars:

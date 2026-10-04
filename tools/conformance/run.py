@@ -59,10 +59,10 @@ APIVERSION_RE = re.compile(r"^vesma\.component/v[0-9]+$")
 NAME_RE = re.compile(r"^[a-z][a-z0-9-]{0,62}$")
 DURATION_RE = re.compile(r"^[0-9]+(ms|s|m|h)$")
 SPDX_RE = re.compile(r"^[A-Za-z0-9.-]+(\+[A-Za-z0-9.-]+)?$")
-PLACEHOLDER_RE = re.compile(r"^\{([A-Za-z_][A-Za-z0-9_]*)\}$")
 ANY_BRACES_RE = re.compile(r"\{[^{}]*\}")
+WELL_FORMED_PLACEHOLDER_RE = re.compile(r"^\{[a-z_]+\}$")  # spec.md §6: only {token} counts
 PLACEHOLDER_VALUE_RE = re.compile(r"^<[^>]*>$")  # e.g. <sha256-of-binary>, <token>
-ARGV_ALLOWLIST = {"config_path", "state_dir", "runtime_dir", "venv_bin"}
+ARGV_ALLOWLIST = {"config_path", "data_dir", "runtime_dir", "venv_bin"}
 TIERS = {"core", "optional"}
 
 # spec.md §3.5: argv elements must not contain shell metacharacters or
@@ -71,10 +71,12 @@ SHELL_META_CHARS = set("|&;<>()$`\\\"'*?")
 SHELL_BASENAMES = {"sh", "bash", "dash", "ash", "zsh", "ksh", "busybox", "cmd", "powershell"}
 SHELL_FLAGS = {"-c", "-lc"}
 
-# spec.md §3.5: secret-like key names are rejected in launch.env.vars. The
-# value scan is a supplementary defense-in-depth layer (see README): values
-# under artifact_sha256 (a contract-declared hex64 hash, spec §3.3) and
-# <placeholder> values are exempt.
+# spec.md §6 (canon): secret-like key names are rejected in launch.env.vars;
+# values of ALL string scalars are scanned against the 5 secret-like patterns.
+# Exemptions (§6): the `config` subtree (schema_inline carries legit patterns
+# and defaults), metadata.description, metadata.provenance.artifact_sha256
+# (a contract-declared hex64 hash, spec §3.3) and <placeholder> values.
+# Diagnostics never print the matched values (masked).
 SECRET_KEY_RE = re.compile(
     r"token|secret|password|passwd|api_key|apikey|private_key|credential", re.I)
 SECRET_VALUE_PATTERNS = [
@@ -84,6 +86,10 @@ SECRET_VALUE_PATTERNS = [
     ("long hex (>=40 chars)", re.compile(r"\b[0-9a-fA-F]{40,}\b")),
     ("long base64 (>=40 chars)", re.compile(r"\b[A-Za-z0-9+/]{40,}={0,2}\b")),
 ]
+SECRET_SCAN_EXEMPT_PATHS = {
+    "$.metadata.description",
+    "$.metadata.provenance.artifact_sha256",
+}
 CANONICAL_MANIFESTS_DIR = Path(os.path.expanduser("~/.config/vesma/components.d"))
 
 # Duration-bearing leaves per spec §3.5/3.7/3.8/3.10: section path -> leaves.
@@ -96,6 +102,12 @@ DURATION_LEAVES = {
     ("restart", "backoff"): ("base", "max", "reset_after"),
     ("restart", "window"): ("per",),
 }
+
+
+def _secret_scan_exempt(path):
+    # spec.md §6 value-scan exemptions: the config subtree + named leaves.
+    return (path in SECRET_SCAN_EXEMPT_PATHS
+            or path == "$.config" or path.startswith("$.config."))
 
 
 # ---------------------------------------------------------------------------
@@ -458,8 +470,8 @@ def ch_no_secret_in_vars(doc, ctx):
                 hits.append(f"launch.env.vars key {key!r} has a secret-like name "
                             "(secrets belong in env_file)")
     for path, value in _walk_strings(doc):
-        if path.rsplit(".", 1)[-1] == "artifact_sha256":
-            continue  # contract-declared hex64 hash field (spec §3.3), not a secret
+        if _secret_scan_exempt(path):
+            continue  # spec.md §6 exemptions: config subtree, description, artifact_sha256
         if PLACEHOLDER_VALUE_RE.match(value):
             continue  # declared placeholder convention
         for label, pattern in SECRET_VALUE_PATTERNS:
@@ -504,10 +516,12 @@ def _placeholder_hits(argv, where):
         if not isinstance(el, str):
             continue
         for m in ANY_BRACES_RE.finditer(el):
+            # spec.md §6: only well-formed placeholders {[a-z_]+} are flagged;
+            # literal braces (e.g. {} or {a) are not placeholders — ignored
+            if WELL_FORMED_PLACEHOLDER_RE.match(m.group(0)) is None:
+                continue
             token = m.group(0)[1:-1]
-            if PLACEHOLDER_RE.match(m.group(0)) is None:
-                hits.append(f"{where}[{pos}]: malformed placeholder {m.group(0)!r}")
-            elif token not in ARGV_ALLOWLIST:
+            if token not in ARGV_ALLOWLIST:
                 hits.append(f"{where}[{pos}]: placeholder {m.group(0)!r} outside allowlist")
     return hits
 

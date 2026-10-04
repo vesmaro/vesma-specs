@@ -1,0 +1,20 @@
+# Негативная фикстура (пара 1/2): дублирование имени в установке.
+# Оба манифеста пары валидны по отдельности; дефект — одинаковое имя dupcomp
+# (spec.md §3.3, NAME_DUPLICATED). Фикстуры fixtures/invalid/ — одна установка
+# (spec.md §6), dup-ветка проверки name_kebab_unique.
+apiVersion: vesma.component/v1
+kind: child-process
+metadata:
+  name: dupcomp
+  version: 0.1.0
+  tier: optional
+  description: "Фикстура дублирования имени: dupcomp, файл A."
+  provenance:
+    repo: https://github.com/vesmaro/vesma-mesh
+    license: Apache-2.0
+launch:
+  argv: ["/usr/bin/dupcomp"]
+  cwd: "~/.local/share/vesma/dupcomp"
+stop:
+  signal: SIGTERM
+  grace_period: 10s

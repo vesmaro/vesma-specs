@@ -89,3 +89,63 @@ cases:
     target: conformance/fixtures/invalid/missing-apiversion.yaml
     checks: [schema_invalid, api_version_present]
     expect: fail
+
+  - id: fix-bad-name
+    severity: must
+    target: conformance/fixtures/invalid/bad-name.yaml
+    checks: [schema_invalid, name_kebab_unique]
+    expect: fail
+
+  - id: fix-dup-name-a
+    severity: must
+    target: conformance/fixtures/invalid/dup-name-a.yaml
+    checks: [schema_invalid, name_kebab_unique]
+    expect: fail
+
+  - id: fix-dup-name-b
+    severity: must
+    target: conformance/fixtures/invalid/dup-name-b.yaml
+    checks: [schema_invalid, name_kebab_unique]
+    expect: fail
+
+  - id: fix-bad-placeholder
+    severity: must
+    target: conformance/fixtures/invalid/bad-placeholder.yaml
+    checks: [schema_invalid, argv_placeholder_allowlist]
+    expect: fail
+
+  - id: fix-shell-metachars
+    severity: must
+    target: conformance/fixtures/invalid/shell-metachars.yaml
+    checks: [schema_invalid, no_shell_metacharacters]
+    expect: fail
+
+  - id: fix-checker-mismatch
+    severity: must
+    target: conformance/fixtures/invalid/checker-mismatch.yaml
+    checks: [schema_invalid, checker_block_consistency]
+    expect: fail
+
+  - id: fix-kind-mismatch
+    severity: must
+    target: conformance/fixtures/invalid/kind-mismatch.yaml
+    checks: [schema_invalid, kind_launch_consistency]
+    expect: fail
+
+  - id: fix-bad-license
+    severity: must
+    target: conformance/fixtures/invalid/bad-license.yaml
+    checks: [schema_invalid, license_spdx]
+    expect: fail
+
+  - id: fix-bad-restart-clamp
+    severity: must
+    target: conformance/fixtures/invalid/bad-restart-clamp.yaml
+    checks: [schema_invalid]
+    expect: fail
+
+  - id: fix-kind-stop-mismatch
+    severity: must
+    target: conformance/fixtures/invalid/kind-stop-mismatch.yaml
+    checks: [schema_invalid]
+    expect: fail

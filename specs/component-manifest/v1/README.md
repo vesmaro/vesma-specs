@@ -14,7 +14,7 @@ itself with a manifest — no per-component CLI code.
 
 - **Strict validation** — `additionalProperties: false` on every schema object; an unknown field is rejected, never passed through; evolution goes through `apiVersion` (additive fields = minor contract version).
 - **`apiVersion` required** — must be `vesma.component/v1`; an unsupported version is rejected with the list of supported versions.
-- **`argv` is a list, no shell** — a string array without shell metacharacters or `sh -c`; placeholders expand by supervisor allowlist only (`{config_path}`, `{state_dir}`, `{runtime_dir}`, `{venv_bin}`).
+- **`argv` is a list, no shell** — a string array without shell metacharacters or `sh -c`; placeholders expand by supervisor allowlist only (`{config_path}`, `{data_dir}`, `{runtime_dir}`, `{venv_bin}`).
 - **Secrets only via `env_file`** — never in the manifest or `env.vars`; the file lives outside the manifests directory, mode `0600`, owner = supervisor user; loading is fail-closed — any violation aborts the start.
 - **In-process health = `liveness` by default** (module imported, factory ran); the optional `callback` probe runs in an isolated boundary — any exception or timeout yields `failed` and never crashes the supervisor.
 

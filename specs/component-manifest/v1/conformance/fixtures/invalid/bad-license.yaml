@@ -1,0 +1,30 @@
+# Негативная фикстура: provenance.license вне формы SPDX-идентификатора.
+# "Totally Made Up License!!" содержит пробелы и '!!' — license_spdx
+# проверяет форму идентификатора (regex), не реестр (spec.md §3.3, §6).
+apiVersion: vesma.component/v1
+kind: child-process
+metadata:
+  name: mesh-bad-license
+  version: 1.4.2
+  tier: optional
+  description: "Mesh-агент: валидный манифест, испорченный не-SPDX лицензией."
+  provenance:
+    repo: https://github.com/vesmaro/vesma-mesh
+    license: "Totally Made Up License!!"
+launch:
+  argv: ["/usr/bin/vesma-mesh", "--config", "{config_path}"]
+  cwd: "~/.local/share/vesma/mesh"
+  env:
+    vars:
+      MESH_LOG_LEVEL: info
+    env_file: "~/.config/vesma/env/mesh.env"
+health:
+  checker: http
+  http:
+    url: "http://127.0.0.1:8091/healthz"
+    interval: 10s
+    timeout: 2s
+    unhealthy_threshold: 3
+stop:
+  signal: SIGTERM
+  grace_period: 10s

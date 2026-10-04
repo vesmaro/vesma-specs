@@ -22,9 +22,6 @@ health:
     grace: 30s
     interval: 5s
     timeout: 2s
-stop:
-  signal: SIGTERM
-  grace_period: 10s
 config:
   schema_inline:
     type: object

@@ -5,7 +5,7 @@
   "description": "Машинная схема манифеста компонента VESMA. Нормативный источник — specs/component-manifest/v1/spec.md (контракт component-manifest v1). Strict validation: additionalProperties: false на каждом объекте; неизвестное поле = reject. Эволюция — через apiVersion (аддитивные поля = минор контракта).",
   "type": "object",
   "additionalProperties": false,
-  "required": ["apiVersion", "kind", "metadata", "stop"],
+  "required": ["apiVersion", "kind", "metadata"],
   "properties": {
     "apiVersion": {
       "type": "string",
@@ -15,7 +15,7 @@
     "kind": {
       "type": "string",
       "enum": ["in-process", "child-process"],
-      "description": "Способ исполнения. Определяет, какая секция обязательна: launch (child-process) или in_process (in-process); вторая запрещена."
+      "description": "Способ исполнения. Определяет, какая секция обязательна: launch (child-process) или in_process (in-process); вторая запрещена. stop: обязательна при child-process, запрещена при in-process (spec.md §3.8)."
     },
     "metadata": {
       "type": "object",
@@ -55,7 +55,7 @@
             "license": {
               "type": "string",
               "pattern": "^[A-Za-z0-9][A-Za-z0-9.+-]*$",
-              "description": "SPDX-идентификатор лицензии (проверка license_spdx идёт по списку SPDX)."
+              "description": "SPDX-идентификатор лицензии; проверка license_spdx — форма SPDX-идентификатора (regex), не реестр."
             },
             "artifact_sha256": {
               "type": "string",
@@ -74,7 +74,7 @@
       "properties": {
         "argv": {
           "$ref": "#/$defs/argv",
-          "description": "Строго массив строк, без shell. Плейсхолдеры — только из allowlist: {config_path} {state_dir} {runtime_dir} {venv_bin}; расширяет супервайзер."
+          "description": "Строго массив строк, без shell. Плейсхолдеры — только из allowlist: {config_path} {data_dir} {runtime_dir} {venv_bin}; расширяет супервайзер."
         },
         "cwd": {
           "type": "string",
@@ -218,6 +218,7 @@
     "stop": {
       "type": "object",
       "additionalProperties": false,
+      "description": "Обязательна при kind: child-process; запрещена при kind: in-process — мёртвая конфигурация, остановка in-process = остановка супервайзера (spec.md §3.6, §3.8).",
       "required": ["signal", "grace_period"],
       "properties": {
         "signal": {
@@ -243,7 +244,7 @@
         "schema_file": {
           "type": "string",
           "minLength": 1,
-          "description": "Путь к файлу схемы; относительный резолвится от каталога манифеста."
+          "description": "Путь к файлу схемы; относительный резолвится от data-каталога компонента (specs/layout/v1, ~/.local/share/vesma/<name>/); install-флоу кладёт схему туда же."
         },
         "schema_inline": {
           "type": "object",
@@ -275,7 +276,11 @@
           "additionalProperties": false,
           "required": ["attempts", "per"],
           "properties": {
-            "attempts": { "type": "integer", "minimum": 1 },
+            "attempts": {
+              "type": "integer",
+              "minimum": 3,
+              "description": "Кламп install-валидации: attempts >= 3 (spec.md §3.10, SL-18); значение ниже = reject."
+            },
             "per": { "$ref": "#/$defs/duration" }
           }
         }
@@ -291,11 +296,11 @@
   "allOf": [
     {
       "if": { "required": ["kind"], "properties": { "kind": { "const": "child-process" } } },
-      "then": { "required": ["launch"], "not": { "required": ["in_process"] } }
+      "then": { "required": ["launch", "stop"], "not": { "required": ["in_process"] } }
     },
     {
       "if": { "required": ["kind"], "properties": { "kind": { "const": "in-process" } } },
-      "then": { "required": ["in_process"], "not": { "required": ["launch"] } }
+      "then": { "required": ["in_process"], "not": { "anyOf": [ { "required": ["launch"] }, { "required": ["stop"] } ] } }
     },
     {
       "if": {

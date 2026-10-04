@@ -1,0 +1,21 @@
+# Негативная фикстура: секция stop при kind: in-process.
+# Остановка in-process = остановка супервайзера (spec.md §3.6), поэтому stop
+# для in-process — мёртвая конфигурация и запрещена (spec.md §3.8).
+apiVersion: vesma.component/v1
+kind: in-process
+metadata:
+  name: mesh-kind-stop-mismatch
+  version: 5.3.0
+  tier: optional
+  description: "In-process python-компонент, испорченный запрещённой секцией stop."
+  provenance:
+    repo: https://github.com/vesmaro/vesma
+    license: Apache-2.0
+in_process:
+  module: vesma_board.app
+  entrypoint: create_component
+  python:
+    version: ">=3.11"
+stop:
+  signal: SIGTERM
+  grace_period: 10s

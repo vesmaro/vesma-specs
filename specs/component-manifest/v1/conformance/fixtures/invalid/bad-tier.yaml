@@ -4,7 +4,7 @@
 apiVersion: vesma.component/v1
 kind: child-process
 metadata:
-  name: mesh
+  name: mesh-bad-tier
   version: 1.4.2
   tier: critical
   description: "Mesh-агент: валидный манифест, испорченный плохим тиром."

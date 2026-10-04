@@ -1,0 +1,21 @@
+# Негативная фикстура: kind: child-process с секцией in_process вместо launch.
+# Секции исполнения взаимоисключающие: child-process требует launch и
+# запрещает in_process (spec.md §3.4; проверка kind_launch_consistency).
+apiVersion: vesma.component/v1
+kind: child-process
+metadata:
+  name: mesh-kind-mismatch
+  version: 5.3.0
+  tier: optional
+  description: "Компонент child-process, испорченный секцией in_process вместо launch."
+  provenance:
+    repo: https://github.com/vesmaro/vesma
+    license: Apache-2.0
+in_process:
+  module: vesma_board.app
+  entrypoint: create_component
+  python:
+    version: ">=3.11"
+stop:
+  signal: SIGTERM
+  grace_period: 10s

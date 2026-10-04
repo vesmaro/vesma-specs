@@ -9,7 +9,8 @@ ratified: учредительный АрхКом VESMA, 2026-10-04
 # component-manifest v1 — контракт манифеста компонента
 
 Ключевые слова MUST / MUST NOT / SHOULD / MAY интерпретируются по RFC 2119.
-Проза — русская; идентификаторы, поля и значения полей — английские.
+Проза — русская; идентификаторы, поля и enum-значения — EN; свободный текст
+(`description`) — язык компонента.
 
 ## 1. Scope
 
@@ -59,7 +60,7 @@ Tier, Health check, Grace period, Canonical layout определены в
 | установка (installation) | множество манифестов компонентов на одной машине под одним супервайзером; имена манифестов уникальны в установке |
 | каталог манифестов | каталог лэйаута, в который install-флоу пишет манифесты; канонизирован `specs/layout/v1` как `~/.config/vesma/components.d/` (drop-in: install кладёт, uninstall убирает) |
 | плейсхолдер | токен вида `{name}` в элементе `argv`, который расширяет супервайзер при spawn по фиксированному allowlist |
-| allowlist плейсхолдеров | `{config_path}` (файл конфига компонента в каноническом лэйауте), `{state_dir}`, `{runtime_dir}`, `{venv_bin}` (каталог bin venv компонента) |
+| allowlist плейсхолдеров | `{config_path}` (файл конфига компонента в каноническом лэйауте), `{data_dir}` (data-каталог компонента), `{runtime_dir}`, `{venv_bin}` (каталог bin venv компонента) |
 | fail-closed загрузчик | загрузчик `env_file`: любое нарушение условий (файл отсутствует, права не 0600, чужой владелец) = отказ старта, а не предупреждение |
 | health-проход | один успешный результат health-проверки (`specs/service-lifecycle/v1` §2) |
 | strict validation | дисциплина валидации: `additionalProperties: false` на каждом объекте схемы; неизвестное поле = reject |
@@ -130,7 +131,7 @@ Tier, Health check, Grace period, Canonical layout определены в
   Следствие по построению: инъекция через shell невозможна, `ExecStart`
   юнита генерируется одной строкой (SL-17).
 - **MUST**: плейсхолдеры в элементах `argv` — только из allowlist
-  (`{config_path}`, `{state_dir}`, `{runtime_dir}`, `{venv_bin}`); расширяет
+  (`{config_path}`, `{data_dir}`, `{runtime_dir}`, `{venv_bin}`); расширяет
   их супервайзер при spawn; **других подстановок нет** — никакой
   интерполяции переменных окружения и никакого shell.
 - **MUST**: `cwd` — строка (рабочая директория; канонические пути —
@@ -182,6 +183,8 @@ Tier, Health check, Grace period, Canonical layout определены в
 
 ### 3.8 stop
 
+- **MUST**: при `kind: in-process` секция `stop` **запрещена** — мёртвая
+  конфигурация; остановка in-process = остановка супервайзера (§3.6).
 - **MUST**: `signal` ∈ `SIGTERM` \| `SIGINT` — graceful-сигнал остановки.
 - **MUST**: `grace_period` — длительность; по истечении супервайзер шлёт
   SIGKILL всей процесс-группе ребёнка (`kill(-pgid, …)` —
@@ -193,8 +196,10 @@ Tier, Health check, Grace period, Canonical layout определены в
 ### 3.9 config
 
 - **MUST**: `schema_file` XOR `schema_inline` — ровно один способ объявления
-  схемы; схема — JSON-Schema 2020-12. `schema_file` — путь к файлу схемы
-  (относительный резолвится от каталога манифеста).
+  схемы; схема — JSON-Schema 2020-12. `schema_file` — путь к файлу схемы;
+  относительный путь резолвится от data-каталога компонента (см.
+  `specs/layout/v1`, `~/.local/share/vesma/<name>/`); в канонической установке
+  install-флоу кладёт схему туда же.
 - **MUST**: конфиг компонента = секция общего конфига экосистемы;
   валидация секции — по схеме из манифеста; **инвалидная конфигурация =
   отказ старта (fail-fast)**, не запуск с дефолтами.
@@ -280,18 +285,18 @@ Tier, Health check, Grace period, Canonical layout определены в
 |---|---|
 | `schema_valid` | документ валиден по `schema/component-manifest.schema.json` |
 | `schema_invalid` | документ отвергнут валидацией контракта (см. семантику выше) |
-| `api_version_present` | `apiVersion` присутствует и равен `vesma.component/v1` |
+| `api_version_present` | `apiVersion` присутствует и соответствует `^vesma\.component/v[0-9]+$` |
 | `name_kebab_unique` | `metadata.name` по шаблону и уникален в установке |
 | `tier_enum` | `metadata.tier` ∈ `core` \| `optional` |
 | `duration_format` | все поля-длительности по шаблону `^[0-9]+(ms\|s\|m\|h)$` |
-| `no_secret_in_vars` | в `launch.env.vars` нет ключей с секретными именами |
+| `no_secret_in_vars` | секретов в манифесте нет: (а) имена ключей `launch.env.vars` проверяются на секретоподобные (`token`, `secret`, `password`, `passwd`, `api_key`, `apikey`, `private_key`, `credential`; case-insensitive); (б) значения всех строковых скаляров документа проверяются на 5 секретоподобных паттернов (openai-style `sk-…`, github PAT `ghp_…`, PEM private key, длинный hex ≥ 40, длинный base64 ≥ 40). Исключения value-scan: поддерево `config` (`schema_inline` содержит легитимные паттерны и дефолты), `metadata.description`, `metadata.provenance.artifact_sha256` (hex64 по контракту), значения-плейсхолдеры `<...>`; в диагностике значения маскируются |
 | `no_shell_metacharacters` | `argv` (launch и health.exec) без shell-метасимволов, whitespace и shell-инвокации |
-| `argv_placeholder_allowlist` | плейсхолдеры argv только из allowlist §2 |
+| `argv_placeholder_allowlist` | плейсхолдеры argv (`launch.argv`, `health.exec.argv`) только из allowlist §2; флагуются только well-formed плейсхолдеры вида `{[a-z_]+}` вне allowlist — литеральные `{}`, `{a` и т.п. плейсхолдерами не являются и не флагуются |
 | `checker_block_consistency` | `health.checker` ↔ соответствующий блок (иф-связка §3.7); `callback` только при in-process |
 | `kind_launch_consistency` | kind ↔ launch/in_process XOR (§3.4) |
 | `env_file_outside_manifests_dir` | `env.env_file` вне каталога манифестов |
 | `depends_on_acyclic` | граф `depends_on` установки ацикличен |
-| `license_spdx` | `provenance.license` — валидный SPDX-идентификатор |
+| `license_spdx` | `provenance.license` — форма SPDX-идентификатора (regex `^[A-Za-z0-9.-]+(\+[A-Za-z0-9.-]+)?$`), не реестр |
 
 Кейсы: три позитивных (примеры, `expect: pass`, полный набор уместных
 проверок, все `severity: must`) и негативные по `conformance/fixtures/invalid/`

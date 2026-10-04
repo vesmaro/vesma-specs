@@ -1,12 +1,13 @@
-# Негативная фикстура: отсутствует apiVersion.
-# apiVersion обязателен; неподдерживаемая/отсутствующая версия = reject,
-# ошибка обязана содержать массив поддерживаемых версий (spec.md §3.2).
+# Негативная фикстура: имя компонента вне шаблона ^[a-z][a-z0-9-]{0,62}$.
+# "Mesh_1" содержит заглавные буквы и подчёркивание — reject на валидации
+# имени (spec.md §3.3; проверка name_kebab_unique, ветка шаблона).
+apiVersion: vesma.component/v1
 kind: child-process
 metadata:
-  name: mesh-no-apiversion
+  name: Mesh_1
   version: 1.4.2
   tier: optional
-  description: "Mesh-агент: валидный манифест без apiVersion."
+  description: "Mesh-агент: валидный манифест, испорченный именем вне шаблона."
   provenance:
     repo: https://github.com/vesmaro/vesma-mesh
     license: Apache-2.0

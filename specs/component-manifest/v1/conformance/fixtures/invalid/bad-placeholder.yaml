@@ -1,0 +1,31 @@
+# Негативная фикстура: плейсхолдер argv вне allowlist.
+# {homedir} — well-formed плейсхолдер, но allowlist §2 его не содержит
+# (spec.md §3.5; PLACEHOLDER_UNKNOWN): расширения делает супервайзер,
+# других подстановок нет.
+apiVersion: vesma.component/v1
+kind: child-process
+metadata:
+  name: mesh-bad-placeholder
+  version: 1.4.2
+  tier: optional
+  description: "Mesh-агент: валидный манифест, испорченный плейсхолдером вне allowlist."
+  provenance:
+    repo: https://github.com/vesmaro/vesma-mesh
+    license: Apache-2.0
+launch:
+  argv: ["/usr/bin/vesma-mesh", "--config", "{homedir}"]
+  cwd: "~/.local/share/vesma/mesh"
+  env:
+    vars:
+      MESH_LOG_LEVEL: info
+    env_file: "~/.config/vesma/env/mesh.env"
+health:
+  checker: http
+  http:
+    url: "http://127.0.0.1:8091/healthz"
+    interval: 10s
+    timeout: 2s
+    unhealthy_threshold: 3
+stop:
+  signal: SIGTERM
+  grace_period: 10s

@@ -5,7 +5,7 @@
 apiVersion: vesma.component/v1
 kind: child-process
 metadata:
-  name: mesh
+  name: mesh-unknown-field
   version: 1.4.2
   tier: optional
   description: "Mesh-агент: валидный манифест, испорченный одним неизвестным полем."

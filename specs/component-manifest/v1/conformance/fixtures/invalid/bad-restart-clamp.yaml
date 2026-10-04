@@ -1,0 +1,39 @@
+# Негативная фикстура: window.attempts ниже клампа (2 < 3).
+# Клампы restart-чисел (spec.md §3.10, SL-18) закодированы в схеме:
+# backoff.base >= 500ms, backoff.max <= 5min, window.attempts >= 3 —
+# рестарт-шторм невозможен по построению (CLAMP_VIOLATION).
+apiVersion: vesma.component/v1
+kind: child-process
+metadata:
+  name: mesh-bad-restart-clamp
+  version: 1.4.2
+  tier: optional
+  description: "Mesh-агент: валидный манифест, испорченный attempts ниже клампа."
+  provenance:
+    repo: https://github.com/vesmaro/vesma-mesh
+    license: Apache-2.0
+launch:
+  argv: ["/usr/bin/vesma-mesh", "--config", "{config_path}"]
+  cwd: "~/.local/share/vesma/mesh"
+  env:
+    vars:
+      MESH_LOG_LEVEL: info
+    env_file: "~/.config/vesma/env/mesh.env"
+health:
+  checker: http
+  http:
+    url: "http://127.0.0.1:8091/healthz"
+    interval: 10s
+    timeout: 2s
+    unhealthy_threshold: 3
+stop:
+  signal: SIGTERM
+  grace_period: 10s
+restart:
+  backoff:
+    base: 1s
+    max: 30s
+    reset_after: 300s
+  window:
+    attempts: 2
+    per: 300s

@@ -4,7 +4,7 @@
 apiVersion: vesma.component/v1
 kind: child-process
 metadata:
-  name: mesh
+  name: mesh-argv-string
   version: 1.4.2
   tier: optional
   description: "Mesh-агент: валидный манифест, испорченный argv-строкой."
@@ -12,7 +12,7 @@ metadata:
     repo: https://github.com/vesmaro/vesma-mesh
     license: Apache-2.0
 launch:
-  argv: "/usr/bin/vesma-mesh --config /etc/vesma/mesh.yaml"
+  argv: "/usr/bin/vesma-mesh --config {config_path}"
   cwd: "~/.local/share/vesma/mesh"
   env:
     vars:
