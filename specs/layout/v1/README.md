@@ -58,8 +58,9 @@ placement (CM-09), socket directory and socket permissions (control-socket check
 
 ## Status
 
-`1.0.0-draft.1` — shape ratified by the founding ArchCom (2026-10-04, ADR-0001); becomes stable with the first
-engine implementation (`vesma service install` consuming this layout).
+`1.0.0-draft.2` — deep-review wave 2 normative amendments (2026-10-05, pre-implementation): doctor
+DR-12/DR-13, cache taint. Shape ratified by the founding ArchCom (2026-10-04, ADR-0001); becomes
+stable with the first engine implementation (`vesma service install` consuming this layout).
 
 ## See also
 

@@ -28,13 +28,16 @@ Full English mirror: [spec.en.md](spec.en.md).
 
 ## Validate
 
-[conformance/checklist.md](conformance/checklist.md) — 15 executable checks (permissions independent of umask,
-probe-first bind, `hello` gating, idempotency, limits, unix-only transport); system-profile items are `n/a (v2)`.
+[conformance/checklist.md](conformance/checklist.md) — 16 executable checks (permissions independent of umask,
+bind-first with a liveness probe, `hello` gating, idempotency, limits incl. follow-stream caps, unix-only
+transport); system-profile items are `n/a (v2)`.
 
 ## Status
 
-`1.0.0-draft.1` — shape ratified by the founding VESMA ArchCom on 2026-10-04 (ADR-0001); becomes stable
-(`1.0.0`) with the first conformant implementation in the `vesma` engine.
+`1.0.0-draft.2` — deep-review wave 2 normative amendments (2026-10-05, pre-implementation):
+follow-stream limits, bind-first stale procedure, error-data hygiene. Shape ratified by the
+founding VESMA ArchCom on 2026-10-04 (ADR-0001); becomes stable (`1.0.0`) with the first conformant
+implementation in the `vesma` engine.
 
 ## See also
 

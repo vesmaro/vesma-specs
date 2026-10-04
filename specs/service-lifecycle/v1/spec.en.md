@@ -1,6 +1,6 @@
 ---
 contract: service-lifecycle
-version: 1.0.0-draft.1
+version: 1.0.0-draft.2
 status: draft (ратифицируется первой реализацией в движке vesma)
 decisions: [ADR-0001]
 ratified: учредительный АрхКом VESMA, 2026-10-04
@@ -85,6 +85,12 @@ over the group. **Inventorying processes by name (pkill) is forbidden and
 unnecessary by construction** — the chaos-inventory antipattern (killing
 other people's processes by a name pattern) disappears constructively.
 
+**The group-signal boundary (MUST).** `kill(-pgid, …)` is allowed ONLY
+while the direct child is not yet reaped: an unreaped zombie holds the
+pid/pgid from kernel reuse. After the child's group is reaped, group
+signals are FORBIDDEN — the pgid-reuse window is open (the group number
+may already have been assigned to a new process).
+
 **Reaping.** SIGCHLD → an `os.waitpid(-1, WNOHANG)` loop until exhaustion
 (ECHILD). No exited child remains a zombie.
 
@@ -107,8 +113,10 @@ separate core restart mechanism is introduced — recorded deliberately.
 ### 3.2 Isolation (MUST)
 
 1. The crash of ANY subset of children leaves the supervisor and the
-   control socket alive. Management availability (status/stop/logs) is an
-   invariant, not a "healthy day" privilege.
+   control socket alive (except `kind: in-process`: the death of an
+   in-process module = the death of the supervisor, §3.1). Management
+   availability (status/stop/logs) is an invariant, not a "healthy day"
+   privilege.
 2. An exception in per-child code is caught at the boundary (the child's
    FSM → backoff); the main loop never dies. No execution path of per-child
    logic takes the supervisor out of the loop.
@@ -117,10 +125,30 @@ separate core restart mechanism is introduced — recorded deliberately.
 4. Children do not trust each other: IPC happens only through explicit API
    contracts. The supervisor builds no hidden "child → child" channels.
 5. **The child's env** = a constructed PATH + the manifest's `env.vars` +
-   the contents of `env_file`. `env -i` semantics are mandatory: no host
-   variable leaks into the child except the listed ones — the lesson of
-   the "401 storm" of host env leakage. Conformance: the child prints its
-   environment, the runner cross-checks it with an allow-list (SL-13).
+   the contents of `env_file`. The PATH is constructed per the canon: the
+   component's `{venv_bin}` directory (for python children) + the fixed
+   string `/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin`;
+   the `PATH` variable in `launch.env.vars` is FORBIDDEN (rejected by
+   validation — a conflict with the constructed PATH is unacceptable).
+   `env -i` semantics are mandatory: no host variable leaks into the child
+   except the listed ones — the lesson of the "401 storm" of host env
+   leakage. Conformance: the child prints its environment, the runner
+   cross-checks it with an allow-list (SL-13).
+
+**In-process modules (MUST).** An in-process module is the supervisor's
+trust-equivalent: it runs in the supervisor's process, with all of its fds
+and env. Only first-party code may be connected as an in-process module;
+third-party code runs as a child-process only.
+
+**A single v1 trust domain (MUST — fixing the real boundary).** All
+children run in one systemd unit under one uid. Intercomponent filesystem
+and env isolation is NOT provided in v1: a same-uid child can read the
+neighbors' env files through the filesystem and `/proc/*/environ`, and
+write into foreign data directories. This is a deliberate v1 limitation;
+the v2 horizon is a per-child sandbox and uid separation (the system
+profile, `specs/layout/v1` §3.3). Items 1–5 above are supervision
+isolation — reliability and control — not intercomponent security of a
+same-uid environment.
 
 ### 3.3 The child FSM
 
@@ -189,8 +217,11 @@ present).
 and every change of the supervisor's global health is additionally written
 to the supervisor journal `~/.local/state/vesma/history/` — append-only;
 the record format is the same structural lines of this paragraph with an
-ISO-8601 timestamp. The journal's path, permissions, and append-only
-semantics — `specs/layout/v1`.
+ISO-8601 timestamp. Append-only here is supervisor semantics (the single
+writer); there are no filesystem guarantees against a same-uid write —
+accepted in v1, the sandbox arrives in v2 (§3.2, the single trust domain).
+The journal's path, permissions, and append-only semantics —
+`specs/layout/v1`.
 
 **Child lines in journald.** The supervisor tags child lines with
 `SYSLOG_IDENTIFIER=vesma-<component>` when relaying them to journald (the
@@ -244,7 +275,10 @@ only after reaping all children (PID1 mode: the same before exit).
 systemd manages **exactly one** unit above the `vesma` process; **systemd
 NEVER knows about the children** (the contractual wording): neither the
 unit directives nor the systemd stop logic mention components — the entire
-order of stopping children is the supervisor's responsibility. The unit is
+order of stopping children is the supervisor's responsibility. The unit
+**NEVER contains component argv**: `ExecStart` = the static supervisor
+launch line (`<venv>/bin/vesma service run`); children are spawned only
+via the execve array from the manifest's `launch.argv`. The unit is
 generated by `vesma service install` (user profile:
 `~/.config/systemd/user/vesma.service`).
 
@@ -253,7 +287,7 @@ generated by `vesma service install` (user profile:
 | Directive | Value | Rationale |
 |---|---|---|
 | `Type=` | `exec` | the start counts as successful only after a successful `exec()`; a launch error = unit failure |
-| `ExecStart=` | a single line **without `sh -c`** | the arguments come from the launch manifests; shell concatenation is a legacy antipattern |
+| `ExecStart=` | the static supervisor launch line: `<venv>/bin/vesma service run` (a single line, **without `sh -c`**) | the unit NEVER contains component argv: children are spawned via the execve array from the manifest's `launch.argv`; shell concatenation is a legacy antipattern |
 | `ExecStop=` | **NOT generated** | the default SIGTERM to the main process = the contractual stop (§3.5); the pkill antipattern disappears |
 | `KillSignal=` | `SIGTERM` | matches the contractual stop |
 | `KillMode=` | `mixed` | SIGTERM to the main process → an orderly graceful stop of the children by the supervisor; at `TimeoutStopSec` systemd SIGKILLs the whole cgroup as a backstop |
@@ -278,6 +312,7 @@ unit level.
 | `NoNewPrivileges=` | `true` | forbids escalation via setuid/sgid |
 | `ProtectSystem=` | `strict` | the whole filesystem read-only except `ReadWritePaths` |
 | `ReadWritePaths=` | the layout's state/cache/data (`specs/layout/v1`) | the only writable paths |
+| `ReadOnlyPaths=` | `%h/.local/share/vesma/venv %h/.local/share/vesma/venvs` | venv trees are created by the install flow only; at runtime — read-only (carves the venv trees out of the writable data root). Closes the vector "a compromised optional component → a write into the engine venv → supervisor code on unit restart"; doctor — DR-12 (`specs/layout/v1` §3.10) |
 | `ProtectHome=` | `read-only` (user) / `true` (system) | home not writable (user) / hidden (system) |
 | `PrivateTmp=` | `yes` | an isolated /tmp |
 | `PrivateDevices=` | `yes` | no device access |
@@ -298,9 +333,13 @@ mean a non-working supervisor for the sake of a checkbox — recorded here
 so that a "security audit" does not silently bring the directive back.
 
 **Containers.** In containers only a LOUD, documented downgrade of the
-filesystem directives (not applicable without a real systemd host) is
-acceptable: it is printed in the install output and visible in
-`vesma service status`. There are no silent degradations.
+filesystem directives — `ProtectSystem`, `ProtectHome`, `ReadOnlyPaths`,
+`ReadWritePaths`, `PrivateTmp` (not applicable without a real systemd
+host) is acceptable: it is printed in the install output and visible in
+`vesma service status`. ONLY these directives may be downgraded: an
+attempt to downgrade any other directive of the hardening block = a unit
+generation error. There are no silent degradations (doctor — DR-13,
+`specs/layout/v1` §3.10).
 
 ### 3.7 Error codes — not applicable
 
@@ -315,7 +354,7 @@ Minimal artifacts in `examples/`:
 
 | File | What it shows |
 |---|---|
-| `examples/example-unit.service` | a generated user-profile unit: the full MUST table + the full hardening block, ExecStart as a single line |
+| `examples/example-unit.service` | a generated user-profile unit: the full MUST table + the full hardening block, ExecStart — the static supervisor launch line (no component argv) |
 | `examples/example-log-lines.txt` | 8 structural lines: spawn, health transitions, exit (by code and by signal), an optional degraded alert, a core crash-loop degraded alert |
 | `examples/example-status.json` | a `vesma service status` response: supervisor + a component map "name → record" (`state` + `health` + additive fields), healthy and degraded records (with reason); the shape matches the `status` of specs/control-socket/v1 §4.5 |
 
@@ -334,7 +373,7 @@ vesma engine (ratification by implementation).
 
 ## 6. Compatibility
 
-- **SemVer**: `1.0.0-draft.1` → `1.0.0` upon ratification by
+- **SemVer**: `1.0.0-draft.2` → `1.0.0` upon ratification by
   implementation. A breaking change = MAJOR + a deprecation window with
   dual support (the discipline of the README "Contract discipline"
   section).
@@ -396,7 +435,7 @@ not provided; the single migration point is the generator.
 | 5 launch mechanisms (distrobox sh wrappers, podman exec, host-native binaries, nohup/&, cron) | one supervisor: launching a component = spawn by manifest (§3.1) |
 | pkill patterns in ExecStop (inventorying by name) | `kill(-pgid, …)` by construction; ExecStop is not generated at all (§3.6) |
 | `env -i` in an sh wrapper (manual environment hygiene per component) | the supervisor's `env -i` semantics are mandatory, constructed centrally (§3.2) |
-| `sh -c "…"` with concatenation in ExecStart | ExecStart = a single line without `sh -c`, the arguments from the launch manifests (§3.6) |
+| `sh -c "…"` with concatenation in ExecStart | ExecStart = the static supervisor launch line; the children's argv — via the execve array from the launch manifests (§3.6) |
 | 2 unit scopes, duplicate services (board ×2) | exactly one unit above the vesma process; systemd NEVER knows about the children; a duplicate = an install-validation error (§3.6) |
 | grep over log mush | `SYSLOG_IDENTIFIER=vesma-<component>`; `vesma service logs --component=X` = a journalctl filter (§3.4) |
 
@@ -418,7 +457,7 @@ this spec.
 - `specs/component-manifest/v1` — the component manifest (the supervisor's input)
 - `specs/control-socket/v1` — live-supervisor management
 - `specs/layout/v1` — canonical paths (state/cache/data/socket/unit)
-- `adrs/ADR-0001` — the repository's founding ADR (structure + governance)
+- [ADR-0001](../../../adrs/0001-repo-structure-and-governance.md) — the repository's founding ADR (structure + governance)
 - RFC 2119 — keyword interpretation
 - `docs/brief-2026-10-04-archcom-founding.md` — the brief and the unbreakable decisions
 - `docs/concept.md`, `docs/roadmap.md` — the layer concept and phases
@@ -427,9 +466,6 @@ this spec.
 
 ## Translation note
 
-- Mirror date: 2026-10-04; base commit of the normative Russian source:
-  `01fb6ed` (`specs/service-lifecycle/v1/spec.md`).
-- This is an informative mirror; in case of divergence the Russian
-  `spec.md` prevails.
-- Sync policy: the mirror is updated in the same change (single commit) as
-  the Russian text; a standalone edit of this file is a process violation.
+- Last sync: 2026-10-05.
+- Synced with the Russian spec.md in the same change (single-commit sync
+  policy). In case of divergence, the Russian text prevails.

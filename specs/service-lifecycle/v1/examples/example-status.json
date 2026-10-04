@@ -1,6 +1,6 @@
 {
   "contract": "service-lifecycle",
-  "contract_version": "1.0.0-draft.1",
+  "contract_version": "1.0.0-draft.2",
   "generated_at": "2026-10-04T12:00:00Z",
   "supervisor": {
     "pid": 4210,

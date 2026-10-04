@@ -1,6 +1,6 @@
 ---
 contract: layout
-version: 1.0.0-draft.1
+version: 1.0.0-draft.2
 status: draft (ратифицируется первой реализацией в движке vesma)
 decisions: [ADR-0001]
 ratified: учредительный АрхКом VESMA, 2026-10-04
@@ -57,7 +57,7 @@ overlaps (the inventory is in the brief of the
   dependency pin policy;
 - the cache rule: regenerable content, never secrets (enforcement at the
   write-API level);
-- installation doctor checks (`vesma doctor --service`, DR-01…DR-11);
+- installation doctor checks (`vesma doctor --service`, DR-01…DR-13);
 - migration from legacy: target paths (§9) — the migration itself is not
   executed here.
 
@@ -96,7 +96,7 @@ and are not redefined here. Contract terms:
 
 | Term | Meaning |
 |---|---|
-| installation profile | user (v1, implemented) or system (defined §3.3, the implementation deferred beyond v2); system is built by a 1:1 mapping table to the user paths |
+| installation profile | user (v1, implemented) or system (defined §3.3, the implementation deferred to the v2 horizon); system is built by a 1:1 mapping table to the user paths |
 | canonical path | a path from the tables §3.2/§3.3; hardcoding other places in installation artifacts is a contract violation |
 | drop-in directory | a directory whose unit of content is a single file `<name>.yaml`; install puts the file, uninstall removes it; the operations never touch foreign files |
 | files-under-state | the file mode of logs in `~/.local/state/vesma/logs/<name>/` — only when journald is unavailable (container / manual mode) |
@@ -105,7 +105,7 @@ and are not redefined here. Contract terms:
 | freeze drift | a divergence between the actual venv contents (`pip freeze`) and the installation's lock file |
 | user-site | the interpreter's per-user site-packages directory (PEP 370); a leak = user-site ending up in the process's `sys.path` |
 | history | the append-only journal of supervisor transitions: `~/.local/state/vesma/history/` |
-| doctor | the diagnostic command `vesma doctor --service`; the checklist DR-01…DR-11 (§3.10) |
+| doctor | the diagnostic command `vesma doctor --service`; the checklist DR-01…DR-13 (§3.10) |
 | first observation window | the founding track's first telemetry window (founding context); the legacy-deployment migration is not executed before it closes (roadmap phase 3; details — the founding pack `docs/`) |
 
 ## 3. Contract
@@ -322,10 +322,12 @@ supervisor at spawn according to the MUST table:
   deleting the directory at any moment does not change the installation's
   correctness (the content is restored).
 - **MUST**: the cache **NEVER** contains secrets. Enforcement is at the
-  level of the engine's write API: a write to the cache happens only
-  through the write API, which **MUST** refuse a value originating from
-  an env file / a secret installation context; bypassing the API is a
-  contract violation.
+  level of the engine's write API: values originating from env files carry
+  the "secret" type at load time (a taint); the cache write API **MUST**
+  reject values of the secret type (LY-12). Writes bypassing the API
+  (same-uid directly into the filesystem) are outside the contract's
+  radius; they are caught by the doctor cross-check
+  (`vesma doctor --service`, §3.10).
 - **MUST NOT**: configs, manifests, env contents, logs, and state data
   are not placed in the cache (their home is the §3.2 table).
 
@@ -348,6 +350,8 @@ checklist):
 | DR-09 | http/tcp health-port collisions | an intersection of health-probe ports (`health.http`/`health.tcp`, CM §3.7) across the installation's manifests = FAIL |
 | DR-10 | free space | the volumes of the canonical roots (config/data/state/cache/runtime); the WARN/FAIL thresholds — the engine implementation |
 | DR-11 | `Storage=persistent` for journald | systemd contexts only; a volatile journal = WARN (logs are lost on reboot); outside systemd — n/a |
+| DR-12 | venv/venvs not writable at runtime | `ReadOnlyPaths=` in the generated unit (SL §3.6) covers `~/.local/share/vesma/venv` and `~/.local/share/vesma/venvs`; venv trees are created by the install flow only — a runtime write = FAIL |
+| DR-13 | container hardening downgrade | only filesystem directives were downgraded (`ProtectSystem`, `ProtectHome`, `ReadOnlyPaths`, `ReadWritePaths`, `PrivateTmp`); a downgrade of any other hardening-block directive = FAIL |
 
 - **MUST**: every finding carries a severity `OK`/`WARN`/`FAIL` and a
   ready remediation command with the real path (the "committee rule":
@@ -396,7 +400,7 @@ engine (ratification by implementation).
 
 ## 7. Compatibility
 
-- **SemVer**: `1.0.0-draft.1` → `1.0.0` upon ratification by
+- **SemVer**: `1.0.0-draft.2` → `1.0.0` upon ratification by
   implementation. A breaking change (moving an existing path, changing
   permissions, changing the semantics of log places) = MAJOR + a
   deprecation window with dual support (ADR-0001 §2). Additive (a new
@@ -470,7 +474,7 @@ inventory is in the brief of the `vesma-cli-service-management` directive,
 | artifacts of the retired orchestrator | retired (not migrated) | — |
 | ad-hoc launchers (nohup scripts, sh wrappers) | retired (not migrated) | launching = the supervisor by manifests (SL) |
 
-**Migration order:** 1) a `doctor` inventory (DR-01…DR-11 + the
+**Migration order:** 1) a `doctor` inventory (DR-01…DR-13 + the
 legacy-path list) → 2) transfer per the table (the install flow creates
 manifests / env / venvs; the data is moved with owner and permissions) →
 3) the component's green conformance → 4) retirement of the legacy
@@ -506,9 +510,6 @@ this spec.
 
 ## Translation note
 
-- Mirror date: 2026-10-04; base commit of the normative Russian source:
-  `01fb6ed` (`specs/layout/v1/spec.md`).
-- This is an informative mirror; in case of divergence the Russian
-  `spec.md` prevails.
-- Sync policy: the mirror is updated in the same change (single commit) as
-  the Russian text; a standalone edit of this file is a process violation.
+- Last sync: 2026-10-05.
+- Synced with the Russian spec.md in the same change (single-commit sync
+  policy). In case of divergence, the Russian text prevails.

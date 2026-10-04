@@ -1,6 +1,6 @@
 ---
 contract: control-socket
-version: 1.0.0-draft.1
+version: 1.0.0-draft.2
 status: draft
 ratified: учредительный АрхКом VESMA, 2026-10-04
 decisions: [ADR-0001]
@@ -140,11 +140,12 @@ At startup the supervisor performs the procedure strictly in this order:
 1. **Target path** — per the profile from § 3 (user profile: the directory
    from `XDG_RUNTIME_DIR`; if it is empty → the fallback path + a WARN
    line in the log).
-2. **`connect()`-probe** on the target path:
+2. **`bind` on the target path.** Success → step 5. `EADDRINUSE` →
+   **a `connect()`-probe of the live instance**:
    - a live instance answered (connect succeeded and a valid response to
      hello arrived within the response timeout) → **exit "already
      running"** (single-instance guard): do not unlink, do not bind;
-   - `ECONNREFUSED` or `ENOENT` → the path is free or stale → step 3;
+   - `ECONNREFUSED`/`ENOENT` → the path is stale → step 3;
    - any other error (`EACCES`, `ELOOP`, ...) → start refusal with
      diagnostics, delete nothing.
 3. **Before unlink — `lstat`**:
@@ -153,12 +154,19 @@ At startup the supervisor performs the procedure strictly in this order:
    - the path is a symlink → **start refusal + an alert, NEVER follow**;
    - a non-socket (a regular file, a directory) or a foreign owner → start
      refusal + an alert; do not delete foreign objects.
-4. **`unlink` + `bind` + `listen`** on the target path.
+4. **`unlink` + a retry `bind` + `listen`** on the target path. The loop
+   "bind → EADDRINUSE → probe → lstat → unlink → retry bind" runs at most
+   3 attempts; exhausted → start refusal with diagnostics. Between the
+   probe and the unlink the directory is kept under one's own ownership
+   (`0700`): a race between FOREIGN supervisors is impossible by
+   construction (a foreign uid does not own the directory), and two starts
+   of ONE supervisor are handled by the single-instance guard (step 2: a
+   live probe → exit).
 5. **After bind — `fstat` of the bound fd**: verify the mode and the owner
    (user profile: 0600 and own uid; see note B to § 3). A mismatch →
    fatal at startup.
 6. **A blind `unlink` of a live socket is forbidden by the contract.**
-   Probe-first is mandatory for all profiles; for user fallback
+   A probe before unlink is mandatory for all profiles; for user fallback
    (`~/.local/state/...` survives reboots) the stale scenario is the norm,
    the procedure is mandatory on every start.
 
@@ -271,7 +279,9 @@ for `restart`.
   final response. A normal end of the source (the component stopping) →
   the final response `{"id": N, "result": {"state": "<fsm-state>"}}`; an
   internal error → error. The client MAY break the connection at any
-  moment; the server MUST release the subscription resources.
+  moment; the server MUST release the subscription resources. The limits
+  and timeouts of follow streams (subscriptions per peer/installation, the
+  idle timeout, the duration cap) — § 4.7.
 
 #### `health`
 
@@ -303,12 +313,20 @@ Ranges: `<100` — protocol; `100–199` — lifecycle; `200` — authz; `500` �
 infra. A client that receives an unknown code MUST interpret it by range.
 A new code inside an existing range is an additive change (MINOR, § 8).
 
+**Error-data hygiene for the 100–199 range (MUST).** Only machine-formable
+fields are allowed in `data`: the component name, the FSM state, the exit
+code. Paths, env strings, and argv are FORBIDDEN in error data — they may
+carry secrets and internal installation details.
+
 ### 4.7 Limits and prohibitions — MUST
 
 | Limit | Value | On violation |
 |---|---|---|
 | Request line length | ≤ 1 MiB | error 1 and/or closing the connection |
 | Response timeout | 10 s (except follow streams) | the client closes the connection; retrying idempotent operations is safe |
+| Concurrent follow subscriptions | at most 2 per peer and at most 8 per installation | beyond — error 3 `invalid_params` |
+| Follow framing idle timeout | 60 s | no data for a frame — the server closes the stream with a final response |
+| Follow stream duration | ≤ 3600 s (a hard cap) | auto-close with a final response; the client resubscribes |
 | `tail` | ≤ 10000, default 100 | error 3 |
 | Component name | `^[a-z][a-z0-9-]{0,62}$` (the full manifest name pattern) and presence in the manifest registry | a regex failure → 3; not in the registry → 100 (protection against name injection in `logs`) |
 | Transport | `AF_UNIX` only | a TCP control plane is FORBIDDEN by default; its appearance = a new trust boundary → MAJOR + a full threat model |
@@ -365,7 +383,7 @@ and one error). The values in the example are placeholders.
 
 ## 7. Conformance
 
-Checklist: [conformance/checklist.md](conformance/checklist.md) — 15 items
+Checklist: [conformance/checklist.md](conformance/checklist.md) — 16 items
 of executable conformance checking against the v1 contract. An item
 without coverage = the implementation is non-conformant. The system-profile
 items are outside the v1 checklist (the implementation is deferred to the
@@ -426,8 +444,9 @@ history; for story connectivity, read them together with this spec.
 
 ## 10. References
 
-- ADR-0001 (the founding VESMA ArchCom, 2026-10-04: the repository
-  structure and governance) — `adrs/0001-*` (written in Phase 0).
+- [ADR-0001](../../../adrs/0001-repo-structure-and-governance.md)
+  (the founding VESMA ArchCom, 2026-10-04: the repository structure and
+  governance) — recorded in phase 0 on 2026-10-04.
 - [specs/service-lifecycle/v1](../../service-lifecycle/v1/spec.md) —
   the supervisor = the socket holder: FSM, health aggregation, restart
   policies.
@@ -443,9 +462,6 @@ history; for story connectivity, read them together with this spec.
 
 ## Translation note
 
-- Mirror date: 2026-10-04; base commit of the normative Russian source:
-  `01fb6ed` (`specs/control-socket/v1/spec.md`).
-- This is an informative mirror; in case of divergence the Russian
-  `spec.md` prevails.
-- Sync policy: the mirror is updated in the same change (single commit) as
-  the Russian text; a standalone edit of this file is a process violation.
+- Last sync: 2026-10-05.
+- Synced with the Russian spec.md in the same change (single-commit sync
+  policy). In case of divergence, the Russian text prevails.

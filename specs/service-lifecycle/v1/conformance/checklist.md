@@ -1,7 +1,7 @@
 # Conformance checklist — service-lifecycle v1
 
 Гейт соответствия реализации супервайзера контракту
-`specs/service-lifecycle/v1/spec.md` (версия 1.0.0-draft.1).
+`specs/service-lifecycle/v1/spec.md` (версия 1.0.0-draft.2).
 Тип проверки: **авт** — исполняемая проверка (pytest-пак движка / раннер
 conformance), **ручн** — инспекция кода/артефактов. Контракт ратифицируется
 первым зелёным прохождением всех пунктов реализацией в движке vesma.
