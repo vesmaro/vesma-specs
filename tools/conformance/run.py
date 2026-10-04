@@ -64,6 +64,10 @@ WELL_FORMED_PLACEHOLDER_RE = re.compile(r"^\{[a-z_]+\}$")  # spec.md §6: only {
 PLACEHOLDER_VALUE_RE = re.compile(r"^<[^>]*>$")  # e.g. <sha256-of-binary>, <token>
 ARGV_ALLOWLIST = {"config_path", "data_dir", "runtime_dir", "venv_bin"}
 TIERS = {"core", "optional"}
+# spec.md §3.3: names reserved for the layout's venv directories — the engine
+# venv ~/.local/share/vesma/venv/ and the per-component venvs/<name>/
+# (specs/layout/v1 §3.8); a manifest with such a name is rejected.
+RESERVED_NAMES = {"venv", "venvs"}
 
 # spec.md §3.5: argv elements must not contain shell metacharacters or
 # whitespace; no shell invocation (shell basename as argv[0], -c/-lc flags).
@@ -91,6 +95,7 @@ SECRET_SCAN_EXEMPT_PATHS = {
     "$.metadata.provenance.artifact_sha256",
 }
 CANONICAL_MANIFESTS_DIR = Path(os.path.expanduser("~/.config/vesma/components.d"))
+HOME_DIR = os.path.expanduser("~")
 
 # Duration-bearing leaves per spec §3.5/3.7/3.8/3.10: section path -> leaves.
 DURATION_LEAVES = {
@@ -439,6 +444,14 @@ def ch_name_kebab_unique(doc, ctx):
     return True, f"name {name!r} unique in {ctx.target_dir.name}/"
 
 
+def ch_name_not_reserved(doc, ctx):
+    name = _get(doc, "metadata", "name")
+    if isinstance(name, str) and name in RESERVED_NAMES:
+        return False, (f"metadata.name {name!r} is reserved (venv directories "
+                       "of the layout, specs/layout/v1 §3.8)")
+    return True, f"metadata.name {name!r} is not reserved"
+
+
 def ch_tier_enum(doc, ctx):
     tier = _get(doc, "metadata", "tier")
     if tier not in TIERS:
@@ -598,9 +611,9 @@ def ch_env_file_outside_manifests_dir(doc, ctx):
     for label, base in (("manifests dir of this run", Path(os.path.realpath(ctx.target_dir))),
                         ("canonical manifests dir", Path(os.path.realpath(CANONICAL_MANIFESTS_DIR)))):
         if real == base or base in real.parents:
-            inside.append(f"{label} ({str(base).replace(home, '~')})")
+            inside.append(f"{label} ({str(base).replace(HOME_DIR, '~')})")
     if inside:
-        shown = str(resolved).replace(home, "~")
+        shown = str(resolved).replace(HOME_DIR, "~")
         return False, (f"env_file {env_file!r} resolves to {shown}, which is inside: "
                        + "; ".join(inside))
     return True, f"env_file {env_file!r} lies outside the manifests dir"
@@ -636,6 +649,7 @@ CHECKS = {
     "schema_invalid": ch_schema_invalid,
     "api_version_present": ch_api_version_present,
     "name_kebab_unique": ch_name_kebab_unique,
+    "name_not_reserved": ch_name_not_reserved,
     "tier_enum": ch_tier_enum,
     "duration_format": ch_duration_format,
     "no_secret_in_vars": ch_no_secret_in_vars,
