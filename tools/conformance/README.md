@@ -41,7 +41,7 @@ python3 tools/conformance/run.py --all specs                                 # �
 | `tier_enum` | `metadata.tier` ∈ {`core`, `optional`} |
 | `duration_format` | поля-длительности (`health.*.interval/timeout/grace`, `stop.grace_period`, `restart.*.*`) по шаблону `^[0-9]+(ms\|s\|m\|h)$` |
 | `no_secret_in_vars` | в `launch.env.vars` нет ключей с секретными именами (`token`, `secret`, `password`, `passwd`, `api_key`, `apikey`, `private_key`, `credential`, case-insensitive); дополнительно — скан всех строковых скаляров на секретоподобные значения (`sk-…`, `ghp_…`, PEM, hex/base64 ≥ 40 символов); исключения: поле `metadata.provenance.artifact_sha256` (контрактный хэш, не секрет) и плейсхолдеры `<…>` |
-| `no_shell_metacharacters` | `launch.argv` и `health.exec.argv` — массивы строк без метасимволов ` \| & ; < > ( ) $ \` \ " ' * ?`, без whitespace и shell-инвокации (`sh`/`bash`/… первым элементом, флаги `-c`/`-lc`) — spec.md §3.5 |
+| `no_shell_metacharacters` | `launch.argv` и `health.exec.argv` — массивы строк без shell-метасимволов (`;`, `\|`, `&`, `$`, `<`, `>`, скобок, кавычек, бэктика, `\`, `*`, `?`), без whitespace и shell-инвокации (`sh`/`bash`/… первым элементом, флаги `-c`/`-lc`) — spec.md §3.5 |
 | `argv_placeholder_allowlist` | плейсхолдеры `{…}` в argv только из allowlist: `{config_path}`, `{state_dir}`, `{runtime_dir}`, `{venv_bin}` |
 | `checker_block_consistency` | `health.checker` ↔ соответствующий блок (`http`/`tcp`/`exec`/`callback`); лишние пробные блоки запрещены; `callback` — только при `kind: in-process` |
 | `kind_launch_consistency` | `kind: child-process` ⇒ есть `launch`, нет `in_process`; `kind: in-process` ⇒ наоборот |
