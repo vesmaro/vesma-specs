@@ -1,0 +1,10 @@
+# markdownlint configuration for the vesma-specs repository.
+#
+# Policy: rules are disabled individually, each with a stated reason — never
+# a blanket "default: false". The specs are normative Russian prose; these
+# choices keep the current corpus lint-clean without editing contract text.
+
+MD013: false  # line-length: Russian prose is not wrapped by convention
+MD033: false  # inline-HTML: allowed inside specification text and tables
+MD036: false  # emphasis-as-heading: intentional lead-in style ("**Активы.**")
+MD040: false  # fenced-code-language: protocol dumps / transcripts are legitimately untagged

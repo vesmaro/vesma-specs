@@ -1,0 +1,9 @@
+# Python bytecode and caches
+__pycache__/
+*.pyc
+
+# Python virtual environments
+.venv/
+
+# Node (local tooling sandboxes)
+node_modules/

@@ -1,0 +1,10 @@
+# Code ownership — governance per ADR-0001
+# (adrs/0001-repo-structure-and-governance).
+#
+# The contract corpus, architecture decisions and CI/tooling are owned by
+# the VESMA founding architect. Replace the personal handle with a GitHub
+# team (e.g. @vesmaro/specs-owners) once the org team exists.
+
+specs/ @Korrnals
+adrs/  @Korrnals
+tools/ @Korrnals

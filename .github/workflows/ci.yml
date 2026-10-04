@@ -1,0 +1,154 @@
+# Continuous integration for the vesma-specs contract repository.
+#
+# Hardening (ratified CI policy, founding ArchCom 2026-10-04):
+#   - least privilege: top-level `permissions: contents: read`, no job
+#     escalates, and no `secrets.*` reference anywhere in this file;
+#   - `pull_request_target` is deliberately NOT used: it runs untrusted-PR
+#     code with repository-scoped secrets, which this repository never needs;
+#   - every action is pinned to a full commit SHA (resolved from the upstream
+#     repository and verified on 2026-10-04); version upgrades are conscious,
+#     reviewed edits;
+#   - every job has an explicit timeout; concurrent runs on the same ref are
+#     superseded instead of piling up.
+
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  # ------------------------------------------------------------------ lint --
+  lint:
+    name: markdownlint
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+      - name: Lint all markdown
+        # Maintained by the markdownlint author (DavidAnson); v24 = node24.
+        uses: DavidAnson/markdownlint-cli2-action@21c1be1b93ad9ed58fa840aacc3f279cde2a72ff  # v24.2.0
+        with:
+          globs: "**/*.md"
+          config: ".markdownlint.yaml"
+
+  # ----------------------------------------------------------- conformance --
+  conformance:
+    name: conformance suites (run.py)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+      - name: Set up Python
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97  # v7.0.0
+        with:
+          python-version: "3.11"
+      - name: Install dependencies
+        # Version floors, not exact pins: jsonschema>=4.18 is the first line
+        # with full Draft 2020-12 support; PyYAML 6.x is the current stable
+        # major. Hash-pinned requirements.txt is follow-up supply-chain work.
+        run: python -m pip install --disable-pip-version-check "jsonschema>=4.18" "pyyaml>=6.0"
+      - name: "Dependency check (run.py imports: stdlib + jsonschema/yaml only)"
+        run: |
+          python3 - <<'PY'
+          import ast
+          import sys
+
+          ALLOWED_THIRD_PARTY = {"jsonschema", "yaml"}
+          source = open("tools/conformance/run.py", encoding="utf-8").read()
+          imports = set()
+          for node in ast.walk(ast.parse(source)):
+              if isinstance(node, ast.Import):
+                  imports.update(alias.name.split(".")[0] for alias in node.names)
+              elif isinstance(node, ast.ImportFrom) and node.module and node.level == 0:
+                  imports.add(node.module.split(".")[0])
+          disallowed = sorted(
+              name for name in imports
+              if name not in sys.stdlib_module_names and name not in ALLOWED_THIRD_PARTY
+          )
+          if disallowed:
+              print("DISALLOWED imports in tools/conformance/run.py:",
+                    ", ".join(disallowed))
+              sys.exit(1)
+          print("dep-check OK:", ", ".join(sorted(imports)))
+          PY
+      - name: Run conformance suites
+        # Exit codes: 0 = green, 1 = a `must` case failed, 2 = infra error.
+        # The JSON report is written before the exit code propagates, so the
+        # artifact upload below (if: always()) has a report even on failure.
+        run: python3 tools/conformance/run.py --all specs/ --format=json > conformance-report.json
+      - name: Upload conformance report
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a  # v7.0.1
+        with:
+          name: conformance-report
+          path: conformance-report.json
+          if-no-files-found: error
+
+  # ----------------------------------------------------------- schema-lint --
+  schema-lint:
+    name: schema & example lint
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+      - name: Set up Python
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97  # v7.0.0
+        with:
+          python-version: "3.11"
+      - name: Install dependencies
+        run: python -m pip install --disable-pip-version-check "jsonschema>=4.18" "pyyaml>=6.0"
+      - name: Lint JSON Schemas and example/fixture YAML
+        run: python3 tools/ci/schema_lint.py .
+
+  # --------------------------------------------------------- breaking-check --
+  breaking-check:
+    name: breaking-change check (stub, report mode)
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Check out repository (full history for the baseline ref)
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+        with:
+          fetch-depth: 0
+          fetch-tags: true
+      - name: Detect breaking schema changes without a major bump
+        # Stdlib-only tool: no setup-python/pip needed. Report mode while the
+        # contracts are at 1.0.0-draft (see tools/ci/breaking_check.py).
+        run: python3 tools/ci/breaking_check.py specs/
+
+  # --------------------------------------------------------------- secrets --
+  secrets:
+    name: secret scan (gitleaks)
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Check out repository (full history)
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+        with:
+          fetch-depth: 0
+      - name: Gitleaks scan
+        # v3 (node24). Scan scope follows the action's event logic: push to
+        # main = full repository history; pull_request = the commits the PR
+        # introduces (every merged commit is re-scanned in full on push).
+        # PR comments and SARIF upload are disabled so this workflow needs
+        # no GITHUB_TOKEN and no secrets.* at all.
+        uses: gitleaks/gitleaks-action@e0c47f4f8be36e29cdc102c57e68cb5cbf0e8d1e  # v3.0.0
+        env:
+          GITLEAKS_ENABLE_COMMENTS: "false"
+          GITLEAKS_ENABLE_UPLOAD_ARTIFACT: "false"
