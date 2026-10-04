@@ -13,7 +13,7 @@ language: en (informative mirror)
 > specification [spec.md](spec.md). In case of divergence, the Russian text
 > prevails. The mirror is maintained in the same change as the Russian text
 > (single-commit sync policy).
-
+>
 > **Status: draft.** The spec is ratified by the first implementation in
 > the `vesma` engine (card `cli-service-management`). The contract form —
 > installation profiles and paths, permissions, the uniqueness of log

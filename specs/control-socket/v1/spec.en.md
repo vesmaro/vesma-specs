@@ -13,7 +13,7 @@ language: en (informative mirror)
 > specification [spec.md](spec.md). In case of divergence, the Russian text
 > prevails. The mirror is maintained in the same change as the Russian text
 > (single-commit sync policy).
-
+>
 > **Status: draft.** The spec is ratified by the first implementation in
 > the `vesma` engine (card `cli-service-management`). The contract form —
 > paths and permissions, the TOCTOU procedure, protocol, methods, error
@@ -361,7 +361,7 @@ service-lifecycle; the socket adds no surface here.
 
 Minimal session: [examples/example-session.txt](examples/example-session.txt)
 (hello → status → start → status → logs → stop → an idempotent stop retry
-+ one error). The values in the example are placeholders.
+and one error). The values in the example are placeholders.
 
 ## 7. Conformance
 

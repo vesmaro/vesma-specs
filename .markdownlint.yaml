@@ -5,6 +5,8 @@
 # choices keep the current corpus lint-clean without editing contract text.
 
 MD013: false  # line-length: Russian prose is not wrapped by convention
+MD024:
+  siblings_only: true  # bilingual layout: same heading text may repeat under different language sections
 MD033: false  # inline-HTML: allowed inside specification text and tables
 MD036: false  # emphasis-as-heading: intentional lead-in style ("**Активы.**")
 MD040: false  # fenced-code-language: protocol dumps / transcripts are legitimately untagged
