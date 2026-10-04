@@ -169,10 +169,16 @@ vesma.supervisor component=<name> event=<spawn|exit|health|degraded> pid=<n|none
 вердикта строка optional-деградации процитирована без префикса и pid;
 канонический префикс `vesma.supervisor` и `pid` присутствуют всегда).
 
-**Журнал.** Супервайзер маркирует строки детей `SYSLOG_IDENTIFIER=vesma-<component>`
-при пересылке в journald (маркировку выполняет супервайзер, не ребёнок).
-`vesma service logs --component=X` = journalctl-фильтр по идентификатору,
-не grep по каше.
+**Журнал history/ (MUST).** Каждый переход FSM каждого компонента и каждое
+изменение глобального health супервайзера дополнительно записываются в
+журнал супервайзера `~/.local/state/vesma/history/` — append-only; формат
+записей — те же структурные строки этого параграфа с ISO-8601 timestamp.
+Путь, права и append-only семантика журнала — `specs/layout/v1`.
+
+**Строки детей в journald.** Супервайзер маркирует строки детей
+`SYSLOG_IDENTIFIER=vesma-<component>` при пересылке в journald (маркировку
+выполняет супервайзер, не ребёнок). `vesma service logs --component=X` =
+journalctl-фильтр по идентификатору, не grep по каше.
 
 ### 3.5 Рестарт-политики
 
@@ -277,6 +283,13 @@ native extensions (JIT/WX-память в нативных модулях); вк
 печатается в install-выводе и виден в `vesma service status`. Тихих
 деградаций нет.
 
+### 3.7 Коды ошибок — не применимо
+
+Контракт не определяет протокольных кодов ошибок: ошибки жизненного цикла
+выражаются FSM-состояниями (§3.3) и структурными строками наблюдаемости
+(§3.4). Протокольные коды управления живым супервайзером — дом
+`specs/control-socket/v1` (§4.6).
+
 ## 4. Примеры
 
 Артефакты-минимум в `examples/`:
@@ -285,7 +298,7 @@ native extensions (JIT/WX-память в нативных модулях); вк
 |---|---|
 | `examples/example-unit.service` | сгенерированный юнит user-профиля: полная таблица MUST + полный hardening-блок, ExecStart одной строкой |
 | `examples/example-log-lines.txt` | 8 структурных строк: spawn, health-переходы, exit (по коду и по сигналу), degraded-алерт optional, degraded-алерт core crash-loop |
-| `examples/example-status.json` | ответ `vesma service status`: супервайзер + 2 компонента в состояниях healthy и degraded (с reason) |
+| `examples/example-status.json` | ответ `vesma service status`: супервайзер + карта компонентов «имя → запись» (`state` + `health` + аддитивные поля), записи healthy и degraded (с reason); форма совпадает с `status` specs/control-socket/v1 §4.5 |
 
 Пути в примерах (state/cache/data, юнит, сокет) — плейсхолдеры по
 каноническим корням; финальные имена фиксируют `specs/layout/v1` и
@@ -304,9 +317,10 @@ lazy-retry без спама. Статус контракта — `draft` до �
 - **SemVer**: `1.0.0-draft.1` → `1.0.0` по факту ратификации реализацией.
   Ломающее изменение = MAJOR + deprecation-окно с dual-поддержкой
   (дисциплина README §«Дисциплина контрактов»).
-- **Потребляемые контракты**: поля `name/kind/tier/launch/health/
-  stop_semantics/depends_on/env.vars/env_file/restart.*/artifact_sha256` —
-  из `specs/component-manifest/v1`; протокол управления живым супервайзером
+- **Потребляемые контракты**: поля `metadata` (name/tier), `kind`,
+  `launch`/`in_process`, `health`, `stop`, `config`, `depends_on`,
+  `env.vars`/`env_file`, `restart.*`, `artifact_sha256` — из
+  `specs/component-manifest/v1`; протокол управления живым супервайзером
   (status/logs/start/stop) — `specs/control-socket/v1`; пути state/cache/
   data/сокета — `specs/layout/v1`.
 - **Отложено в v2**: `WatchdogSec`/`sd_notify`; активация

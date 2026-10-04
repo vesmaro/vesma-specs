@@ -12,7 +12,7 @@ S: {"id": 1, "result": {"protocol_version": 1, "min_protocol": 1, "server_versio
 
 # --- 2. status: всё дерево (без params) --------------------------------------
 C: {"id": 2, "method": "status"}
-S: {"id": 2, "result": {"supervisor": {"pid": 4312, "health": "healthy"}, "components": {"memory-server": {"state": "healthy", "health": "healthy"}, "board": {"state": "stopped", "health": "down"}}}}
+S: {"id": 2, "result": {"supervisor": {"pid": 4312, "health": "healthy"}, "components": {"server": {"state": "healthy", "health": "healthy"}, "board": {"state": "stopped", "health": "down"}}}}
 
 # --- 3. start компонента ------------------------------------------------------
 # Ответ immediate: FSM перешла stopped → starting (spawn, T1 service-lifecycle);

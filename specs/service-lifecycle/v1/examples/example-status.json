@@ -12,22 +12,22 @@
     "health": "degraded",
     "health_reason": "component=board reason=restart-budget-exhausted"
   },
-  "components": [
-    {
-      "name": "core",
+  "components": {
+    "server": {
+      "state": "healthy",
+      "health": "healthy",
       "tier": "core",
       "kind": "in-process",
-      "state": "healthy",
       "pid": 4210,
       "uptime_seconds": 86240,
       "restarts_total": 0,
       "last_health_transition": { "from": "starting", "to": "healthy", "at": "2026-10-03T09:41:05Z" }
     },
-    {
-      "name": "board",
+    "board": {
+      "state": "degraded",
+      "health": "degraded",
       "tier": "optional",
       "kind": "child-process",
-      "state": "degraded",
       "pid": null,
       "degraded_reason": "restart-budget-exhausted",
       "attempts": 5,
@@ -37,5 +37,5 @@
       "restarts_total": 5,
       "last_exit": { "code": 1, "signal": null, "pid": 4252, "at": "2026-10-04T11:58:31Z" }
     }
-  ]
+  }
 }

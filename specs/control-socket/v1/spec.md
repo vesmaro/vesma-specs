@@ -209,7 +209,8 @@ RFC 2119. Проза документов — русская; идентифик
 | без params — всё дерево; `params: {"component": "<name>"}` — один компонент | `{"supervisor": {"pid": N, "health": "..."}, "components": {"<name>": {"state": "<fsm-state>", "health": "healthy\|degraded\|down"}}}`; при `component` ключ `supervisor` опускается | 100 |
 
 Минимальная запись компонента — `state` + `health`; дополнительные поля
-(tier, счётчики рестартов) аддитивны и определяет service-lifecycle.
+(tier, счётчики рестартов) аддитивны; их состав определяет
+service-lifecycle.
 
 #### `start` — идемпотентен (MUST)
 
@@ -289,7 +290,7 @@ RFC 2119. Проза документов — русская; идентифик
 | Длина строки запроса | ≤ 1 MiB | error 1 и/или закрытие соединения |
 | Таймаут ответа | 10 s (кроме follow-потоков) | клиент закрывает соединение; повтор идемпотентных операций безопасен |
 | `tail` | ≤ 10000, дефолт 100 | error 3 |
-| Имя компонента | `^[a-z][a-z0-9-]*$` и наличие в реестре манифестов | regex-провал → 3; нет в реестре → 100 (защита от name-инъекции в `logs`) |
+| Имя компонента | `^[a-z][a-z0-9-]{0,62}$` (полный шаблон имени манифеста) и наличие в реестре манифестов | regex-провал → 3; нет в реестре → 100 (защита от name-инъекции в `logs`) |
 | Транспорт | только `AF_UNIX` | TCP control plane ЗАПРЕЩЁН по умолчанию; его появление = новая trust boundary → MAJOR + полный threat model |
 
 ### 4.8 CLI-отображение
@@ -324,7 +325,7 @@ system-сокет.
 | Посторонний локальный пользователь подключается к сокету | S (Spoofing) | DAC 0700/0600; `SO_PEERCRED` defense-in-depth: peer uid == владелец сокета, иначе immediate close (system-профиль: uid=root или gid=vesma-oper на каждый accept + audit) | conformance 1, 3 |
 | Symlink-подмена пути сокета, подмена каталога | T (Tampering) | `lstat` перед unlink (только свой socket-файл; symlink → отказ + алерт, никогда не follow); `fstat` после bind; pre-flight клиента на lax-каталог (§ 4.1) | conformance 2, 5, 6 |
 | Stale-сокет как ложный инстанс, потеря single-instance | E / D | `connect()`-probe перед unlink; pidfile не нужен — probe решает; слепой unlink живого сокета запрещён | conformance 4, 7 |
-| Инъекция имени компонента в `logs` (path traversal) | E (Elevation of Privilege) | regex `^[a-z][a-z0-9-]*$` + валидация против реестра манифестов | conformance 13 |
+| Инъекция имени компонента в `logs` (path traversal) | E (Elevation of Privilege) | regex `^[a-z][a-z0-9-]{0,62}$` + валидация против реестра манифестов | conformance 13 |
 | TCP-экспозиция control plane | I / S | запрещена by construction (unix-only; включение = MAJOR + полный threat model) | conformance 15 |
 | Downgrade протокола | T | `hello`: проверка major `protocol_version`; несовпадение → error 4 + `supported` | conformance 9 |
 | Flood соединений / гигантских строк против супервайзера | D (DoS) | лимит строки 1 MiB; таймаут ответа 10 s; CLI не держит постоянных соединений кроме `logs --follow` | conformance 12, 14 |
