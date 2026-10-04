@@ -15,6 +15,8 @@ itself with a manifest — no per-component CLI code.
 
 - **Strict validation** — `additionalProperties: false` on every schema object; an unknown field is rejected, never passed through; evolution goes through `apiVersion` (additive fields = minor contract version).
 - **`apiVersion` required** — must be `vesma.component/v1`; an unsupported version is rejected with the list of supported versions.
+- **Reserved names** — `metadata.name` must never be `venv` or `venvs` (reserved for the layout's venv directories, specs/layout/v1 §3.8); the validator rejects the collision.
+- **`artifact_sha256` by tier** — mandatory for `tier: core`; for `optional` it is optional, and its absence surfaces as a `doctor` WARN.
 - **`argv` is a list, no shell** — a string array without shell metacharacters or `sh -c`; placeholders expand by supervisor allowlist only (`{config_path}`, `{data_dir}`, `{runtime_dir}`, `{venv_bin}`).
 - **Secrets only via `env_file`** — never in the manifest or `env.vars`; the file lives outside the manifests directory, mode `0600`, owner = supervisor user; loading is fail-closed — any violation aborts the start.
 - **In-process health = `liveness` by default** (module imported, factory ran); the optional `callback` probe runs in an isolated boundary — any exception or timeout yields `failed` and never crashes the supervisor.
@@ -32,12 +34,14 @@ itself with a manifest — no per-component CLI code.
 From the repo root: `python3 tools/conformance/run.py specs/component-manifest/v1`. The suite is
 [conformance/cases.yaml](conformance/cases.yaml) — positive cases from `examples/` plus negative fixtures under
 `conformance/fixtures/invalid/`. The runner (stdlib + `jsonschema`, declarations only) is a separate tooling
-deliverable. Integrator checklist: [conformance/checklist.md](conformance/checklist.md) (CM-01…CM-15).
+deliverable. Integrator checklist: [conformance/checklist.md](conformance/checklist.md) (CM-01…CM-17).
 
 ## Status
 
-`1.0.0-draft.1` — shape ratified by the founding VESMA ArchCom on 2026-10-04 (ADR-0001); becomes stable
-(`1.0.0`) with the first conformant implementation in the `vesma` engine.
+`1.0.0-draft.2` — deep-review wave 2 normative amendments (2026-10-05, pre-implementation): reserved
+names `venv`/`venvs`, `artifact_sha256` mandatory for `tier: core`. Shape ratified by the founding
+VESMA ArchCom on 2026-10-04 (ADR-0001); becomes stable (`1.0.0`) with the first conformant
+implementation in the `vesma` engine.
 
 ## See also
 

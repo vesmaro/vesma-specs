@@ -49,6 +49,7 @@ python3 tools/conformance/run.py --all specs                                 # �
 | `schema_invalid` | документ **отвергнут валидацией контракта** = провал JSON-Schema **или** любого нормативного правила раннера (секретность `env.vars`, размещение `env_file`, граф `depends_on` и остальные правила §3 не выражаемы JSON-Schema) |
 | `api_version_present` | `apiVersion` соответствует `^vesma\.component/v[0-9]+$` |
 | `name_kebab_unique` | `metadata.name` по шаблону `^[a-z][a-z0-9-]{0,62}$` и уникален среди `*.yaml` каталога таргета |
+| `name_not_reserved` | `metadata.name` ∉ {`venv`, `venvs`} — имена зарезервированы за venv-каталогами лэйаута (spec.md §3.3, specs/layout/v1 §3.8) |
 | `tier_enum` | `metadata.tier` ∈ {`core`, `optional`} |
 | `duration_format` | поля-длительности (`health.*.interval/timeout/grace`, `stop.grace_period`, `restart.*.*`) по шаблону `^[0-9]+(ms\|s\|m\|h)$` |
 | `no_secret_in_vars` | в `launch.env.vars` нет ключей с секретными именами (`token`, `secret`, `password`, `passwd`, `api_key`, `apikey`, `private_key`, `credential`, case-insensitive); дополнительно — скан значений всех строковых скаляров документа на 5 секретоподобных паттернов (`sk-…`, `ghp_…`, PEM private key, hex/base64 ≥ 40 символов); исключения value-scan: поддерево `config` (`schema_inline` содержит легитимные паттерны и дефолты), `metadata.description`, `metadata.provenance.artifact_sha256` (контрактный hex64, не секрет) и плейсхолдеры `<…>`; в диагностике значения маскируются |

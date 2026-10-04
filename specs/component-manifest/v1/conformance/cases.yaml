@@ -13,7 +13,7 @@
 
 suite: component-manifest-v1
 contract: component-manifest
-version: 1.0.0-draft.1
+version: 1.0.0-draft.2
 
 cases:
   # --- позитивные: примеры-минимум -------------------------------------------
@@ -147,5 +147,17 @@ cases:
   - id: fix-kind-stop-mismatch
     severity: must
     target: conformance/fixtures/invalid/kind-stop-mismatch.yaml
+    checks: [schema_invalid]
+    expect: fail
+
+  - id: fix-reserved-name
+    severity: must
+    target: conformance/fixtures/invalid/reserved-name.yaml
+    checks: [schema_invalid, name_not_reserved]
+    expect: fail
+
+  - id: fix-core-no-sha
+    severity: must
+    target: conformance/fixtures/invalid/core-no-sha.yaml
     checks: [schema_invalid]
     expect: fail

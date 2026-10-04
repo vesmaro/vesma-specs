@@ -1,6 +1,6 @@
 ---
 contract: component-manifest
-version: 1.0.0-draft.1
+version: 1.0.0-draft.2
 status: draft (ратифицируется первой реализацией в движке vesma)
 decisions: [ADR-0001]
 ratified: учредительный АрхКом VESMA, 2026-10-04
@@ -101,6 +101,9 @@ Tier, Health check, Grace period, Canonical layout определены в
 
 - **MUST**: `name` — по шаблону `^[a-z][a-z0-9-]{0,62}$`; уникален в
   установке.
+- **MUST**: `name` не входит в множество зарезервированных имён
+  {`venv`, `venvs`} — коллизия с venv-каталогами лэйаута
+  (specs/layout/v1 §3.8); валидатор манифестов обязан отвергать.
 - **MUST**: `version` — SemVer 2.0.0 самого компонента.
 - **MUST**: `tier` — `core` \| `optional`. Манифест кодирует тир;
   рестарт-политику по тиру применяет супервайзер
@@ -113,6 +116,10 @@ Tier, Health check, Grace period, Canonical layout определены в
 - **MAY**: `provenance.artifact_sha256` — hex64. Если задан, супервайзер
   проверяет хэш артефакта запуска **при каждом старте** — ловит tamper и
   drift между install и spawn. Подписи артефактов — v2 (нужен корневой ключ).
+- **MUST**: при `tier: core` артефакт-хэш (`provenance.artifact_sha256`)
+  обязателен; при `tier: optional` — опционален, отсутствие = `doctor`
+  WARN (молчаливый приём подмены не оговорён контрактом — см. threat
+  model, §8).
 
 ### 3.4 kind и секции исполнения
 
@@ -145,9 +152,18 @@ Tier, Health check, Grace period, Canonical layout определены в
   пользователя супервайзера. Загрузчик fail-closed: нарушение любого
   условия = отказ старта с готовой командой исправления (`chmod 600`,
   `chown`, перенос файла) — предупреждением это не лечится.
+- Примечание (юнит и spawn): argv компонентов никогда не попадает в строки
+  юнита — `ExecStart` юнита статичен (`vesma service run`); spawn
+  выполняется execve-массивом, поэтому гарантия «без shell» сохраняется
+  при любых пробелах в путях.
 - Семантика окружения ребёнка (конструирует супервайзер): конструируемый
   PATH + `env.vars` + содержимое `env_file`; семантика `env -i` мандатна
   (specs/service-lifecycle/v1 §3.2, SL-13).
+- Примечание (остаточный риск): значения `env_file` передаются в окружение
+  ребёнка; процесс с тем же uid может читать `/proc/<pid>/environ` —
+  осознанный остаточный риск v1 (единый trust-domain,
+  specs/service-lifecycle/v1 §3.2); v2-горизонт — fd-passing или
+  альтернативная передача секретов.
 
 ### 3.6 in_process
 
@@ -287,6 +303,7 @@ Tier, Health check, Grace period, Canonical layout определены в
 | `schema_invalid` | документ отвергнут валидацией контракта (см. семантику выше) |
 | `api_version_present` | `apiVersion` присутствует и соответствует `^vesma\.component/v[0-9]+$` |
 | `name_kebab_unique` | `metadata.name` по шаблону и уникален в установке |
+| `name_not_reserved` | `metadata.name` ∉ зарезервированного множества {`venv`, `venvs`} (§3.3; коллизия с venv-каталогами лэйаута — specs/layout/v1 §3.8) |
 | `tier_enum` | `metadata.tier` ∈ `core` \| `optional` |
 | `duration_format` | все поля-длительности по шаблону `^[0-9]+(ms\|s\|m\|h)$` |
 | `no_secret_in_vars` | секретов в манифесте нет: (а) имена ключей `launch.env.vars` проверяются на секретоподобные (`token`, `secret`, `password`, `passwd`, `api_key`, `apikey`, `private_key`, `credential`; case-insensitive); (б) значения всех строковых скаляров документа проверяются на 5 секретоподобных паттернов (openai-style `sk-…`, github PAT `ghp_…`, PEM private key, длинный hex ≥ 40, длинный base64 ≥ 40). Исключения value-scan: поддерево `config` (`schema_inline` содержит легитимные паттерны и дефолты), `metadata.description`, `metadata.provenance.artifact_sha256` (hex64 по контракту), значения-плейсхолдеры `<...>`; в диагностике значения маскируются |
@@ -306,7 +323,7 @@ Tier, Health check, Grace period, Canonical layout определены в
 
 ## 7. Совместимость
 
-- **SemVer**: `1.0.0-draft.1` → `1.0.0` по факту ратификации реализацией
+- **SemVer**: `1.0.0-draft.2` → `1.0.0` по факту ратификации реализацией
   в движке vesma. Ломающее изменение = MAJOR + deprecation-окно
   `max(90 дней, 2 минорных релиза)` с dual-поддержкой (ADR-0001 §2).
 - **Аддитивные поля** (новые опциональные поля, не ломающие существующие

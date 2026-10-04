@@ -1,6 +1,6 @@
 ---
 contract: component-manifest
-version: 1.0.0-draft.1
+version: 1.0.0-draft.2
 status: draft (ратифицируется первой реализацией в движке vesma)
 decisions: [ADR-0001]
 ratified: учредительный АрхКом VESMA, 2026-10-04
@@ -110,6 +110,9 @@ of this document:
 
 - **MUST**: `name` matches `^[a-z][a-z0-9-]{0,62}$`; unique within the
   installation.
+- **MUST**: `name` is not in the reserved names set {`venv`, `venvs`} —
+  collision with the layout's venv directories (specs/layout/v1 §3.8);
+  the manifest validator MUST reject.
 - **MUST**: `version` is the component's own SemVer 2.0.0.
 - **MUST**: `tier` is `core` \| `optional`. The manifest encodes the tier;
   the per-tier restart policy is applied by the supervisor
@@ -124,6 +127,10 @@ of this document:
   verifies the launch artifact hash **on every start** — this catches tamper
   and drift between install and spawn. Artifact signatures are v2 (they
   require a root key).
+- **MUST**: with `tier: core` the artifact hash
+  (`provenance.artifact_sha256`) is required; with `tier: optional` it is
+  optional, and its absence = a `doctor` WARN (silent acceptance of
+  substitution is not covered by the contract — see the threat model, §8).
 
 ### 3.4 kind and execution sections
 
@@ -157,9 +164,18 @@ of this document:
   by the supervisor user. The loader is fail-closed: a violation of any
   condition = start refusal with a ready remediation command (`chmod 600`,
   `chown`, moving the file) — a warning does not fix this.
+- Note (unit and spawn): the components' argv never lands in the unit's
+  lines — the unit's `ExecStart` is static (`vesma service run`); spawning
+  is done with an execve array, so the "no shell" guarantee holds with any
+  spaces in paths.
 - The child environment semantics (constructed by the supervisor): a
   constructed PATH + `env.vars` + the contents of `env_file`; `env -i`
   semantics are mandatory (specs/service-lifecycle/v1 §3.2, SL-13).
+- Note (residual risk): the `env_file` values are passed into the child's
+  environment; a same-uid process can read `/proc/<pid>/environ` — a
+  deliberate residual risk of v1 (a single trust domain,
+  specs/service-lifecycle/v1 §3.2); the v2 horizon is fd-passing or an
+  alternative secret transfer.
 
 ### 3.6 in_process
 
@@ -308,6 +324,7 @@ task):
 | `schema_invalid` | the document is rejected by contract validation (see the semantics above) |
 | `api_version_present` | `apiVersion` is present and matches `^vesma\.component/v[0-9]+$` |
 | `name_kebab_unique` | `metadata.name` matches the pattern and is unique within the installation |
+| `name_not_reserved` | `metadata.name` is not in the reserved set {`venv`, `venvs`} (§3.3; collision with the layout's venv directories — specs/layout/v1 §3.8) |
 | `tier_enum` | `metadata.tier` ∈ `core` \| `optional` |
 | `duration_format` | all duration fields match the pattern `^[0-9]+(ms\|s\|m\|h)$` |
 | `no_secret_in_vars` | no secrets in the manifest: (a) the key names of `launch.env.vars` are checked for secret-like ones (`token`, `secret`, `password`, `passwd`, `api_key`, `apikey`, `private_key`, `credential`; case-insensitive); (b) the values of all string scalars of the document are checked against 5 secret-like patterns (openai-style `sk-…`, github PAT `ghp_…`, PEM private key, long hex ≥ 40, long base64 ≥ 40). Value-scan exceptions: the `config` subtree (`schema_inline` contains legitimate patterns and defaults), `metadata.description`, `metadata.provenance.artifact_sha256` (hex64 by contract), placeholder values `<...>`; in diagnostics the values are masked |
@@ -328,7 +345,7 @@ positive cases.
 
 ## 7. Compatibility
 
-- **SemVer**: `1.0.0-draft.1` → `1.0.0` upon ratification by the first
+- **SemVer**: `1.0.0-draft.2` → `1.0.0` upon ratification by the first
   implementation in the vesma engine. A breaking change = MAJOR + a
   deprecation window of `max(90 days, 2 minor releases)` with dual support
   (ADR-0001 §2).
@@ -425,9 +442,6 @@ this spec.
 
 ## Translation note
 
-- Mirror date: 2026-10-04; base commit of the normative Russian source:
-  `01fb6ed` (`specs/component-manifest/v1/spec.md`).
-- This is an informative mirror; in case of divergence the Russian
-  `spec.md` prevails.
-- Sync policy: the mirror is updated in the same change (single commit) as
-  the Russian text; a standalone edit of this file is a process violation.
+- Last sync: 2026-10-05.
+- Synced with the Russian spec.md in the same change (single-commit sync
+  policy). In case of divergence, the Russian text prevails.

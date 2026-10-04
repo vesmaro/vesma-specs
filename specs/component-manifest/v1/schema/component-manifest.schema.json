@@ -25,7 +25,8 @@
         "name": {
           "type": "string",
           "pattern": "^[a-z][a-z0-9-]{0,62}$",
-          "description": "Имя компонента; уникально в установке (проверка name_kebab_unique)."
+          "not": { "enum": ["venv", "venvs"] },
+          "description": "Имя компонента; уникально в установке (проверка name_kebab_unique). Зарезервированные имена venv/venvs запрещены — коллизия с venv-каталогами лэйаута (specs/layout/v1 §3.8; проверка name_not_reserved)."
         },
         "version": {
           "type": "string",
@@ -60,7 +61,7 @@
             "artifact_sha256": {
               "type": "string",
               "pattern": "^[0-9a-f]{64}$",
-              "description": "hex64. Если задан — супервайзер проверяет хэш артефакта запуска при каждом старте (tamper/drift). Подписи — v2."
+              "description": "hex64. Обязателен при tier: core (if/then ниже); при optional — опционален, отсутствие = doctor WARN. Если задан — супервайзер проверяет хэш артефакта запуска при каждом старте (tamper/drift). Подписи — v2."
             }
           }
         }
@@ -308,6 +309,16 @@
         "properties": { "health": { "required": ["checker"], "properties": { "checker": { "const": "callback" } } } }
       },
       "then": { "required": ["kind"], "properties": { "kind": { "const": "in-process" } } }
+    },
+    {
+      "if": {
+        "required": ["metadata"],
+        "properties": { "metadata": { "required": ["tier"], "properties": { "tier": { "const": "core" } } } }
+      },
+      "then": {
+        "required": ["metadata"],
+        "properties": { "metadata": { "required": ["provenance"], "properties": { "provenance": { "required": ["artifact_sha256"] } } } }
+      }
     }
   ],
   "$defs": {

@@ -1,0 +1,30 @@
+# Негативная фикстура: tier: core без обязательного artifact_sha256.
+# Для core-тиров артефакт-хэш обязателен (spec.md §3.3; if/then по
+# metadata.tier в схеме); манифест валиден во всём остальном.
+apiVersion: vesma.component/v1
+kind: child-process
+metadata:
+  name: core-no-sha
+  version: 2.1.0
+  tier: core
+  description: "Core-компонент без обязательного artifact_sha256: манифест валиден во всём остальном."
+  provenance:
+    repo: https://github.com/vesmaro/vesma-core
+    license: Apache-2.0
+launch:
+  argv: ["/usr/bin/vesma-core", "--config", "{config_path}"]
+  cwd: "~/.local/share/vesma/core-no-sha"
+  env:
+    vars:
+      LOG_LEVEL: info
+    env_file: "~/.config/vesma/env/core.env"
+health:
+  checker: http
+  http:
+    url: "http://127.0.0.1:8098/healthz"
+    interval: 10s
+    timeout: 2s
+    unhealthy_threshold: 3
+stop:
+  signal: SIGTERM
+  grace_period: 10s
