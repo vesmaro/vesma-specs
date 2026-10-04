@@ -1,0 +1,45 @@
+Каноническое дерево user-профиля — specs/layout/v1 §3.2 (пример; пути —
+канонические дефолты XDG; <name> — metadata.name компонента; права в
+комментариях выставляются явно, не от umask — §3.1).
+
+Пример-установка: board (in-process, живёт на venv движка), worker
+(python-компонент-ребёнок, собственный venv), mesh (go-ребёнок, без venv).
+
+~/.config/vesma/                          # 0700, владелец: пользователь супервайзера
+├── vesma.yaml                            # общий конфиг; конфиг компонента = секция (CM §3.9); SHOULD 0600
+├── components.d/                         # 0700 — drop-in каталог манифестов
+│   ├── board.yaml                        #   манифест board: install кладёт, uninstall убирает
+│   ├── mesh.yaml                         #   имя файла == metadata.name
+│   └── worker.yaml                       #   невалидный файл здесь = fail-closed ошибка загрузки (§3.5)
+└── env/                                  # 0700 — env-файлы секретов (вне components.d!)
+    ├── mesh.env                          # 0600 — секреты go-ребёнка mesh (fail-closed загрузка)
+    └── worker.env                        # 0600 — секреты python-ребёнка worker
+
+~/.local/share/vesma/                     # 0700
+├── board/                                # 0700 — данные board, default cwd ({state_dir})
+├── mesh/                                 # 0700 — данные mesh (go-ребёнок: venv не имеет)
+├── worker/                               # 0700 — данные worker, default cwd
+└── venvs/                                # 0700 — только python-компоненты-дети (§3.8)
+    └── worker/                           # 0700 — venv worker ({venv_bin} → venvs/worker/bin)
+        └── (site-packages — не миро-/группо-записываемы; freeze == lock)
+
+~/.local/state/vesma/                     # 0700
+├── logs/                                 # 0700 — files-under-state (только когда journald нет)
+│   ├── board/                            #   ротация 10 MB × 5 файлов
+│   ├── mesh/
+│   └── worker/
+├── history/                              # 0700 — append-only журнал переходов супервайзера
+└── run/                                  # 0700 — fallback runtime (XDG_RUNTIME_DIR пуст) + WARN
+    ├── control.sock                      # 0600
+    └── pids/                             #   диагностические pid-файлы
+
+${XDG_RUNTIME_DIR}/vesma/                 # 0700 — канонический runtime (tmpfs-семантика)
+├── control.sock                          # 0600 — specs/control-socket/v1 §3
+└── pids/                                 # диагностические pid-файлы (не механизм single-instance)
+
+~/.cache/vesma/                           # 0750
+└── worker/                               # регенерируемое; НИКОГДА не секреты (правило API записи, §3.9)
+
+Юнит супервайзера: ~/.config/systemd/user/vesma.service — дом
+specs/service-lifecycle/v1 §3.6 (приведён для ориентира; в таблицу лэйаута
+не входит — это системный каталог systemd, не лэйаут vesma).

@@ -1,0 +1,30 @@
+Мок-вывод vesma doctor --service — specs/layout/v1 §3.10 (пример; пути и
+имена — плейсхолдеры, формат вывода иллюстративный). Каждая находка —
+severity + готовая команда исправления; doctor команды не исполняет.
+
+$ vesma doctor --service
+vesma doctor — инсталляция user-профиля (layout v1)
+
+[OK]   DR-01 права config/data/runtime: ~/.config/vesma/ и подкаталоги 0700,
+       data-каталоги 0700, владелец — текущий пользователь
+[OK]   DR-03 user-site: тест импорта в чистом окружении — user-site
+       отсутствует в sys.path
+[OK]   DR-05 версия python: venvs/worker — интерпретатор 3.12.x
+       соответствует python.version манифеста
+[OK]   DR-08 живость сокета: connect-probe + hello ок
+       (${XDG_RUNTIME_DIR}/vesma/control.sock)
+
+[WARN] DR-01 env-файл ~/.config/vesma/env/mesh.env: права 0644 (ожидается
+       0600, владелец — текущий пользователь)
+       fail-closed загрузчик откажет старт «mesh», пока права не исправлены
+       исправление:
+         chmod 0600 ~/.config/vesma/env/mesh.env
+
+[FAIL] DR-02 venv дрейф: venvs/worker — pip freeze расходится с lock
+       (в venv вручную установлен пакет)
+       ручные установки не переживают регенерацию и ломают воспроизводимость
+       исправление:
+         vesma service install worker
+
+summary: 4 ok, 1 warn, 1 fail
+exit code: 1
