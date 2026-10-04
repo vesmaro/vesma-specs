@@ -1,0 +1,109 @@
+# =============================================================================
+# Шаблон манифеста компонента VESMA
+#
+# Нормативный источник: specs/component-manifest/v1/ (spec.md + schema/
+# component-manifest.schema.json; контракт 1.0.0-draft.1, ADR-0001).
+# Этот файл — скелет для копирования; комментарии объясняют каждый блок и
+# после копирования удаляются. Имена полей синхронизированы со спекой
+# component-manifest v1 (синхронизация 2026-10-04: apiVersion
+# vesma.component/v1, launch.argv/cwd, env.vars/env_file, health.checker,
+# config.schema_file/schema_inline, restart.backoff/window; из provenance
+# удалён owner — не входит в ратифицированную форму). При расхождении
+# нормативны спека и её schema/.
+#
+# Принцип (директива владельца «CLI-first», 2026-10-04): CLI не дописывается
+# под компонент — компонент заявляет себя этим манифестом, CLI управляет им
+# по общим правилам (specs/service-lifecycle). Манифест пишет только
+# install-флоу CLI; компонент собственный манифест не пишет.
+# =============================================================================
+
+apiVersion: vesma.component/v1         # версия контракта манифеста; неподдерживаемая = reject + массив supported в ошибке
+
+kind: child-process                    # in-process | child-process — как компонент исполняется; секции взаимоисключающие
+
+metadata:
+  name: my-component                   # ^[a-z][a-z0-9-]{0,62}$; уникально в установке (см. ECOSYSTEM.md)
+  version: 0.1.0                       # SemVer 2.0.0 самого компонента
+  tier: optional                       # core | optional — критичность; optional деградирует, не роняя систему.
+                                       # Рестарт-политику по тиру применяет супервайзер (specs/service-lifecycle/v1 §3.5) —
+                                       # манифест поведение рестарта по тиру не описывает.
+  description: >-                      # одна фраза, ≤ 200 символов
+    Короткое человеческое описание назначения компонента.
+  provenance:
+    repo: https://github.com/vesmaro/my-component   # https-URL публичного репозитория компонента
+    license: Apache-2.0                # SPDX-идентификатор лицензии
+    # artifact_sha256: <hex64>         # опционально; если задан — супервайзер проверяет хэш артефакта
+                                       # при каждом старте (tamper/drift); подписи — v2
+
+# --- kind: child-process — запуск отдельного процесса ------------------------
+launch:
+  argv:                                # СТРОГО список строк, без shell ("sh -c" и метасимволы запрещены)
+    - /usr/bin/my-component
+    - --config
+    - "{config_path}"                  # плейсхолдеры только из allowlist: {config_path} {state_dir}
+                                       # {runtime_dir} {venv_bin}; расширяет супервайзер, других подстановок нет
+  cwd: "~/.local/share/vesma/my-component"   # рабочая директория; канонические пути — specs/layout/v1
+  env:
+    vars: {}                           # статические переменные окружения; ТОЛЬКО не-секреты
+    env_file: "~/.config/vesma/env/my-component.env"   # секреты ТОЛЬКО тут; вне каталога
+                                       # манифестов; права 0600; владелец — пользователь супервайзера;
+                                       # загрузчик fail-closed: нарушение = отказ старта с командой исправления
+
+# --- kind: in-process — импортируемый модуль супервайзера --------------------
+# Раскомментируйте вместо launch, если kind: in-process.
+# in_process:
+#   module: my_component.adapter      # импортируемый python-модуль
+#   entrypoint: create                # фабрика () -> Component, вызываемая супервайзером
+#   python:
+#     version: ">=3.11"               # ограничение версии интерпретатора
+
+# --- health: как супервайзер судит о живости ---------------------------------
+# Секция опциональна: без неё checker = liveness (процесс жив / модуль загружен).
+# Блок, соответствующий checker, обязателен; остальные пробные блоки запрещены.
+health:
+  checker: http                        # http | tcp | exec | liveness | callback
+  http:
+    url: "http://127.0.0.1:8091/healthz"
+    interval: 10s                     # длительности: ^[0-9]+(ms|s|m|h)$
+    timeout: 2s
+    unhealthy_threshold: 3            # подряд неуспешных проб -> degraded (FSM T7, service-lifecycle §3.3)
+  # tcp:                              # проверка порта: {host, port, interval, timeout, unhealthy_threshold}
+  # exec:                             # проверка командой: argv тех же правил, что launch.argv
+  # callback: "my_component.app:health"   # только in-process; () -> {state, detail?}; любое
+                                         # исключение = state failed (супервайзер не роняется)
+  startup:
+    grace: 30s                        # стартовое окно: сколько ждать первого успешного health-прохода
+    interval: 5s
+    timeout: 2s
+
+# --- stop: как компонент останавливается -------------------------------------
+stop:
+  signal: SIGTERM                     # SIGTERM | SIGINT — graceful-сигнал остановки
+  grace_period: 10s                   # окно на graceful остановку; по истечении — SIGKILL процесс-группе
+                                      # (kill(-pgid, ...), specs/service-lifecycle/v1 §3.1, §3.5)
+
+# --- config: секция компонента в общем конфиге -------------------------------
+# Ровно один способ (XOR): schema_file ИЛИ schema_inline; схема — JSON-Schema 2020-12.
+# Конфиг компонента = секция общего конфига; инвалидная конфигурация = отказ старта (fail-fast).
+config:
+  schema_file: ./config.schema.json   # относительный путь резолвится от каталога манифеста
+  # schema_inline: {type: object, ...}   # или схема прямо в манифесте
+
+# --- restart: переопределение рестарт-чисел (опционально) --------------------
+# Без секции действуют тировые дефолты супервайзера (service-lifecycle §3.5).
+# Клампы install-валидации: backoff.base >= 500ms, backoff.max <= 5min, window.attempts >= 3.
+restart:
+  backoff:
+    base: 1s                          # первая задержка перед перезапуском
+    max: 30s                          # потолок задержки
+    reset_after: 300s                 # счётчик сбрасывается после этого непрерывного uptime
+  window:
+    attempts: 5                       # бюджет попыток за окно...
+    per: 300s                         # ...длительностью per; исчерпан (optional) -> degraded + алерт
+
+# --- depends_on: порядок запуска ---------------------------------------------
+depends_on: []                        # имена других манифестов установки; граф ацикличен
+                                      # (цикл = ошибка install-валидации); up = первый успешный
+                                      # health-проход; старт топологический, остановка — обратная
+# depends_on:
+#   - server

@@ -1,0 +1,50 @@
+# =============================================================================
+# Шаблон conformance-сьюта контракта
+#
+# Нормативный источник: спека контракта (раздел «Conformance») + ADR-0001 §4.
+# Исполняется раннером tools/conformance/run.py (stdlib + jsonschema); раннер
+# валидирует только декларации и не исполняет компоненты.
+#
+# Формат: suite / contract / version / cases[{id, severity, target, checks, expect}].
+#   checks   — имена ИЗ СЛОВАРЯ ПРОВЕРОК в разделе «Conformance» спеки контракта
+#              (ниже — пример на словаре component-manifest v1; для другого
+#              контракта подставьте имена его словаря);
+#   expect   — pass  : все проверки кейса должны пройти (позитивный кейс);
+#              fail  : документ должен быть отвергнут хотя бы одной проверкой;
+#   severity — must | should: must образует MUST-гейт интеграции
+#              (провал = exit 1), провал should = WARN (exit не меняет).
+#
+# Гейт: зелёный MUST-прогон сьюта = условие интеграции компонента.
+# =============================================================================
+
+suite: my-contract-basics               # имя сьюта; уникально внутри контракта
+contract: my-contract                   # имя контракта = каталог specs/<name>/
+version: 1.0.0-draft.1                  # версия контракта (SemVer-стиль, как во front-matter спеки)
+
+cases:
+  - id: example-valid                   # стабильный идентификатор кейса (kebab-case)
+    severity: must                      # must | should — must образует MUST-прогон гейта
+    target: examples/declaration.yaml   # YAML-файл относительно корня spec-dir
+    checks:                             # имена проверок из словаря §6 спеки контракта
+      - schema_valid
+      - api_version_present
+      - name_kebab_unique
+      - tier_enum
+      - duration_format
+    expect: pass                        # pass | fail — ожидаемый исход проверок
+
+  - id: bad-api-version-rejected
+    severity: must
+    target: conformance/fixtures/invalid/bad-api-version.yaml
+    checks:                             # schema_invalid + диагностическая проверка причины
+      - schema_invalid
+      - api_version_present
+    expect: fail
+
+  - id: recommended-fields-present
+    severity: should
+    target: examples/declaration.yaml
+    checks:
+      - name_kebab_unique
+      - license_spdx
+    expect: pass

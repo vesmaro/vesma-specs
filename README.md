@@ -16,6 +16,37 @@
 | [docs/concept.md](docs/concept.md) | концепция слоя: зачем, границы, адресаты, governance |
 | [docs/brief-2026-10-04-archcom-founding.md](docs/brief-2026-10-04-archcom-founding.md) | бриф учредительной сессии: контекст недели, первый пункт = АрхКом, нерушимые решения, входы |
 | [docs/roadmap.md](docs/roadmap.md) | дорожная карта фаз 0–4 с чеклистами |
+| [adrs/0001-repo-structure-and-governance.md](adrs/0001-repo-structure-and-governance.md) | ADR-0001: вердикт учредительного АрхКома — структура репозитория и governance |
+| [GLOSSARY.md](GLOSSARY.md) | глоссарий слоя: термин EN — определение RU |
+| [ECOSYSTEM.md](ECOSYSTEM.md) | карта экосистемы: компоненты, тиры, реализуемые контракты, статусы |
+
+## Структура репозитория
+
+```
+specs/<name>/vN/    спека-на-контракт: spec.md, README.md (EN quickstart),
+                    schema/, examples/, conformance/, CHANGELOG.md
+adrs/               архитектурные решения (ADR-NNNN) — вердикты АрхКома
+templates/          шаблоны: спека контракта, манифест компонента, conformance-сьют
+tools/conformance/  conformance-раннер (stdlib + jsonschema)
+GLOSSARY.md         глоссарий терминов
+ECOSYSTEM.md        карта экосистемы
+```
+
+Правила неизменности версий-директорий и полного состава —
+[ADR-0001](adrs/0001-repo-structure-and-governance.md).
+
+## Governance
+
+- Мержит Chair АрхКома (TL). Кворум АрхКома ≥ 2 (включая владельца зоны) —
+  для новых контрактов, MAJOR/breaking-изменений и deprecation; аддитивные
+  минорные поля — TL + уведомление комитета; проза/примеры/tools — TL после
+  ревью. `CODEOWNERS`: `specs/`, `adrs/`, `tools/`.
+- Вердикт АрхКома = ADR + PR, неразделимы.
+- Conformance-гейт: CI гоняет раннер на PR к `specs/**`; зелёный MUST-прогон
+  сьюта — гейт интеграции компонента в экосистему.
+
+Подробно (включая дисциплину секретов и i18n) —
+[ADR-0001](adrs/0001-repo-structure-and-governance.md).
 
 ## Дисциплина контрактов
 
