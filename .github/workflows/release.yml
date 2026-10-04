@@ -116,13 +116,16 @@ jobs:
         # GLOSSARY.md, ECOSYSTEM.md and the Apache-2.0 LICENSE (the
         # bundle is a distribution of the Work; the license travels with
         # it). Deterministic archive flags: fixed sort order, no owner
-        # names, no gzip timestamp -> identical trees give identical
-        # checksums.
+        # names, no gzip timestamp, every member mtime pinned to the
+        # epoch -> rebuilding from the same tag yields byte-identical
+        # files (verified against v0.1.0; without --mtime the checkout
+        # time leaked into tar headers and broke cross-build checksum
+        # comparison).
         run: |
           set -euo pipefail
           TAG="${GITHUB_REF_NAME}"
           TARBALL="vesma-specs-${TAG}-contracts.tar.gz"
-          tar --sort=name --owner=0 --group=0 --numeric-owner \
+          tar --sort=name --owner=0 --group=0 --numeric-owner --mtime=@0 \
               -cf - specs/ adrs/ GLOSSARY.md ECOSYSTEM.md LICENSE \
             | gzip -n > "${TARBALL}"
           sha256sum "${TARBALL}" conformance-report.json > SHA256SUMS
