@@ -1,0 +1,41 @@
+{
+  "contract": "service-lifecycle",
+  "contract_version": "1.0.0-draft.1",
+  "generated_at": "2026-10-04T12:00:00Z",
+  "supervisor": {
+    "pid": 4210,
+    "pid1_mode": false,
+    "unit": "vesma.service",
+    "scope": "user",
+    "uptime_seconds": 86240,
+    "control_socket": "${XDG_RUNTIME_DIR}/vesma/control.sock",
+    "health": "degraded",
+    "health_reason": "component=board reason=restart-budget-exhausted"
+  },
+  "components": [
+    {
+      "name": "core",
+      "tier": "core",
+      "kind": "in-process",
+      "state": "healthy",
+      "pid": 4210,
+      "uptime_seconds": 86240,
+      "restarts_total": 0,
+      "last_health_transition": { "from": "starting", "to": "healthy", "at": "2026-10-03T09:41:05Z" }
+    },
+    {
+      "name": "board",
+      "tier": "optional",
+      "kind": "child-process",
+      "state": "degraded",
+      "pid": null,
+      "degraded_reason": "restart-budget-exhausted",
+      "attempts": 5,
+      "window_seconds": 300,
+      "lazy_retry_interval_seconds": 300,
+      "next_lazy_retry_at": "2026-10-04T12:05:00Z",
+      "restarts_total": 5,
+      "last_exit": { "code": 1, "signal": null, "pid": 4252, "at": "2026-10-04T11:58:31Z" }
+    }
+  ]
+}

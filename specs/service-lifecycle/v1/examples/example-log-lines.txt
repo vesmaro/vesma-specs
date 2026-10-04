@@ -1,0 +1,8 @@
+vesma.supervisor component=core event=spawn pid=4213
+vesma.supervisor component=core event=health pid=4213 from=starting to=healthy
+vesma.supervisor component=board event=spawn pid=4221
+vesma.supervisor component=board event=exit pid=4221 code=1 signal=none
+vesma.supervisor component=board event=health pid=4252 from=healthy to=degraded
+vesma.supervisor component=board event=degraded pid=4252 state=degraded reason=restart-budget-exhausted attempts=5 window=300s
+vesma.supervisor component=cortex event=exit pid=4310 code=none signal=KILL
+vesma.supervisor component=cortex event=degraded pid=4310 state=degraded reason=crash-loop attempts=10 window=none
