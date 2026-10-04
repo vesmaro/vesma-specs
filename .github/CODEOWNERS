@@ -12,3 +12,9 @@ tools/ @Korrnals
 # CI hardening policy and quasi-normative templates require owner review.
 .github/   @Korrnals
 templates/ @Korrnals
+
+# Leak-sensitive prose: the founding docs/ pack and the root-level docs
+# (README / GLOSSARY / ECOSYSTEM) may carry owner-environment specifics
+# before generalization — owner review is mandatory on every change.
+docs/   @Korrnals
+/*.md   @Korrnals

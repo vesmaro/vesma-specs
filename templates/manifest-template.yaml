@@ -2,7 +2,7 @@
 # Шаблон манифеста компонента VESMA
 #
 # Нормативный источник: specs/component-manifest/v1/ (spec.md + schema/
-# component-manifest.schema.json; контракт 1.0.0-draft.1, ADR-0001).
+# component-manifest.schema.json; контракт 1.0.0-draft.2, ADR-0001).
 # Этот файл — скелет для копирования; комментарии объясняют каждый блок и
 # после копирования удаляются. Имена полей синхронизированы со спекой
 # component-manifest v1 (синхронизация 2026-10-04: apiVersion
@@ -31,8 +31,9 @@ metadata:
   provenance:
     repo: https://github.com/vesmaro/my-component   # https-URL публичного репозитория компонента
     license: Apache-2.0                # SPDX-идентификатор лицензии
-    # artifact_sha256: <hex64>         # опционально; если задан — супервайзер проверяет хэш артефакта
-                                       # при каждом старте (tamper/drift); подписи — v2
+    # artifact_sha256: <hex64>         # обязателен при tier: core; иначе опционально (отсутствие
+                                       # = doctor WARN); если задан — супервайзер проверяет хэш
+                                       # артефакта при каждом старте (tamper/drift); подписи — v2
 
 # --- kind: child-process — запуск отдельного процесса ------------------------
 launch:

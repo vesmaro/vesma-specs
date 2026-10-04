@@ -29,12 +29,13 @@ rewritten; living versions of integration contracts move here with pointers.
 ### Repository structure
 
 ```
-specs/<name>/vN/    spec-per-contract: spec.md, README.md (EN quickstart),
-                    schema/, examples/, conformance/, CHANGELOG.md
+specs/<name>/vN/    spec-per-contract: spec.md, spec.en.md (informative EN
+                    mirror), README.md (EN quickstart), schema/, examples/,
+                    conformance/, CHANGELOG.md
 adrs/               architectural decisions (ADR-NNNN) — ArchCom verdicts
 templates/          templates: contract spec, component manifest, conformance suite
 tools/conformance/  conformance runner (stdlib + jsonschema)
-tools/ci/           CI checks: schema lint, breaking-change detector
+tools/ci/           three tools: schema lint, breaking-change detector, bilingual check
 GLOSSARY.md         terminology glossary
 ECOSYSTEM.md        ecosystem map
 ```
@@ -102,12 +103,13 @@ Apache-2.0 (the VESMA ecosystem family default, owner decision 2026-09-29).
 ### Структура репозитория
 
 ```
-specs/<name>/vN/    спека-на-контракт: spec.md, README.md (EN quickstart),
-                    schema/, examples/, conformance/, CHANGELOG.md
+specs/<name>/vN/    спека-на-контракт: spec.md, spec.en.md (информативное
+                    EN-зеркало), README.md (EN quickstart), schema/,
+                    examples/, conformance/, CHANGELOG.md
 adrs/               архитектурные решения (ADR-NNNN) — вердикты АрхКома
 templates/          шаблоны: спека контракта, манифест компонента, conformance-сьют
 tools/conformance/  conformance-раннер (stdlib + jsonschema)
-tools/ci/           CI-проверки: линт схем, breaking-детектор
+tools/ci/           три инструмента: линт схем, breaking-детектор, bilingual-проверка
 GLOSSARY.md         глоссарий терминов
 ECOSYSTEM.md        карта экосистемы
 ```

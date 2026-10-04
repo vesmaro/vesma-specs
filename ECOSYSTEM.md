@@ -31,8 +31,12 @@ Notes (EN):
   `vesma-cortex` repositories respectively; they have no repositories of
   their own.
 - The `component-manifest`, `service-lifecycle`, `control-socket`, `layout`
-  contracts are created in phase 1 of the [roadmap](docs/roadmap.md); until
-  then "implemented contract" is a plan, not a commitment.
+  contracts were created in phase 1 of the [roadmap](docs/roadmap.md)
+  (draft until ratified by the first implementation).
+- `decision-provider` v1 (draft) — the decision-provider family contract; a
+  provider is not a supervisor component (no manifest is created for one);
+  migrated from [vesma-canon](https://github.com/vesmaro/vesma-canon)
+  ADR-0004 in phase 2 of the [roadmap](docs/roadmap.md).
 - The "manifest not declared" status is lifted by the appearance of the
   component's manifest plus a green MUST-pass of its conformance suite (the
   integration gate).
@@ -42,8 +46,12 @@ Notes (EN):
 - `vesma board` и `vesma cortex-metrics` живут внутри реп `vesma` и
   `vesma-cortex` соответственно; отдельных репозиториев у них нет.
 - Контракты `component-manifest`, `service-lifecycle`, `control-socket`,
-  `layout` создаются в фазе 1 [roadmap](docs/roadmap.md); до тех пор
-  «реализуемый контракт» — план, а не обязательство.
+  `layout` созданы в фазе 1 [roadmap](docs/roadmap.md) (draft до
+  ратификации первой реализацией).
+- `decision-provider` v1 (draft) — контракт семейства провайдеров решений;
+  провайдер — не компонент супервайзера (манифест не заводится);
+  мигрирован из [vesma-canon](https://github.com/vesmaro/vesma-canon)
+  ADR-0004 в фазе 2 [roadmap](docs/roadmap.md).
 - Статус «манифест не заявлен» снимается появлением манифеста компонента и
   зелёным MUST-прогоном его conformance-сьюта (гейт интеграции).
 

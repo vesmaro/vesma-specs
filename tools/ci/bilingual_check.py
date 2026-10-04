@@ -24,6 +24,14 @@ the sync note is a repository-wide fixed convention):
    convention and are not held to the ``language: en`` / sync-note
    substrings.
 
+What this gate does NOT check:
+
+- Marker pairing is not content synchrony: the gate verifies that the
+  pair exists and carries the fixed markers, not that the English text
+  actually matches the Russian norm. Content synchrony is enforced by
+  the single-commit sync review discipline (ADR-0001 §5, the
+  2026-10-05 amendment).
+
 Exit codes: 0 = everything paired, 1 = pairing violation(s) found.
 """
 

@@ -54,6 +54,7 @@ the owner.
 ```
 specs/<name>/vN/
   spec.md           # normative spec (Russian, requirements per RFC 2119)
+  spec.en.md        # informative EN mirror of the spec (single-commit sync)
   README.md         # EN quickstart for the integrator
   schema/           # machine schemas (JSON-Schema and others)
   examples/         # minimum examples (mandatory for merge)
@@ -61,7 +62,7 @@ specs/<name>/vN/
   CHANGELOG.md      # the contract's SemVer history
 adrs/               # ADR-NNNN — verdicts and decisions of the layer (at the root)
 tools/conformance/  # conformance runner
-tools/ci/           # CI checks: breaking-change detector, schema lint
+tools/ci/           # three tools: schema lint, breaking-change detector, bilingual check
 templates/          # templates: spec, component manifest, conformance suite
 GLOSSARY.md         # glossary: EN term — RU definition
 ECOSYSTEM.md        # ecosystem component map
@@ -117,6 +118,13 @@ Immutability rules:
   implement, what to verify with.
 - The rule: "what an integrator does — EN; what the ArchCom decided — RU".
 
+> **Amendment (2026-10-05, the owner's directive on the full bilingualism
+> of the public repo).** Every contract carries an informative EN mirror
+> `spec.en.md` (single-commit sync; on divergence the Russian version
+> prevails); pairing is mechanically gated by CI (bilingual sync check).
+> The alternative rejected below concerned a full normative re-authoring
+> of the specs in EN — mirrors do not violate it.
+
 ### 6. Secrets policy of a public repository
 
 - Never-list: tokens, connection strings, real paths and hostnames of the
@@ -167,6 +175,6 @@ full EN translation of the specs.
 - [Layer concept](../docs/concept.md) — why specs exists, boundaries, audiences
 - [Roadmap](../docs/roadmap.md) — phases 0–4
 - CLI-first directive brief: `Project-Vesma/handoff/vesma-cli-service-management-directive-20261004.md` — the chaos inventory (5 launch mechanisms, pkill in ExecStop, venv overrides)
-- Precedents: vesma-cortex ADR 0003 (schema 2 manifest dual transition), federation ArchCom 2026-07-20 (contract-first, SemVer, buf-style breaking detector), vesma-cortex decision-provider ADR-0004 (a provider family without engine edits)
+- Precedents: vesma-cortex ADR 0003 (schema 2 manifest dual transition), federation ArchCom 2026-07-20 (contract-first, SemVer, buf-style breaking detector), vesma-canon decision-provider ADR-0004 (a provider family without engine edits)
 - Templates introduced by this ADR: [spec-template.md](../templates/spec-template.md), [manifest-template.yaml](../templates/manifest-template.yaml), [cases-template.yaml](../templates/cases-template.yaml)
 - [Glossary](../GLOSSARY.md) and the [ecosystem map](../ECOSYSTEM.md)

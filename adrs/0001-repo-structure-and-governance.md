@@ -41,6 +41,7 @@ venv-перекрытия. Каждому компоненту — собств�
 ```
 specs/<name>/vN/
   spec.md           # нормативная спека (русский, требования по RFC 2119)
+  spec.en.md        # информативное EN-зеркало спеки (single-commit sync)
   README.md         # EN quickstart для интегратора
   schema/           # машинные схемы (JSON-Schema и др.)
   examples/         # примеры-минимум (обязательны к мержу)
@@ -48,7 +49,7 @@ specs/<name>/vN/
   CHANGELOG.md      # SemVer-история контракта
 adrs/               # ADR-NNNN — вердикты и решения слоя (на корне)
 tools/conformance/  # conformance-раннер
-tools/ci/           # CI-проверки: breaking-детектор, линт схем
+tools/ci/           # три инструмента: линт схем, breaking-детектор, bilingual-проверка
 templates/          # шаблоны: спека, манифест компонента, conformance-сьют
 GLOSSARY.md         # глоссарий: термин EN — определение RU
 ECOSYSTEM.md        # карта компонентов экосистемы
@@ -99,6 +100,13 @@ ECOSYSTEM.md        # карта компонентов экосистемы
   чем проверить.
 - Правило: «что интегратор делает — EN; что АрхКом решил — RU».
 
+> **Поправка (2026-10-05, директива владельца о полной двуязычности
+> публичной репы).** Каждый контракт несёт информативное EN-зеркало
+> `spec.en.md` (single-commit sync; при расхождении приоритет у русской
+> версии); парность механически гейтится CI (bilingual sync check).
+> Отклонённая ниже альтернатива касалась полноценного нормативного
+> EN-пере-авторства спек — зеркала её не нарушают.
+
 ### 6. Секретная политика публичного репозитория
 
 - Never-list: токены, connection strings, реальные пути и hostname'ы машин
@@ -147,6 +155,6 @@ governance при дрейфе.
 - [Концепция слоя](../docs/concept.md) — зачем существует specs, границы, адресаты
 - [Дорожная карта](../docs/roadmap.md) — фазы 0–4
 - Бриф директивы CLI-first: `Project-Vesma/handoff/vesma-cli-service-management-directive-20261004.md` — инвентарь хаоса (5 механизмов запуска, pkill в ExecStop, venv-перекрытия)
-- Прецеденты: ADR 0003 vesma-cortex (dual-переход манифеста schema 2), АрхКом федерации 2026-07-20 (contract-first, SemVer, breaking-детектор по образцу buf), ADR-0004 decision-provider vesma-cortex (семейство провайдеров без правок движка)
+- Прецеденты: ADR 0003 vesma-cortex (dual-переход манифеста schema 2), АрхКом федерации 2026-07-20 (contract-first, SemVer, breaking-детектор по образцу buf), ADR-0004 decision-provider vesma-canon (семейство провайдеров без правок движка)
 - Шаблоны, введённые этим ADR: [spec-template.md](../templates/spec-template.md), [manifest-template.yaml](../templates/manifest-template.yaml), [cases-template.yaml](../templates/cases-template.yaml)
 - [Глоссарий](../GLOSSARY.md) и [карта экосистемы](../ECOSYSTEM.md)
