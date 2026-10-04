@@ -1,0 +1,21 @@
+# Негативная фикстура (пара 1/2): цикл в графе depends_on.
+# alpha -> beta -> alpha. Цикл = ошибка install-валидации (spec.md §3.11);
+# фикстуры fixtures/invalid/ для set-проверок — одна установка (spec.md §6).
+apiVersion: vesma.component/v1
+kind: child-process
+metadata:
+  name: alpha
+  version: 0.1.0
+  tier: optional
+  description: "Фикстура цикла: alpha зависит от beta."
+  provenance:
+    repo: https://github.com/vesmaro/vesma-mesh
+    license: Apache-2.0
+launch:
+  argv: ["/usr/bin/alpha"]
+  cwd: "~/.local/share/vesma/alpha"
+stop:
+  signal: SIGTERM
+  grace_period: 10s
+depends_on:
+  - beta

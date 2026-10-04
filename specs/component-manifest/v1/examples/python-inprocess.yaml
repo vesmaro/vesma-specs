@@ -1,0 +1,40 @@
+# Пример-минимум component-manifest v1: in-process python-компонент (board).
+# В примерах — только канонические пути лэйаута и плейсхолдеры (ADR-0001 §6).
+apiVersion: vesma.component/v1
+kind: in-process
+metadata:
+  name: board
+  version: 5.3.0
+  tier: optional
+  description: "Веб-панель супервайзера: статус компонентов, логи и ручное управление (in-process python-модуль)."
+  provenance:
+    repo: https://github.com/vesmaro/vesma
+    license: Apache-2.0
+in_process:
+  module: vesma_board.app
+  entrypoint: create_component
+  python:
+    version: ">=3.11"
+health:
+  checker: callback
+  callback: "vesma_board.app:health"
+  startup:
+    grace: 30s
+    interval: 5s
+    timeout: 2s
+stop:
+  signal: SIGTERM
+  grace_period: 10s
+config:
+  schema_inline:
+    type: object
+    additionalProperties: false
+    properties:
+      bind:
+        type: string
+        default: "127.0.0.1:8080"
+        description: "Адрес, который слушает board."
+      log_level:
+        type: string
+        enum: [debug, info, warn, error]
+        default: info

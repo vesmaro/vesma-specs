@@ -1,0 +1,91 @@
+# Conformance-сьют контракта component-manifest v1.
+#
+# Исполнитель проверок — tools/conformance/run.py (stdlib + jsonschema;
+# валидирует только декларации и не исполняет компоненты — ADR-0001 §4).
+# Словарь проверок нормирован в spec.md §6.
+#
+# Семантика schema_invalid: документ отвергнут валидацией контракта —
+# JSON-Schema (schema/) плюс нормативные правила §3, реализуемые раннером.
+# Фикстуры conformance/fixtures/invalid/ для set-проверок (name_kebab_unique,
+# depends_on_acyclic) рассматриваются как одна установка.
+#
+# Гейт: зелёный MUST-прогон сьюта = условие интеграции компонента.
+
+suite: component-manifest-v1
+contract: component-manifest
+version: 1.0.0-draft.1
+
+cases:
+  # --- позитивные: примеры-минимум -------------------------------------------
+  - id: ex-python-inprocess-valid
+    severity: must
+    target: examples/python-inprocess.yaml
+    checks: [schema_valid, kind_launch_consistency, api_version_present, name_kebab_unique, tier_enum, duration_format, no_secret_in_vars, checker_block_consistency, license_spdx]
+    expect: pass
+
+  - id: ex-go-child-valid
+    severity: must
+    target: examples/go-child.yaml
+    checks: [schema_valid, kind_launch_consistency, api_version_present, name_kebab_unique, tier_enum, duration_format, no_secret_in_vars, no_shell_metacharacters, argv_placeholder_allowlist, env_file_outside_manifests_dir, checker_block_consistency, license_spdx]
+    expect: pass
+
+  - id: ex-node-runtime-valid
+    severity: must
+    target: examples/node-runtime.yaml
+    checks: [schema_valid, kind_launch_consistency, api_version_present, name_kebab_unique, tier_enum, duration_format, no_secret_in_vars, no_shell_metacharacters, argv_placeholder_allowlist, env_file_outside_manifests_dir, depends_on_acyclic, checker_block_consistency, license_spdx]
+    expect: pass
+
+  # --- негативные: fixtures/invalid/ ------------------------------------------
+  - id: fix-unknown-field
+    severity: must
+    target: conformance/fixtures/invalid/unknown-field.yaml
+    checks: [schema_invalid]
+    expect: fail
+
+  - id: fix-argv-string
+    severity: must
+    target: conformance/fixtures/invalid/argv-string.yaml
+    checks: [schema_invalid]
+    expect: fail
+
+  - id: fix-secret-in-vars
+    severity: must
+    target: conformance/fixtures/invalid/secret-in-vars.yaml
+    checks: [schema_invalid, no_secret_in_vars]
+    expect: fail
+
+  - id: fix-env-file-inside-manifest-dir
+    severity: must
+    target: conformance/fixtures/invalid/env-file-inside-manifest-dir.yaml
+    checks: [schema_invalid, env_file_outside_manifests_dir]
+    expect: fail
+
+  - id: fix-bad-duration
+    severity: must
+    target: conformance/fixtures/invalid/bad-duration.yaml
+    checks: [schema_invalid, duration_format]
+    expect: fail
+
+  - id: fix-cyclic-dependson-a
+    severity: must
+    target: conformance/fixtures/invalid/cyclic-dependson-a.yaml
+    checks: [schema_invalid, depends_on_acyclic]
+    expect: fail
+
+  - id: fix-cyclic-dependson-b
+    severity: must
+    target: conformance/fixtures/invalid/cyclic-dependson-b.yaml
+    checks: [schema_invalid, depends_on_acyclic]
+    expect: fail
+
+  - id: fix-bad-tier
+    severity: must
+    target: conformance/fixtures/invalid/bad-tier.yaml
+    checks: [schema_invalid, tier_enum]
+    expect: fail
+
+  - id: fix-missing-apiversion
+    severity: must
+    target: conformance/fixtures/invalid/missing-apiversion.yaml
+    checks: [schema_invalid, api_version_present]
+    expect: fail

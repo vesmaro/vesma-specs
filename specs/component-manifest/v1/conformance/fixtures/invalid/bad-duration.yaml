@@ -1,0 +1,33 @@
+# Негативная фикстура: длительности вне формата ^[0-9]+(ms|s|m|h)$.
+# "2sec" — неизвестная единица; "1h30m" — составное значение (запрещены).
+apiVersion: vesma.component/v1
+kind: child-process
+metadata:
+  name: mesh
+  version: 1.4.2
+  tier: optional
+  description: "Mesh-агент: валидный манифест, испорченный плохими длительностями."
+  provenance:
+    repo: https://github.com/vesmaro/vesma-mesh
+    license: Apache-2.0
+launch:
+  argv: ["/usr/bin/vesma-mesh", "--config", "{config_path}"]
+  cwd: "~/.local/share/vesma/mesh"
+  env:
+    vars:
+      MESH_LOG_LEVEL: info
+    env_file: "~/.config/vesma/env/mesh.env"
+health:
+  checker: http
+  http:
+    url: "http://127.0.0.1:8091/healthz"
+    interval: 10s
+    timeout: 2sec
+    unhealthy_threshold: 3
+  startup:
+    grace: 30s
+    interval: 5s
+    timeout: 2s
+stop:
+  signal: SIGTERM
+  grace_period: 1h30m

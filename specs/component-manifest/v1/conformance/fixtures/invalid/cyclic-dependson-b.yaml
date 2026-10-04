@@ -1,0 +1,20 @@
+# Негативная фикстура (пара 2/2): цикл в графе depends_on.
+# beta -> alpha -> beta. Вместе с cyclic-dependson-a.yaml образует цикл.
+apiVersion: vesma.component/v1
+kind: child-process
+metadata:
+  name: beta
+  version: 0.1.0
+  tier: optional
+  description: "Фикстура цикла: beta зависит от alpha."
+  provenance:
+    repo: https://github.com/vesmaro/vesma-mesh
+    license: Apache-2.0
+launch:
+  argv: ["/usr/bin/beta"]
+  cwd: "~/.local/share/vesma/beta"
+stop:
+  signal: SIGTERM
+  grace_period: 10s
+depends_on:
+  - alpha

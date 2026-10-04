@@ -1,0 +1,37 @@
+# Пример-минимум component-manifest v1: child-process Go-бинарь (mesh).
+# artifact_sha256 — плейсхолдер-хэш (hex64); install-флоу подставляет
+# sha256 реально поставляемого бинаря и проверяет его при каждом старте.
+apiVersion: vesma.component/v1
+kind: child-process
+metadata:
+  name: mesh
+  version: 1.4.2
+  tier: optional
+  description: "Mesh-агент экосистемы: туннели и распределение трафика между узлами (Go-бинарь, child-process)."
+  provenance:
+    repo: https://github.com/vesmaro/vesma-mesh
+    license: Apache-2.0
+    artifact_sha256: "0000000000000000000000000000000000000000000000000000000000000000"
+launch:
+  argv: ["/usr/bin/vesma-mesh", "--config", "{config_path}"]
+  cwd: "~/.local/share/vesma/mesh"
+  env:
+    vars:
+      MESH_LOG_LEVEL: info
+    env_file: "~/.config/vesma/env/mesh.env"
+health:
+  checker: http
+  http:
+    url: "http://127.0.0.1:8091/healthz"
+    interval: 10s
+    timeout: 2s
+    unhealthy_threshold: 3
+  startup:
+    grace: 30s
+    interval: 5s
+    timeout: 2s
+stop:
+  signal: SIGTERM
+  grace_period: 10s
+config:
+  schema_file: ./config.schema.json

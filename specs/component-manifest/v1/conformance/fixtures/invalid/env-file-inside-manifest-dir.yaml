@@ -1,0 +1,32 @@
+# Негативная фикстура: env_file внутри каталога манифестов.
+# Секреты хранятся вне каталога манифестов (каноническое место — specs/layout/v1:
+# ~/.config/vesma/env/<name>.env; каталог манифестов — ~/.config/vesma/components.d/):
+# иначе ребёнок потенциально читает каталог, где лежат и его собственные
+# инструкции запуска.
+apiVersion: vesma.component/v1
+kind: child-process
+metadata:
+  name: mesh
+  version: 1.4.2
+  tier: optional
+  description: "Mesh-агент: валидный манифест, испорченный env_file в каталоге манифестов."
+  provenance:
+    repo: https://github.com/vesmaro/vesma-mesh
+    license: Apache-2.0
+launch:
+  argv: ["/usr/bin/vesma-mesh", "--config", "{config_path}"]
+  cwd: "~/.local/share/vesma/mesh"
+  env:
+    vars:
+      MESH_LOG_LEVEL: info
+    env_file: "~/.config/vesma/components.d/mesh.env"
+health:
+  checker: http
+  http:
+    url: "http://127.0.0.1:8091/healthz"
+    interval: 10s
+    timeout: 2s
+    unhealthy_threshold: 3
+stop:
+  signal: SIGTERM
+  grace_period: 10s

@@ -1,0 +1,27 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://vesmaro.org/schemas/component-manifest/v1/examples/mesh-config.schema.json",
+  "title": "vesma-mesh component config (example)",
+  "description": "Schema of the 'mesh' section of the common config, referenced by the go-child example via config.schema_file. Placeholder values only.",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "listen_addr": {
+      "type": "string",
+      "description": "Address the mesh transport listens on (example placeholder).",
+      "examples": ["127.0.0.1:8090"]
+    },
+    "log_level": {
+      "type": "string",
+      "enum": ["debug", "info", "warn", "error"],
+      "default": "info"
+    },
+    "peers": {
+      "type": "array",
+      "description": "Federation peer endpoints (example placeholders).",
+      "items": { "type": "string" },
+      "default": []
+    }
+  },
+  "required": ["listen_addr"]
+}
