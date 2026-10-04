@@ -125,6 +125,22 @@ jobs:
       - name: Lint JSON Schemas and example/fixture YAML
         run: python3 tools/ci/schema_lint.py .
 
+  # --------------------------------------------------------- bilingual-sync --
+  bilingual-sync:
+    name: bilingual sync check
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+      - name: Check bilingual spec/ADR pairing
+        # Stdlib-only tool: no setup-python/pip needed (same precedent as
+        # breaking-check). Fails when a specs/<contract>/v<N>/spec.md lacks
+        # its spec.en.md mirror (or vice versa), when a mirror misses the
+        # `language: en` marker or the sync note, or when an ADR's declared
+        # EN mirror file is absent (orphan mirrors fail too).
+        run: python3 tools/ci/bilingual_check.py .
+
   # --------------------------------------------------------- breaking-check --
   breaking-check:
     name: breaking-change check (strict)
