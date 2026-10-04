@@ -1,0 +1,250 @@
+# Release pipeline for the vesma-specs contract repository.
+#
+# Trigger: pushing an annotated `v*` tag. The tag IS the release cut —
+# every artifact is built from, and the release points at, the tagged
+# commit; nothing is taken from any mutable ref.
+#
+# Hardening (same ratified CI policy as ci.yml, founding ArchCom
+# 2026-10-04, with the release-specific deltas stated below):
+#   - least privilege: top-level `permissions: contents: read`; ONLY the
+#     `release` job escalates — see its per-job `permissions` block and
+#     the comment there explaining why the write grant is unavoidable;
+#   - ONE deliberate, documented exception to ci.yml's "no secrets.*"
+#     rule: `${{ secrets.GITHUB_TOKEN }}`. That symbol is not a configured
+#     repository secret — it is the per-run token GitHub Actions mints for
+#     this repository, scoped exactly by the permissions blocks in this
+#     file. No repository or organization secret is ever read here;
+#   - `gh` CLI is deliberately NOT used (org canon, owner directive
+#     2026-10-01: the gh client's auth scheme/GraphQL path can 404-ghost
+#     on org repos with fine-grained tokens). The GitHub REST API is
+#     called with curl + Bearer auth, `-f` fail-fast, and explicit error
+#     handling on every call;
+#   - every action is pinned to a full commit SHA (same pins as ci.yml,
+#     resolved from the upstream repository and verified 2026-10-04);
+#     no new action is introduced — the release job re-runs the
+#     deterministic conformance runner instead of downloading an
+#     inter-job artifact;
+#   - every job has an explicit timeout. Concurrency is grouped per ref
+#     but `cancel-in-progress` is FALSE (unlike ci.yml): cancelling a
+#     release mid-flight could leave a half-published release behind;
+#     a superseding run queues and re-attaches assets idempotently.
+
+name: Release
+
+on:
+  push:
+    tags: ['v*']
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  # ----------------------------------------------------------- conformance --
+  # Unprivileged gate: MUST-pass suites must be green on the tagged tree
+  # before anything is published. This job holds only the top-level
+  # `contents: read` grant.
+  conformance:
+    name: conformance suites (run.py)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Check out the tagged commit
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+      - name: Set up Python
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97  # v7.0.0
+        with:
+          python-version: "3.11"
+      - name: Install dependencies
+        # Same version floors as ci.yml: jsonschema>=4.18 is the first
+        # line with full Draft 2020-12 support; PyYAML 6.x is the current
+        # stable major.
+        run: python -m pip install --disable-pip-version-check "jsonschema>=4.18" "pyyaml>=6.0"
+      - name: Run conformance suites on the tagged tree
+        # Exit 0 = all MUST cases pass; 1 = a `must` case failed -> the
+        # release job below never starts (needs: conformance).
+        run: python3 tools/conformance/run.py --all specs/ --format=json > conformance-report.json
+      - name: Upload conformance report (workflow artifact)
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a  # v7.0.1
+        with:
+          name: conformance-report
+          path: conformance-report.json
+          if-no-files-found: error
+
+  # --------------------------------------------------------------- release --
+  release:
+    name: build artifacts and publish the GitHub Release
+    needs: conformance
+    # `contents: write` — REQUIRED for this job and this job only:
+    # creating the GitHub Release and uploading its assets is a
+    # repository-content write over the REST API, which the top-level
+    # `contents: read` least-privilege default cannot perform. The
+    # conformance gate above runs unprivileged; only publication is
+    # privileged. The token used is the Actions-issued GITHUB_TOKEN
+    # (see the workflow header note), never a repository secret.
+    permissions:
+      contents: write
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Check out the tagged commit
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+      - name: Set up Python
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97  # v7.0.0
+        with:
+          python-version: "3.11"
+      - name: Install dependencies
+        run: python -m pip install --disable-pip-version-check "jsonschema>=4.18" "pyyaml>=6.0"
+      - name: Generate the release conformance report
+        # Re-run instead of downloading the gate job's artifact: the
+        # runner is deterministic (validates declarations, never executes
+        # component code), costs seconds, keeps this job's published
+        # report provably tied to the exact tree it publishes, and adds
+        # no extra pinned action to the supply chain.
+        run: python3 tools/conformance/run.py --all specs/ --format=json > conformance-report.json
+      - name: Build release artifacts
+        # Contracts bundle: every specs/<name>/v1/ directory (RU and EN
+        # specs, schemas, examples, conformance suites) plus adrs/,
+        # GLOSSARY.md, ECOSYSTEM.md and the Apache-2.0 LICENSE (the
+        # bundle is a distribution of the Work; the license travels with
+        # it). Deterministic archive flags: fixed sort order, no owner
+        # names, no gzip timestamp -> identical trees give identical
+        # checksums.
+        run: |
+          set -euo pipefail
+          TAG="${GITHUB_REF_NAME}"
+          TARBALL="vesma-specs-${TAG}-contracts.tar.gz"
+          tar --sort=name --owner=0 --group=0 --numeric-owner \
+              -cf - specs/ adrs/ GLOSSARY.md ECOSYSTEM.md LICENSE \
+            | gzip -n > "${TARBALL}"
+          sha256sum "${TARBALL}" conformance-report.json > SHA256SUMS
+          echo "TARBALL=${TARBALL}" >> "${GITHUB_ENV}"
+          cat SHA256SUMS
+      - name: Resolve or create the release record (draft)
+        # Publish path: create as DRAFT, attach assets, only then publish
+        # (PATCH draft:false) — a failing upload never leaves a public
+        # half-published release. Idempotency on re-run: reuse a
+        # published release or a leftover draft for this tag, and let the
+        # upload step replace same-named assets.
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          TAG="${GITHUB_REF_NAME}"
+          NOTES=".github/RELEASE_NOTES_${TAG}.md"
+          API="https://api.github.com/repos/${GITHUB_REPOSITORY}"
+          AUTH="Authorization: Bearer ${GITHUB_TOKEN}"
+
+          if [[ ! -f "${NOTES}" ]]; then
+            echo "ERROR: ${NOTES} not found — every release ships curated notes" >&2
+            exit 1
+          fi
+
+          # Release name = the H1 of the notes file; fallback: the tag.
+          NAME="$(awk 'NR==1 && /^# / {sub(/^# +/, ""); print; exit}' "${NOTES}")"
+          NAME="${NAME:-vesma-specs ${TAG}}"
+          echo "RELEASE_NAME=${NAME}" >> "${GITHUB_ENV}"
+
+          # 1) Already published for this tag (re-run after a late failure)?
+          REL="$(curl -fsS -H "${AUTH}" -H 'Accept: application/vnd.github+json' \
+                 "${API}/releases/tags/${TAG}" 2>/dev/null || true)"
+          if [[ -n "${REL}" ]]; then
+            echo "release for ${TAG} already published (id $(jq -r '.id' <<<"${REL}")); reusing"
+            echo "RELEASE_ID=$(jq -r '.id' <<<"${REL}")" >> "${GITHUB_ENV}"
+            exit 0
+          fi
+
+          # 2) Draft left behind by an earlier failed run?
+          DRAFT_ID="$(curl -fsS -H "${AUTH}" -H 'Accept: application/vnd.github+json' \
+              "${API}/releases?per_page=100" \
+            | jq -r --arg t "${TAG}" '.[] | select(.draft and .tag_name == $t) | .id' \
+            | head -n1 || true)"
+          if [[ -n "${DRAFT_ID}" ]]; then
+            echo "reusing draft id ${DRAFT_ID} from an earlier run"
+            echo "RELEASE_ID=${DRAFT_ID}" >> "${GITHUB_ENV}"
+            exit 0
+          fi
+
+          # 3) Create a fresh draft. --rawfile keeps the notes body
+          #    JSON-safe verbatim (newlines, quotes, unicode).
+          BODY="$(mktemp)"
+          jq -n --arg tag "${TAG}" --arg name "${NAME}" --rawfile body "${NOTES}" \
+            '{tag_name: $tag, name: $name, body: $body, draft: true}' > "${BODY}"
+          CREATED="$(curl -fsS -X POST -H "${AUTH}" \
+            -H 'Accept: application/vnd.github+json' \
+            "${API}/releases" -d @"${BODY}")"
+          echo "RELEASE_ID=$(jq -r '.id' <<<"${CREATED}")" >> "${GITHUB_ENV}"
+      - name: Upload release assets
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          API="https://api.github.com/repos/${GITHUB_REPOSITORY}"
+          AUTH="Authorization: Bearer ${GITHUB_TOKEN}"
+
+          REL="$(curl -fsS -H "${AUTH}" -H 'Accept: application/vnd.github+json' \
+                 "${API}/releases/${RELEASE_ID}")"
+          UPLOAD_URL="$(jq -r '.upload_url' <<<"${REL}" | sed 's|{?name,label}||')"
+
+          for FILE in "${TARBALL}" conformance-report.json SHA256SUMS; do
+            ASSET="$(basename "${FILE}")"
+            # Idempotent re-attach: drop a same-named asset from an
+            # earlier attempt, then upload the fresh build.
+            OLD_ID="$(jq -r --arg n "${ASSET}" \
+              '.assets[]? | select(.name == $n) | .id' <<<"${REL}" | head -n1)"
+            if [[ -n "${OLD_ID}" ]]; then
+              echo "replacing existing asset ${ASSET} (id ${OLD_ID})"
+              curl -fsS -X DELETE -H "${AUTH}" \
+                "${API}/releases/assets/${OLD_ID}"
+            fi
+            echo "uploading ${ASSET} ($(stat -c '%s' "${FILE}") bytes)"
+            curl -fsS -X POST -H "${AUTH}" \
+              -H 'Content-Type: application/octet-stream' \
+              --data-binary "@${FILE}" \
+              "${UPLOAD_URL}?name=${ASSET}" > /dev/null
+          done
+      - name: Publish and verify the release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          TAG="${GITHUB_REF_NAME}"
+          API="https://api.github.com/repos/${GITHUB_REPOSITORY}"
+          AUTH="Authorization: Bearer ${GITHUB_TOKEN}"
+
+          # Publish (no-op when the record was already published).
+          curl -fsS -X PATCH -H "${AUTH}" -H 'Accept: application/vnd.github+json' \
+            "${API}/releases/${RELEASE_ID}" -d '{"draft": false}' > /dev/null
+
+          # Verify: published, exactly the three expected assets, all
+          # non-empty.
+          PUBLISHED="$(curl -fsS -H "${AUTH}" -H 'Accept: application/vnd.github+json' \
+                       "${API}/releases/tags/${TAG}")"
+          jq -e --arg t "${TARBALL}" '
+            .draft == false
+            and ([.assets[].name] | sort)
+                == ([$t, "conformance-report.json", "SHA256SUMS"] | sort)
+            and ([.assets[].size] | all(. > 0))
+          ' <<<"${PUBLISHED}" > /dev/null \
+            || { echo "asset verification failed:" >&2
+                 jq -r '.assets[] | "  \(.name)  \(.size) bytes"' <<<"${PUBLISHED}" >&2
+                 exit 1; }
+
+          # End-to-end integrity: the published SHA256SUMS must equal the
+          # locally computed one byte for byte.
+          SUMS_URL="$(jq -r '.assets[] | select(.name == "SHA256SUMS")
+                            | .browser_download_url' <<<"${PUBLISHED}")"
+          curl -fsSL -o /tmp/SHA256SUMS.published "${SUMS_URL}"
+          diff -u SHA256SUMS /tmp/SHA256SUMS.published
+
+          echo "release published:"
+          jq -r '"  \(.html_url)"' <<<"${PUBLISHED}"
+          jq -r '.assets[] | "  \(.name)  \(.size) bytes"' <<<"${PUBLISHED}"
