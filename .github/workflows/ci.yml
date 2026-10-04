@@ -127,7 +127,7 @@ jobs:
 
   # --------------------------------------------------------- breaking-check --
   breaking-check:
-    name: breaking-change check (stub, report mode)
+    name: breaking-change check (strict)
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
@@ -137,11 +137,11 @@ jobs:
           fetch-depth: 0
           fetch-tags: true
       - name: Detect breaking schema changes without a major bump
-        # Stdlib-only tool: no setup-python/pip needed. Report mode while the
-        # contracts are at 1.0.0-draft (see tools/ci/breaking_check.py).
-        # TODO(strict): flip to --strict after v0.1.0 tag lands — the tag
-        # gives the detector its baseline to compare against.
-        run: python3 tools/ci/breaking_check.py specs/
+        # Stdlib-only tool: no setup-python/pip needed. Strict since the
+        # v0.1.0 tag: the tag is the detector's baseline (newest tag via
+        # git describe), and a breaking schema change without a contract
+        # MAJOR bump fails CI (exit 1).
+        run: python3 tools/ci/breaking_check.py specs/ --strict
 
   # --------------------------------------------------------------- secrets --
   secrets:
