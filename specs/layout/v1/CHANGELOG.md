@@ -11,22 +11,27 @@
 - Профили: user (v1, реализуемый) и system (таблица соответствия XDG 1:1;
   реализация отложена за миграцию прода — строго после 2026-10-16, B0-окно,
   горизонт v2); `/var/log/vesma` в v1 не создаётся.
-- User-профиль: таблица MUST из 10 канонических путей с правами (конфиг,
-  манифесты, env-секреты, data/cwd, venvs, логи, history, fallback runtime,
-  canonical runtime, кэш).
+- User-профиль: таблица MUST из 12 канонических путей с правами (конфиг,
+  манифесты, env-секреты, data/cwd, конфиг-схема компонента
+  `<name>/config.schema.json`, venv движка `venv/`, venvs, логи, history,
+  fallback runtime, canonical runtime, кэш).
 - Канонизации, снимающие плейсхолдеры соседних контрактов: каталог
   манифестов = `~/.config/vesma/components.d/<name>.yaml` (drop-in;
   снимает `~/.config/vesma/manifests/` из component-manifest §2); имя
   сокета = `control.sock` (согласовано с control-socket §3); каноническое
-  место env-файлов `env/<name>.env`; целевые пути плейсхолдеров
-  `{config_path}/{state_dir}/{runtime_dir}/{venv_bin}`.
+  место env-файлов `env/<name>.env`; каноническое место конфиг-схем
+  `~/.local/share/vesma/<name>/config.schema.json` (резолв
+  `config.schema_file` — от data-каталога компонента); целевые пути
+  плейсхолдеров `{config_path}/{data_dir}/{runtime_dir}/{venv_bin}`.
 - Логи: канон — journald при systemd (`SYSLOG_IDENTIFIER=vesma-<component>`
   от супервайзера, `vesma service logs` = journalctl-фильтр); контейнер /
   ручной режим — files-under-state (`state/logs/<name>/`, ротация
   10 MB × 5); режим ровно один, никаких иных мест логов (закрывает
   инвентарный хаос «логи в 3 местах»).
 - venv-дисциплина: один управляемый venv на python-юнит (движок+in-process
-  = venv движка; python-ребёнок = `venvs/<name>/`); два компонента на одном
+  = venv движка `~/.local/share/vesma/venv/` — единственный venv вне
+  `venvs/`; имена компонентов `venv`/`venvs` зарезервированы;
+  python-ребёнок = `venvs/<name>/`); два компонента на одном
   venv = ошибка; `PYTHONNOUSERSITE=1` инжектируется безусловно; exact-pin
   (`==`) — v1, hash-pinning (`--require-hashes`) — дефолт v1, мандат v2
   (нужен тулинг); только PyPI.

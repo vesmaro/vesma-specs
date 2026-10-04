@@ -91,6 +91,15 @@ jobs:
         # The JSON report is written before the exit code propagates, so the
         # artifact upload below (if: always()) has a report even on failure.
         run: python3 tools/conformance/run.py --all specs/ --format=json > conformance-report.json
+      - name: "Fallback-parser check (no PyYAML)"
+        # The runner ships a stdlib-only mini-YAML parser used whenever
+        # PyYAML is absent; it MUST hold the conformance suites on its own.
+        # Re-run the component-manifest suite with PyYAML uninstalled —
+        # exit 0 expected. Placed after the main pass and before the
+        # artifact upload (upload is if: always() and needs no Python deps).
+        run: |
+          python -m pip uninstall -y pyyaml
+          python3 tools/conformance/run.py specs/component-manifest/v1
       - name: Upload conformance report
         if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a  # v7.0.1
@@ -130,6 +139,8 @@ jobs:
       - name: Detect breaking schema changes without a major bump
         # Stdlib-only tool: no setup-python/pip needed. Report mode while the
         # contracts are at 1.0.0-draft (see tools/ci/breaking_check.py).
+        # TODO(strict): flip to --strict after v0.1.0 tag lands — the tag
+        # gives the detector its baseline to compare against.
         run: python3 tools/ci/breaking_check.py specs/
 
   # --------------------------------------------------------------- secrets --

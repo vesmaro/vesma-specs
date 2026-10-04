@@ -33,7 +33,10 @@ runtime и кэш. Контракт закрывает инвентарный х
 - канонизации, снимающие плейсхолдеры соседних контрактов: каталог
   манифестов = `~/.config/vesma/components.d/<name>.yaml` (drop-in);
   имя сокета = `control.sock`; каноническое место env-файлов;
-- расширение плейсхолдеров argv (`{config_path}`, `{state_dir}`,
+  каноническое место конфиг-схем компонентов
+  `~/.local/share/vesma/<name>/config.schema.json` — резолв
+  `config.schema_file` манифеста от data-каталога компонента (§3.2);
+- расширение плейсхолдеров argv (`{config_path}`, `{data_dir}`,
   `{runtime_dir}`, `{venv_bin}`) в конкретные пути (§3.4);
 - единственность мест логов: journald / files-under-state, других мест нет;
 - venv-дисциплина: один venv на python-юнит, `PYTHONNOUSERSITE=1`,
@@ -113,6 +116,8 @@ Component, Manifest определены в [глоссарии](../../../GLOSSA
 | `~/.config/vesma/components.d/<name>.yaml` | манифесты компонентов (drop-in; install кладёт, uninstall убирает) | каталог `0700` |
 | `~/.config/vesma/env/<name>.env` | env-файлы секретов | файл `0600`; fail-closed загрузка (не `0600` / чужой владелец = отказ старта + готовая команда исправления) |
 | `~/.local/share/vesma/<name>/` | данные компонента; default cwd ребёнка | каталог `0700` |
+| `~/.local/share/vesma/<name>/config.schema.json` | конфиг-схема компонента; кладёт install-флоу вместе с данными компонента; резолв `config.schema_file` манифеста (CM §3.9) — от data-каталога компонента | каталог `0700` (data-каталог компонента) |
+| `~/.local/share/vesma/venv/` | venv движка (supervisor runtime): движок + in-process модули (§3.8); единственный venv вне `venvs/`; имена компонентов `venv`/`venvs` зарезервированы (валидатор имён отклоняет) | каталог `0700` |
 | `~/.local/share/vesma/venvs/<name>/` | venv python-компонента-ребёнка | каталог `0700` |
 | `~/.local/state/vesma/logs/<name>/` | файловые логи (когда journald нет); ротация 10 MB × 5 | каталог `0700` |
 | `~/.local/state/vesma/history/` | журнал переходов супервайзера (append-only) | каталог `0700` |
@@ -122,7 +127,7 @@ Component, Manifest определены в [глоссарии](../../../GLOSSA
 
 Примечания:
 
-- **a.** Default cwd ребёнка — data-каталог компонента (`{state_dir}`,
+- **a.** Default cwd ребёнка — data-каталог компонента (`{data_dir}`,
   §3.4); манифест задаёт `cwd` явно (CM §3.5), install-флоу проставляет
   каноническое значение по умолчанию.
 - **b.** `venvs/<name>/` создаётся **только** для python-компонентов-детей;
@@ -149,7 +154,7 @@ Component, Manifest определены в [глоссарии](../../../GLOSSA
 |---|---|---|
 | общий конфиг | `/etc/vesma/vesma.yaml` | `0640 root:vesma` |
 | манифесты компонентов | `/etc/vesma/components.d/<name>.yaml` | `0640 root:vesma` |
-| env-файлы секретов | `/etc/vesma/env/<name>.env` | `0640 root:vesma` |
+| env-файлы секретов | `/etc/vesma/env/<name>.env` | `0600 root:vesma` |
 | данные компонента / default cwd | `/var/lib/vesma/<name>/` | фиксируется при реализации (v2) |
 | venv python-компонентов | `/var/lib/vesma/venvs/<name>/` | фиксируется при реализации (v2) |
 | runtime (сокет, pids) | `/run/vesma/` | `0750 root:vesma-oper`; `control.sock` `0660` — см. [specs/control-socket/v1](../../control-socket/v1/spec.md) §3 |
@@ -157,6 +162,10 @@ Component, Manifest определены в [глоссарии](../../../GLOSSA
 
 - **MUST NOT**: `/var/log/vesma` не создаётся ни в user-, ни в
   system-профиле v1.
+- **MUST**: env-файлы секретов — `0600 root:vesma`, единое правило с
+  user-профилем (§3.2): групповое чтение секретов противоречит fail-closed
+  загрузчику (CM §3.5, `ENV_FILE_UNSAFE`); общий конфиг и манифесты — не
+  секреты, остаются `0640 root:vesma`.
 - Остальные строки system-соответствия (history, кэш) строятся при
   реализации v2 по тому же принципу 1:1 и **MUST NOT** противоречить этой
   таблице.
@@ -172,7 +181,7 @@ Component, Manifest определены в [глоссарии](../../../GLOSSA
 | Плейсхолдер | User-профиль | System-профиль |
 |---|---|---|
 | `{config_path}` | `~/.config/vesma/vesma.yaml` | `/etc/vesma/vesma.yaml` |
-| `{state_dir}` | `~/.local/share/vesma/<name>/` | `/var/lib/vesma/<name>/` |
+| `{data_dir}` | `~/.local/share/vesma/<name>/` | `/var/lib/vesma/<name>/` |
 | `{runtime_dir}` | `${XDG_RUNTIME_DIR}/vesma/` (fallback: `~/.local/state/vesma/run/`) | `/run/vesma/` |
 | `{venv_bin}` | `~/.local/share/vesma/venvs/<name>/bin` | `/var/lib/vesma/venvs/<name>/bin` |
 
@@ -253,8 +262,10 @@ Component, Manifest определены в [глоссарии](../../../GLOSSA
   doctor DR-04). venv не шарится между компонентами и между компонентом и
   движком.
 - **MUST**: `venvs/<name>/` (`0700`) — только для python-компонентов-детей.
-  Расположение venv движка — дом инсталляции движка (вне `venvs/`, вне
-  таблицы §3.2); venv движка **MUST NOT** пересекаться ни с одним
+  venv движка (supervisor runtime) — `~/.local/share/vesma/venv/` (`0700`,
+  таблица §3.2): единственный venv вне `venvs/`; резервирует имя — имена
+  компонентов `venv` и `venvs` ЗАРЕЗЕРВИРОВАНЫ (валидатор имён манифеста
+  их отклоняет). venv движка **MUST NOT** пересекаться ни с одним
   `venvs/<name>/` (DR-06).
 - **MUST**: `PYTHONNOUSERSITE=1` инжектируется супервайзером **безусловно**
   в каждый python-процесс (движок и дети) — утечка user-site в `sys.path`
@@ -296,7 +307,7 @@ DR-xx референсится threat model §8 и чеклистом):
 | DR-03 | утечка user-site | тест импорта в чистом окружении (эквивалент `PYTHONNOUSERSITE`); user-site в `sys.path` = FAIL |
 | DR-04 | два манифеста на один venv | уникальность venv на python-юнит; коллизия = FAIL |
 | DR-05 | версия python venv vs манифест | ограничение `python.version` манифеста (CM §3.6) против интерпретатора venv; несовпадение = FAIL |
-| DR-06 | venv ≠ интерпретатор движка | `venvs/<name>/` не является (и не симлинкует) venv/интерпретатор движка |
+| DR-06 | venv ≠ интерпретатор движка; зарезервированные имена | `venvs/<name>/` не является (и не симлинкует) venv/интерпретатор движка; имя компонента не входит в зарезервированные {venv, venvs} |
 | DR-07 | дрейф «сгенерированный юнит vs установленный» | установленный юнит (SL §3.6) == регенерированному; расхождение = FAIL + команда `vesma service install` |
 | DR-08 | живость сокета | connect-probe + `hello` по control-socket v1 §4.2; живой супервайзер → OK; stale/отсутствует → статус, не ошибка сам по себе |
 | DR-09 | коллизии http/tcp health-портов | пересечение портов health-проб (`health.http`/`health.tcp`, CM §3.7) между манифестами установки = FAIL |
@@ -355,7 +366,7 @@ venv-правила, `PYTHONNOUSERSITE`, единственность мест �
 - **Канонизации снимают плейсхолдеры соседних контрактов**: каталог
   манифестов `components.d/` (плейсхолдер `~/.config/vesma/manifests/` в
   CM §2), имя `control.sock` (согласовано с control-socket v1 §3),
-  целевые пути плейсхолдеров `{config_path}/{state_dir}/{runtime_dir}/
+  целевые пути плейсхолдеров `{config_path}/{data_dir}/{runtime_dir}/
   {venv_bin}` (allowlist CM §2), files-under-state (путь примеров SL).
   Правки примеров/прозы соседних спек — отдельные аддитивные PR; этот
   контракт их не исполняет и их файлы не трогает.

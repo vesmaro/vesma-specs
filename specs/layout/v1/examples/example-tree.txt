@@ -16,9 +16,14 @@
     └── worker.env                        # 0600 — секреты python-ребёнка worker
 
 ~/.local/share/vesma/                     # 0700
-├── board/                                # 0700 — данные board, default cwd ({state_dir})
+├── board/                                # 0700 — данные board, default cwd ({data_dir})
+│   └── config.schema.json                #   конфиг-схема board; резолв config.schema_file
+│                                         #   манифеста — от data-каталога (§3.2)
 ├── mesh/                                 # 0700 — данные mesh (go-ребёнок: venv не имеет)
 ├── worker/                               # 0700 — данные worker, default cwd
+├── venv/                                 # 0700 — venv движка (supervisor runtime): движок +
+│                                         #   in-process модули (board); единственный venv вне
+│                                         #   venvs/; имена venv/venvs зарезервированы (§3.8)
 └── venvs/                                # 0700 — только python-компоненты-дети (§3.8)
     └── worker/                           # 0700 — venv worker ({venv_bin} → venvs/worker/bin)
         └── (site-packages — не миро-/группо-записываемы; freeze == lock)

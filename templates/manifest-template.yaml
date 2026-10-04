@@ -27,8 +27,7 @@ metadata:
   tier: optional                       # core | optional — критичность; optional деградирует, не роняя систему.
                                        # Рестарт-политику по тиру применяет супервайзер (specs/service-lifecycle/v1 §3.5) —
                                        # манифест поведение рестарта по тиру не описывает.
-  description: >-                      # одна фраза, ≤ 200 символов
-    Короткое человеческое описание назначения компонента.
+  description: "Короткое человеческое описание назначения компонента."   # одна фраза, ≤ 200 символов
   provenance:
     repo: https://github.com/vesmaro/my-component   # https-URL публичного репозитория компонента
     license: Apache-2.0                # SPDX-идентификатор лицензии
@@ -40,7 +39,7 @@ launch:
   argv:                                # СТРОГО список строк, без shell ("sh -c" и метасимволы запрещены)
     - /usr/bin/my-component
     - --config
-    - "{config_path}"                  # плейсхолдеры только из allowlist: {config_path} {state_dir}
+    - "{config_path}"                  # плейсхолдеры только из allowlist: {config_path} {data_dir}
                                        # {runtime_dir} {venv_bin}; расширяет супервайзер, других подстановок нет
   cwd: "~/.local/share/vesma/my-component"   # рабочая директория; канонические пути — specs/layout/v1
   env:
@@ -77,6 +76,9 @@ health:
     timeout: 2s
 
 # --- stop: как компонент останавливается -------------------------------------
+# Только для kind: child-process; при kind: in-process секция stop запрещена —
+# остановка in-process = остановка супервайзера (specs/component-manifest §3.6,
+# §3.8).
 stop:
   signal: SIGTERM                     # SIGTERM | SIGINT — graceful-сигнал остановки
   grace_period: 10s                   # окно на graceful остановку; по истечении — SIGKILL процесс-группе
@@ -86,7 +88,9 @@ stop:
 # Ровно один способ (XOR): schema_file ИЛИ schema_inline; схема — JSON-Schema 2020-12.
 # Конфиг компонента = секция общего конфига; инвалидная конфигурация = отказ старта (fail-fast).
 config:
-  schema_file: ./config.schema.json   # относительный путь резолвится от каталога манифеста
+  schema_file: config.schema.json   # резолв от data-каталога компонента
+                                    # ~/.local/share/vesma/<name>/ (specs/layout/v1 §3.2);
+                                    # install-флоу кладёт схему туда вместе с данными
   # schema_inline: {type: object, ...}   # или схема прямо в манифесте
 
 # --- restart: переопределение рестарт-чисел (опционально) --------------------

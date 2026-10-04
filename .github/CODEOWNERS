@@ -8,3 +8,7 @@
 specs/ @Korrnals
 adrs/  @Korrnals
 tools/ @Korrnals
+
+# CI hardening policy and quasi-normative templates require owner review.
+.github/   @Korrnals
+templates/ @Korrnals

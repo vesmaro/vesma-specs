@@ -9,8 +9,12 @@ Phase-0 CI gate (founding ArchCom 2026-10-04). Checks:
 2. Every ``*.yaml`` / ``*.yml`` under any ``examples/`` or ``fixtures/``
    directory parses with PyYAML (``safe_load_all``; multi-document tolerant).
 3. For a parsed example declaring ``config.schema_file``, the referenced
-   file must exist (resolved relative to the manifest directory, per spec.md
-   §3.9). ``config.schema_inline`` documents are skipped: the schema is
+   file must exist. Resolution bases, in order: the example file's own
+   directory (repo artifacts — the example ships its illustrative schema
+   next to itself), then the component data directory
+   (``~/.local/share/vesma/<name>/`` expanded, per component-manifest
+   spec.md §3.9 and layout §3.2 — the canonical installation base).
+   ``config.schema_inline`` documents are skipped: the schema is
    embedded, there is nothing to resolve.
 
 Severity model:
@@ -107,14 +111,23 @@ def lint_yaml_artifacts(root):
             reference = config.get("schema_file")
             if not isinstance(reference, str) or not reference.strip():
                 continue  # absent, schema_inline-only, or non-string: out of scope
-            resolved = Path(os.path.expanduser(
-                os.path.normpath(path.parent / reference.strip()))).resolve()
-            if resolved.exists():
+            name = doc.get("metadata", {}).get("name", "")
+            candidate_bases = [path.parent]
+            if name:
+                candidate_bases.append(
+                    Path(os.path.expanduser(f"~/.local/share/vesma/{name}")))
+            candidates = [
+                Path(os.path.expanduser(
+                    os.path.normpath(base / reference.strip()))).resolve()
+                for base in candidate_bases]
+            resolved = next((c for c in candidates if c.exists()), None)
+            if resolved is not None:
                 continue
+            expected = ", ".join(str(c) for c in candidates)
             findings.append(
                 (path, "WARN",
                  f"document #{index}: config.schema_file {reference!r} does not "
-                 f"resolve to an existing file (expected {resolved}); ship the "
+                 f"resolve to an existing file (tried: {expected}); ship the "
                  f"schema file or use config.schema_inline"))
     return checked, findings
 
