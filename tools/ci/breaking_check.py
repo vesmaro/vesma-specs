@@ -236,9 +236,11 @@ def main(argv=None):
         print(line)
     print(f"summary: {len(allowed)} allowed/additional, "
           f"{len(breaking)} breaking-without-major-bump finding(s)")
-    print("mode: report (warning-only). Pass --strict to fail CI on "
-          "breaking-without-major-bump findings once the versioning policy "
-          "is ratified.")
+    if args.strict:
+        print("mode: strict (findings fail CI). Baseline: the latest tag.")
+    else:
+        print("mode: report (warning-only). Pass --strict to fail CI on "
+              "breaking-without-major-bump findings.")
     if args.strict and breaking:
         return 1
     return 0

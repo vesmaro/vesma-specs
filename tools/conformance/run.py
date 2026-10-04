@@ -598,9 +598,10 @@ def ch_env_file_outside_manifests_dir(doc, ctx):
     for label, base in (("manifests dir of this run", Path(os.path.realpath(ctx.target_dir))),
                         ("canonical manifests dir", Path(os.path.realpath(CANONICAL_MANIFESTS_DIR)))):
         if real == base or base in real.parents:
-            inside.append(f"{label} ({base})")
+            inside.append(f"{label} ({str(base).replace(home, '~')})")
     if inside:
-        return False, (f"env_file {env_file!r} resolves to {resolved}, which is inside: "
+        shown = str(resolved).replace(home, "~")
+        return False, (f"env_file {env_file!r} resolves to {shown}, which is inside: "
                        + "; ".join(inside))
     return True, f"env_file {env_file!r} lies outside the manifests dir"
 
