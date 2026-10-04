@@ -1,0 +1,46 @@
+# control-socket v1 — пример минимальной сессии (пример-минимум контракта)
+#
+# Значения ПЛЕЙСХОЛДЕРНЫЕ: pid, версии, имена компонентов, строки логов.
+# Транспорт: unix-сокет ${XDG_RUNTIME_DIR}/vesma/control.sock (0600).
+# Кадрирование: JSON Lines — одна строка = один кадр. Префиксы «C:»/«S:»
+# иллюстративные; в проводе только JSON.
+# FSM-состояния и health-значения — дом specs/service-lifecycle/v1.
+
+# --- 1. hello (обязательный первый запрос соединения) -----------------------
+C: {"id": 1, "method": "hello", "params": {"protocol_version": 1}}
+S: {"id": 1, "result": {"protocol_version": 1, "min_protocol": 1, "server_version": "1.0.0", "pid": 4312}}
+
+# --- 2. status: всё дерево (без params) --------------------------------------
+C: {"id": 2, "method": "status"}
+S: {"id": 2, "result": {"supervisor": {"pid": 4312, "health": "healthy"}, "components": {"memory-server": {"state": "healthy", "health": "healthy"}, "board": {"state": "stopped", "health": "down"}}}}
+
+# --- 3. start компонента ------------------------------------------------------
+# Ответ immediate: FSM перешла stopped → starting (spawn, T1 service-lifecycle);
+# start НЕ ждёт первого успешного health-прохода.
+C: {"id": 3, "method": "start", "params": {"component": "board"}}
+S: {"id": 3, "result": {"state": "starting"}}
+
+# --- 4. status одного компонента ---------------------------------------------
+# Между вызовами прошёл первый успешный health-проход: starting → healthy (T4).
+C: {"id": 4, "method": "status", "params": {"component": "board"}}
+S: {"id": 4, "result": {"components": {"board": {"state": "healthy", "health": "healthy"}}}}
+
+# --- 5. logs: tail 2, без follow (один ответ с массивом строк) ----------------
+C: {"id": 5, "method": "logs", "params": {"component": "board", "tail": 2}}
+S: {"id": 5, "result": {"lines": ["2026-10-04T12:00:01Z board: listening on 127.0.0.1:8787", "2026-10-04T12:00:02Z board: ready"]}}
+
+# --- 6. stop компонента -------------------------------------------------------
+C: {"id": 6, "method": "stop", "params": {"component": "board"}}
+S: {"id": 6, "result": {"state": "stopped"}}
+
+# --- 7. stop повторно: идемпотентный повтор (не ошибка) -----------------------
+# already-stopped — маркер идемпотентности, не FSM-состояние.
+C: {"id": 7, "method": "stop", "params": {"component": "board"}}
+S: {"id": 7, "result": {"state": "already-stopped"}}
+
+# --- 8. ошибка: unknown_component ---------------------------------------------
+C: {"id": 8, "method": "logs", "params": {"component": "widget-x"}}
+S: {"id": 8, "error": {"code": 100, "message": "unknown component: widget-x", "data": {}}}
+
+# Примечание: вариант logs с follow: true транскриптом не показан — это поток
+# фреймов {"id": N, "stream": {...}} до финального ответа (см. spec.md § 4.5).
