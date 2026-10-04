@@ -87,7 +87,7 @@
   `/Project-Vesma/handoff/vesma-cli-service-management-directive-20261004.md`.
 - ADR 0003 vesma-cortex (`models/` реестр, манифест schema 2 с dual-переходом
   — образец deprecation-дисциплины) — репо vesma-cortex, main 01ca519+.
-- АрхКом фередации 2026-07-20 (contract-first, SemVer, buf
+- АрхКом федерации 2026-07-20 (contract-first, SemVer, buf
   breaking-detector, общий контракт-репо) — mnemo-запись
   archcom-2026-07-20-phase3-contract-first.
 - ADR-0004 decision-provider + W5d (семейство провайдеров без правок

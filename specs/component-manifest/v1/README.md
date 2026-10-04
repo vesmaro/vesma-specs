@@ -8,6 +8,7 @@ itself with a manifest — no per-component CLI code.
 ## Normative spec
 
 - [spec.md](spec.md) — normative contract (Russian canon, RFC 2119 keywords).
+- Full English mirror: [spec.en.md](spec.en.md).
 - [schema/component-manifest.schema.json](schema/component-manifest.schema.json) — machine schema (JSON-Schema 2020-12); every manifest MUST validate against it.
 
 ## Key rules

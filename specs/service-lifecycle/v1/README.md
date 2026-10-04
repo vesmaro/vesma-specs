@@ -11,6 +11,8 @@ implements it; this contract is the requirements source and the conformance gate
 [spec.md](spec.md) — normative text (Russian canon, RFC 2119): process model, child FSM (transitions T1–T14),
 structural observability lines, restart policies, systemd unit template plus hardening block, mini-STRIDE threat model.
 
+Full English mirror: [spec.en.md](spec.en.md).
+
 ## Key rules
 
 - **Isolation** — a child crash, any subset of children, never kills the supervisor or the control socket; control availability is an invariant.

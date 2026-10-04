@@ -1,5 +1,16 @@
 # Conformance-раннер v0 (`tools/conformance`)
 
+> **EN.** `run.py` executes VESMA contract conformance suites: it reads
+> `<spec-dir>/conformance/cases.yaml`, applies the contract's check dictionary
+> to each target and compares the outcome with the expectation (`expect`).
+> The runner validates **declarations only and never executes component code**
+> (ADR-0001 §4); executing component code is a v2 trust boundary. Quick start:
+> `python3 tools/conformance/run.py --all specs` (exit 0 = all `must` cases
+> green; 1 = a `must` case failed; 2 = infrastructure error). Dependencies:
+> Python 3 stdlib + `jsonschema` (+ `pyyaml` optional — a built-in fallback
+> parser covers the manifest YAML subset without it). The rest of this
+> document is the Russian canon.
+
 `run.py` исполняет conformance-сьюты контрактов VESMA: читает
 `<spec-dir>/conformance/cases.yaml`, применяет к каждому таргету проверки из
 словаря контракта и сверяет факт с ожиданием (`expect`).

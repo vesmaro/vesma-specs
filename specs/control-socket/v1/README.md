@@ -10,6 +10,8 @@ control plane — is forbidden by construction. v1 is Linux-only and ships the u
 [spec.md](spec.md) — normative text (Russian canon, RFC 2119): paths and permissions, the TOCTOU/symlink bind
 procedure, the JSON Lines protocol, methods, error codes, limits, mini-STRIDE threat model.
 
+Full English mirror: [spec.en.md](spec.en.md).
+
 ## Key rules
 
 - **Filesystem permissions ARE the authentication** — user scope is `${XDG_RUNTIME_DIR}/vesma/control.sock`, socket mode `0600`, directory `0700`; `SO_PEERCRED` is defense-in-depth: a peer whose uid is not the socket owner is closed immediately, before any data is read.

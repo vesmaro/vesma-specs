@@ -11,6 +11,8 @@ control-socket contracts.
 It also canonizes the manifests directory (`components.d/`) and the socket name (`control.sock`), which the
 sibling contracts reference.
 
+Full English mirror: [spec.en.md](spec.en.md).
+
 ## Key paths (user profile)
 
 | Area | Path |
@@ -49,7 +51,7 @@ sibling contracts reference.
 ## Validate
 
 No standalone layout suite yet — the executable gate for manifests lives in
-[component-manifest](../component-manifest/v1/) (`tools/conformance/run.py`); adjacent checks cover env-file
+[component-manifest](../../component-manifest/v1/) (`tools/conformance/run.py`); adjacent checks cover env-file
 placement (CM-09), socket directory and socket permissions (control-socket checks 1–2) and unit `ReadWritePaths`
 (SL-17/SL-18). The layout conformance checklist: [conformance/checklist.md](conformance/checklist.md).
 
