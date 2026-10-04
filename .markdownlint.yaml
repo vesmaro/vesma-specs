@@ -8,3 +8,4 @@ MD013: false  # line-length: Russian prose is not wrapped by convention
 MD033: false  # inline-HTML: allowed inside specification text and tables
 MD036: false  # emphasis-as-heading: intentional lead-in style ("**Активы.**")
 MD040: false  # fenced-code-language: protocol dumps / transcripts are legitimately untagged
+MD060: false  # table-column-style: compact `|---|` separators are the house style across every table in the repo

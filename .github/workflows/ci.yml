@@ -142,13 +142,23 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
         with:
           fetch-depth: 0
-      - name: Gitleaks scan
-        # v3 (node24). Scan scope follows the action's event logic: push to
-        # main = full repository history; pull_request = the commits the PR
-        # introduces (every merged commit is re-scanned in full on push).
-        # PR comments and SARIF upload are disabled so this workflow needs
-        # no GITHUB_TOKEN and no secrets.* at all.
-        uses: gitleaks/gitleaks-action@e0c47f4f8be36e29cdc102c57e68cb5cbf0e8d1e  # v3.0.0
-        env:
-          GITLEAKS_ENABLE_COMMENTS: "false"
-          GITLEAKS_ENABLE_UPLOAD_ARTIFACT: "false"
+      - name: Install gitleaks (pinned, checksum-verified)
+        # The gitleaks-action wrapper requires a paid license on organization
+        # repos; the gitleaks CLI itself is free. Run the pinned binary
+        # directly so this workflow stays free of secrets.* references.
+        # TODO(supply-chain): move to a committed install script with a
+        # reviewed checksum bump procedure.
+        run: |
+          set -euo pipefail
+          GITLEAKS_VERSION="8.30.1"
+          GITLEAKS_SHA256="551f6fc83ea457d62a0d98237cbad105af8d557003051f41f3e7ca7b3f2470eb"
+          curl -sSLo /tmp/gitleaks.tar.gz \
+            "https://github.com/gitleaks/gitleaks/releases/download/v${GITLEAKS_VERSION}/gitleaks_${GITLEAKS_VERSION}_linux_x64.tar.gz"
+          echo "${GITLEAKS_SHA256}  /tmp/gitleaks.tar.gz" | sha256sum -c -
+          tar -xzf /tmp/gitleaks.tar.gz -C /tmp gitleaks
+          sudo install -m 0755 /tmp/gitleaks /usr/local/bin/gitleaks
+      - name: Scan full history for secrets
+        # `detect` scans the whole git log of the checkout (fetch-depth: 0
+        # above), so every push and every PR is covered end to end.
+        # --redact masks any finding values in the log output.
+        run: gitleaks detect --source . --verbose --no-banner --redact
