@@ -1,9 +1,9 @@
 ---
 contract: component-manifest
-version: 1.0.0-draft.2
-status: draft (ратифицируется первой реализацией в движке vesma)
+version: 1.0.0
+status: stable
 decisions: [ADR-0001]
-ratified: учредительный АрхКом VESMA, 2026-10-04
+ratified: учредительный АрхКом VESMA, 2026-10-04; ратифицирован первой конформной реализацией — движок vesmaro/vesma, main 4a2da5a, 2026-10-05 (конформанс — docs/project/reports/service-conformance-2026-10-06.md в репо движка; раннер 24/24; чеклист интегратора CM-01…CM-17 green)
 ---
 
 # component-manifest v1 — контракт манифеста компонента
@@ -323,8 +323,9 @@ Tier, Health check, Grace period, Canonical layout определены в
 
 ## 7. Совместимость
 
-- **SemVer**: `1.0.0-draft.2` → `1.0.0` по факту ратификации реализацией
-  в движке vesma. Ломающее изменение = MAJOR + deprecation-окно
+- **SemVer**: ратифицирован 2026-10-05 первой конформной реализацией
+  в движке vesma (main `4a2da5a`): `1.0.0-draft.2` → `1.0.0`.
+  Ломающее изменение = MAJOR + deprecation-окно
   `max(90 дней, 2 минорных релиза)` с dual-поддержкой (ADR-0001 §2).
 - **Аддитивные поля** (новые опциональные поля, не ломающие существующие
   манифесты) = минорная версия контракта; строгая схема с
