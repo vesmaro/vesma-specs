@@ -1,8 +1,8 @@
 ---
 contract: control-socket
-version: 1.0.0-draft.2
-status: draft
-ratified: учредительный АрхКом VESMA, 2026-10-04
+version: 1.0.0
+status: stable
+ratified: учредительный АрхКом VESMA, 2026-10-04; ратифицирован первой конформной реализацией — движок vesmaro/vesma, main 4a2da5a, 2026-10-05 (конформанс — docs/project/reports/service-conformance-2026-10-06.md в репо движка; раннер 24/24; чеклист CS-01…CS-16 green; live cross-uid лега — реальный прогон 2026-10-05, sudo+setpriv uid 65534, транскрипт в отчёте)
 decisions: [ADR-0001]
 language: en (informative mirror)
 ---
@@ -14,8 +14,8 @@ language: en (informative mirror)
 > prevails. The mirror is maintained in the same change as the Russian text
 > (single-commit sync policy).
 >
-> **Status: draft.** The spec is ratified by the first implementation in
-> the `vesma` engine (card `cli-service-management`). The contract form —
+> **Status: stable (1.0.0).** Ratified by the first conforming
+> implementation in the `vesma` engine on 2026-10-05 (main `4a2da5a`). The contract form —
 > paths and permissions, the TOCTOU procedure, protocol, methods, error
 > codes, limits, threat model — was ratified by the founding VESMA ArchCom
 > on 2026-10-04 (ADR-0001) and is here **codified, not replayed**. Further
@@ -424,7 +424,8 @@ Transition rules:
 
 1. The engine implementation (card `cli-service-management`) introduces
    the socket before the mass migration of components; the spec status
-   changes `draft` → `stable` by the first conformant implementation.
+   changed `draft` → `stable` on 2026-10-05 by the first conformant
+   implementation (main `4a2da5a`).
 2. For a migrated component (a manifest present in the registry),
    management happens only per the contract; parallel channels (TCP/HTTP
    control plane, sockets outside the layout) are forbidden by § 4.7.
