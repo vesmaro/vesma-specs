@@ -1,9 +1,9 @@
 ---
 contract: service-lifecycle
-version: 1.0.0-draft.2
-status: draft (ратифицируется первой реализацией в движке vesma)
+version: 1.0.0
+status: stable
 decisions: [ADR-0001]
-ratified: учредительный АрхКом VESMA, 2026-10-04
+ratified: учредительный АрхКом VESMA, 2026-10-04; ратифицирован первой конформной реализацией — движок vesmaro/vesma, main 4a2da5a, 2026-10-05 (конформанс — docs/project/reports/service-conformance-2026-10-06.md в репо движка; раннер 24/24; чеклист SL-01…SL-18 green, включая SL-06 real-container PID1 evidence — rootless podman, транскрипт в отчёте)
 ---
 
 # service-lifecycle v1 — контракт супервайзера
@@ -344,12 +344,12 @@ native extensions (JIT/WX-память в нативных модулях); вк
 Чеклист соответствия реализации — `conformance/checklist.md` (SL-01…SL-18):
 изоляция, pgid-стоп, subreaper, PID1-reap, FSM-переходы, структурные строки,
 рестарт-числа, env-семантика, юнит-шаблон, hardening, graceful-порядок,
-lazy-retry без спама. Статус контракта — `draft` до первого прохождения
-чеклиста реализацией в движке vesma (ратификация реализацией).
+lazy-retry без спама. Контракт ратифицирован реализацией 2026-10-05
+(первое прохождение чеклиста — движок vesma, main `4a2da5a`).
 
 ## 6. Совместимость
 
-- **SemVer**: `1.0.0-draft.2` → `1.0.0` по факту ратификации реализацией.
+- **SemVer**: ратифицирован 2026-10-05 (`1.0.0-draft.2` → `1.0.0`).
   Ломающее изменение = MAJOR + deprecation-окно с dual-поддержкой
   (дисциплина README §«Дисциплина контрактов»).
 - **Потребляемые контракты**: поля `metadata` (name/tier), `kind`,
