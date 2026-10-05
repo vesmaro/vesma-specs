@@ -1,9 +1,9 @@
 ---
 contract: layout
-version: 1.0.0-draft.2
-status: draft (ратифицируется первой реализацией в движке vesma)
+version: 1.0.0
+status: stable
 decisions: [ADR-0001]
-ratified: учредительный АрхКом VESMA, 2026-10-04
+ratified: учредительный АрхКом VESMA, 2026-10-04; ратифицирован первой конформной реализацией — движок vesmaro/vesma, main 4a2da5a, 2026-10-05 (конформанс — docs/project/reports/service-conformance-2026-10-06.md в репо движка; раннер 24/24; чеклист LY-01…LY-14 green (LY-13 system-профиль — n/a в v1, горизонт v2); LY-12 cache taint write-API — движок PR #497)
 language: en (informative mirror)
 ---
 
@@ -14,8 +14,8 @@ language: en (informative mirror)
 > prevails. The mirror is maintained in the same change as the Russian text
 > (single-commit sync policy).
 >
-> **Status: draft.** The spec is ratified by the first implementation in
-> the `vesma` engine (card `cli-service-management`). The contract form —
+> **Status: stable (1.0.0).** Ratified by the first conforming
+> implementation in the `vesma` engine on 2026-10-05 (main `4a2da5a`). The contract form —
 > installation profiles and paths, permissions, the uniqueness of log
 > locations, venv discipline, doctor checks, migration from legacy — was
 > ratified by the founding VESMA ArchCom on 2026-10-04 (ADR-0001) and is
@@ -394,14 +394,14 @@ check types are "auto" (the engine's test suite / the runner) and
 "manual" (artifact inspection) — as in
 [specs/service-lifecycle/v1](../../service-lifecycle/v1/spec.md) §5; the
 `tools/conformance` runner validates declarations, the file checks are
-executed by the engine (ADR-0001 §4). The contract status is `draft`
-until the checklist is first passed by an implementation in the `vesma`
-engine (ratification by implementation).
+executed by the engine (ADR-0001 §4). The contract was ratified by
+implementation on 2026-10-05 (first full checklist pass — the `vesma`
+engine, main `4a2da5a`).
 
 ## 7. Compatibility
 
-- **SemVer**: `1.0.0-draft.2` → `1.0.0` upon ratification by
-  implementation. A breaking change (moving an existing path, changing
+- **SemVer**: ratified 2026-10-05 (`1.0.0-draft.2` → `1.0.0`).
+  A breaking change (moving an existing path, changing
   permissions, changing the semantics of log places) = MAJOR + a
   deprecation window with dual support (ADR-0001 §2). Additive (a new
   directory, a new doctor check, a new doctor-finding code) = a minor

@@ -18,7 +18,7 @@ Terminology / Терминология — [GLOSSARY.md](GLOSSARY.md).
 
 | Компонент | Тип | Тир | Реализуемый контракт | Статус | Репа |
 |---|---|---|---|---|---|
-| vesma server | in-process | core | component-manifest, service-lifecycle, control-socket (реализует как супервайзер) | супервайзер движка; реализация контрактов — фаза 3 | [vesma](https://github.com/vesmaro/vesma) |
+| vesma server | in-process | core | component-manifest, service-lifecycle, control-socket (реализует как супервайзер) | супервайзер движка; первая конформная реализация контрактов — main `4a2da5a`, 2026-10-05 | [vesma](https://github.com/vesmaro/vesma) |
 | vesma board | in-process (python) | optional | component-manifest | манифест не заявлен (фаза 4) | [vesma](https://github.com/vesmaro/vesma) |
 | vesma mesh | child-process (Go) | optional | component-manifest, service-lifecycle | манифест не заявлен (фаза 4) | [vesma-mesh](https://github.com/vesmaro/vesma-mesh) |
 | vesma eyes | child-process (Node) | optional | component-manifest, service-lifecycle | манифест не заявлен (фаза 4) | [vesma-eyes](https://github.com/vesmaro/vesma-eyes) |
@@ -31,8 +31,10 @@ Notes (EN):
   `vesma-cortex` repositories respectively; they have no repositories of
   their own.
 - The `component-manifest`, `service-lifecycle`, `control-socket`, `layout`
-  contracts were created in phase 1 of the [roadmap](docs/roadmap.md)
-  (draft until ratified by the first implementation).
+  contracts were created in phase 1 of the [roadmap](docs/roadmap.md);
+  on 2026-10-05 they were ratified `1.0.0` stable by the first conforming
+  implementation — the [vesma](https://github.com/vesmaro/vesma) engine,
+  main `4a2da5a` (conformance report in the engine repo).
 - `decision-provider` v1 (draft) — the decision-provider family contract; a
   provider is not a supervisor component (no manifest is created for one);
   migrated from [vesma-canon](https://github.com/vesmaro/vesma-canon)
@@ -46,8 +48,10 @@ Notes (EN):
 - `vesma board` и `vesma cortex-metrics` живут внутри реп `vesma` и
   `vesma-cortex` соответственно; отдельных репозиториев у них нет.
 - Контракты `component-manifest`, `service-lifecycle`, `control-socket`,
-  `layout` созданы в фазе 1 [roadmap](docs/roadmap.md) (draft до
-  ратификации первой реализацией).
+  `layout` созданы в фазе 1 [roadmap](docs/roadmap.md); 2026-10-05
+  ратифицированы как `1.0.0` stable первой конформной реализацией —
+  движок [vesma](https://github.com/vesmaro/vesma), main `4a2da5a`
+  (конформанс-отчёт — в репо движка).
 - `decision-provider` v1 (draft) — контракт семейства провайдеров решений;
   провайдер — не компонент супервайзера (манифест не заводится);
   мигрирован из [vesma-canon](https://github.com/vesmaro/vesma-canon)

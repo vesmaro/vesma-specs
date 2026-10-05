@@ -1,9 +1,9 @@
 ---
 contract: service-lifecycle
-version: 1.0.0-draft.2
-status: draft (ратифицируется первой реализацией в движке vesma)
+version: 1.0.0
+status: stable
 decisions: [ADR-0001]
-ratified: учредительный АрхКом VESMA, 2026-10-04
+ratified: учредительный АрхКом VESMA, 2026-10-04; ратифицирован первой конформной реализацией — движок vesmaro/vesma, main 4a2da5a, 2026-10-05 (конформанс — docs/project/reports/service-conformance-2026-10-06.md в репо движка; раннер 24/24; чеклист SL-01…SL-18 green, включая SL-06 real-container PID1 evidence — rootless podman, транскрипт в отчёте)
 language: en (informative mirror)
 ---
 
@@ -367,14 +367,14 @@ and `specs/control-socket/v1`.
 The implementation conformance checklist is `conformance/checklist.md`
 (SL-01…SL-18): isolation, pgid stop, subreaper, PID1 reap, FSM transitions,
 structural lines, restart numbers, env semantics, the unit template,
-hardening, graceful order, lazy-retry without spam. The contract status is
-`draft` until the checklist is first passed by an implementation in the
-vesma engine (ratification by implementation).
+hardening, graceful order, lazy-retry without spam. The contract was
+ratified by implementation on 2026-10-05 (first full checklist pass —
+the vesma engine, main `4a2da5a`).
 
 ## 6. Compatibility
 
-- **SemVer**: `1.0.0-draft.2` → `1.0.0` upon ratification by
-  implementation. A breaking change = MAJOR + a deprecation window with
+- **SemVer**: ratified 2026-10-05 (`1.0.0-draft.2` → `1.0.0`).
+  A breaking change = MAJOR + a deprecation window with
   dual support (the discipline of the README "Contract discipline"
   section).
 - **Consumed contracts**: the fields `metadata` (name/tier), `kind`,
