@@ -1,9 +1,11 @@
 ---
 contract: component-manifest
-version: 1.0.0
-status: stable
+version: 1.1.0-draft
+status: draft — ratification pending conformance run
 decisions: [ADR-0001]
-ratified: учредительный АрхКом VESMA, 2026-10-04; ратифицирован первой конформной реализацией — движок vesmaro/vesma, main 4a2da5a, 2026-10-05 (конформанс — docs/project/reports/service-conformance-2026-10-06.md в репо движка; раннер 24/24; чеклист интегратора CM-01…CM-17 green)
+ratified: |-
+  1.0.0 — founding VESMA ArchCom, 2026-10-04; ratified by the first conformant implementation — the vesmaro/vesma engine, main 4a2da5a, 2026-10-05 (conformance — docs/project/reports/service-conformance-2026-10-06.md in the engine repo; runner 24/24; integrator checklist CM-01…CM-17 green).
+  1.1.0-draft — python-child venv dependencies (CM §3.5.1; issue vesmaro/vesma#515, the 2026-10-06 migration window): Draft — ratification pending conformance run. Ratification — the TL by evidence of the first 1.1.0 conformance run (runner + the engine's requirements implementation on a feature branch).
 language: en (informative mirror)
 ---
 
@@ -177,6 +179,46 @@ of this document:
   specs/service-lifecycle/v1 §3.2); the v2 horizon is fd-passing or an
   alternative secret transfer.
 
+### 3.5.1 launch.python — the python child's venv dependencies (1.1.0)
+
+An optional block declaring the component venv's dependencies. Introduced
+in 1.1.0 (additively, does not break existing manifests — §7); before
+1.1.0 the venv contents were filled only by the install flow of the
+bundled pack, and a custom python child was unsupported (issue
+vesmaro/vesma#515).
+
+- **MUST**: `python.version` (optional) — the venv interpreter version
+  constraint in the §3.6 form (`>=3.11`); the check semantics — doctor
+  DR-05 (the venv interpreter is inherited from the engine).
+- **MUST**: `python.requirements` (optional) — an array of strings, each
+  an EXACT `name==version` pin: URLs, `file:`, range and wildcard specs
+  are forbidden; package sources — PyPI only (the rules are identical to
+  LY §3.8 / LY-08 applied to the declaration, reject at load validation,
+  code `REQUIREMENTS_INVALID` with the element's JSON-path and a ready
+  fix form).
+- **MUST**: the only substitution inside requirements is
+  `{engine_version}` (replaced with the engine version at install time;
+  intended for bundled manifests whose engine pin tracks the release
+  train). Outside requirements (argv, version fields) the token is
+  unknown — the `argv_placeholder_allowlist` is unchanged, the supervisor
+  never sees requirements placeholders.
+- **MUST**: requirements without a `{venv_bin}` reference in
+  `launch.argv` are a dead declaration (no venv is created, no pins are
+  installed) — reject (`REQUIREMENTS_INVALID`). Symmetrically:
+  `{venv_bin}` in argv without requirements — reject
+  (`REQUIREMENTS_INVALID`, load validation; defense in depth — the
+  installer repeats the check: a venv without pins is always a
+  configuration mistake, never silent-empty).
+- **MUST**: the install flow fills a python child's venv exactly from
+  `python.requirements` and writes the venv's full freeze into the lock
+  file (LY §3.8); a hand `pip install` into `venvs/<name>/` does not
+  change the manifest — a freeze drift against the lock is a doctor DR-02
+  finding and a rebuild on the next install: hand-filling the venv is a
+  declared drift (DR-02, specs/layout/v1 §3.8; CM-19).
+- In-process components have no `python.requirements` block: they live on
+  the engine venv; an attempt to declare requirements outside `launch` is
+  rejected by the schema (strict validation, §3.2).
+
 ### 3.6 in_process
 
 - **MUST**: `module` is an importable python module; `entrypoint` is a
@@ -275,6 +317,7 @@ the code + the field path + a ready remediation command where applicable.
 | `NAME_DUPLICATED` | the name is already taken by another manifest of the installation | install validation | reject; show the conflicting manifest |
 | `SHELL_IN_ARGV` | shell metacharacters / whitespace / shell invocation in `argv` | install validation | reject; show the element and its position |
 | `PLACEHOLDER_UNKNOWN` | a placeholder outside the allowlist | install validation | reject; show the allowlist |
+| `REQUIREMENTS_INVALID` | a `launch.python.requirements` entry is not an exact `name==version` pin (URL/file:/range/wildcard); requirements without `{venv_bin}` in argv, or `{venv_bin}` without requirements | install validation | reject; show the element's JSON-path and the pin form (or the installer's empty-venv message) |
 | `SECRET_IN_VARS` | a secret-like key name in `env.vars` | install validation | reject; delete the key, move the value to `env_file` |
 | `ENV_FILE_UNSAFE` | `env_file` missing / permissions not 0600 / a foreign owner / located in the manifest directory | loader (fail-closed) | start refusal + a ready remediation command (`chmod 600`, `chown`, move) |
 | `DURATION_INVALID` | a duration not matching the pattern | install validation | reject |
@@ -296,6 +339,7 @@ paths or secrets (ADR-0001 §6).
 | `examples/python-inprocess.yaml` | an in-process python component (`board`): `in_process` with a factory, `health.callback`, `config.schema_inline` (JSON-Schema with 2-3 properties) |
 | `examples/go-child.yaml` | a child-process Go binary (`mesh`): `launch.argv` with the `{config_path}` placeholder, `health.http`, `provenance.artifact_sha256` |
 | `examples/node-runtime.yaml` | a child-process Node runtime (`eyes`): `health.tcp`, `depends_on: [server]` |
+| `examples/python-child.yaml` | a child-process python child (`reporter`): `launch.python.requirements` with exact pins + `{venv_bin}` in argv (§3.5.1, 1.1.0) |
 
 ## 6. Conformance
 
@@ -332,15 +376,18 @@ task):
 | `argv_placeholder_allowlist` | argv placeholders (`launch.argv`, `health.exec.argv`) only from the §2 allowlist; only well-formed placeholders of the form `{[a-z_]+}` outside the allowlist are flagged — literal `{}`, `{a` and the like are not placeholders and are not flagged |
 | `checker_block_consistency` | `health.checker` ↔ the corresponding block (the if-coupling of §3.7); `callback` only with in-process |
 | `kind_launch_consistency` | kind ↔ launch/in_process XOR (§3.4) |
+| `requirements_venv_consistency` | `launch.python.requirements` ↔ `{venv_bin}` in `launch.argv` (§3.5.1, 1.1.0): requirements without a venv reference is a dead declaration; `{venv_bin}` without requirements declares no pins; a cross-field rule JSON-Schema cannot express |
 | `env_file_outside_manifests_dir` | `env.env_file` outside the manifest directory |
 | `depends_on_acyclic` | the installation's `depends_on` graph is acyclic |
 | `license_spdx` | `provenance.license` — SPDX identifier form (regex `^[A-Za-z0-9.-]+(\+[A-Za-z0-9.-]+)?$`), not the registry |
 
-Cases: three positive ones (the examples, `expect: pass`, the full set of
-applicable checks, all `severity: must`) and negative ones over
+Cases: four positive ones (the examples, `expect: pass`, the full set of
+applicable checks, all `severity: must`; since 1.1.0 —
+`examples/python-child.yaml`) and negative ones over
 `conformance/fixtures/invalid/` (all `severity: must`, `expect: fail`). The
 checks `depends_on_acyclic`, `no_shell_metacharacters`,
-`env_file_outside_manifests_dir`, `no_secret_in_vars` are also part of the
+`env_file_outside_manifests_dir`, `no_secret_in_vars`,
+`requirements_venv_consistency` (for a python child) are also part of the
 positive cases.
 
 ## 7. Compatibility
@@ -363,6 +410,15 @@ positive cases.
   capabilities/permissions; resource limits; replicas; the
   metrics/alerts-webhook declaration; artifact signatures (v1 provides only
   `artifact_sha256` — signatures require a root key).
+- **1.1.0 (additive, 2026-10-06, issue vesmaro/vesma#515)**:
+  `launch.python` — an optional python-child declaration block
+  (`version`, `requirements[]` — exact == pins, PyPI-only; §3.5.1).
+  Does not break existing manifests: the block is optional; manifests
+  without `python` under `launch` pass the entire 1.0.0 validation
+  byte-for-byte. Ratification — the first 1.1.0 conformance run (Draft —
+  ratification pending conformance run). For v1-manifest vendors the
+  block stays optional; `{engine_version}` is a placeholder inside
+  requirements only.
 - The template `templates/manifest-template.yaml` is derived from this
   spec; on divergence, the spec and `schema/` are normative.
 

@@ -3,6 +3,40 @@
 Формат версий: SemVer; статус контракта и дисциплина ломающих изменений —
 в `spec.md` §7 и README репозитория.
 
+## 1.1.0-draft — 2026-10-06
+
+Аддитивное минорное: зависимости venv python-чилдов
+(`launch.python`, §3.5.1; issue vesmaro/vesma#515 — инцидент живой
+миграции 2026-10-06: кастомный python-чилд (8788 board face) не имел
+поддержанного пути в v1 install-флоу). **Draft — ratification pending
+conformance run** (ратификация — ТЛ по evidence первого конформанс-прогона
+1.1.0; форма поля согласована с реализацией движка на feature-ветке).
+
+- `launch.python` (опциональный блок, оба поля опциональны):
+  `version` — ограничение интерпретатора venv (форма §3.6, семантика
+  DR-05); `requirements[]` — ТОЧНЫЕ `==` пины, только PyPI (правила
+  LY §3.8/LY-08: URL/file:/range/wildcard — reject; код
+  `REQUIREMENTS_INVALID` — новый в реестре §4).
+- `{engine_version}` — новая подстановка, допустимая ТОЛЬКО внутри
+  requirements: расширяется install-флоу на версию движка в момент
+  install (bundled-манифест metrics пинует `vesma=={engine_version}` —
+  статичный пин в пак-манифесте дрейфовал бы с каждым релизом).
+  Allowlist плейсхолдеров argv НЕ изменяется; супервайзер плейсхолдеров
+  requirements не видит.
+- Cross-field правило (§3.5.1): requirements без `{venv_bin}` в argv —
+  мёртвая декларация; `{venv_bin}` без requirements — пины не объявлены;
+  оба = reject (`REQUIREMENTS_INVALID`, проверка раннера
+  `requirements_venv_consistency`).
+- Venv наполняется ровно из requirements; lock = полный freeze (LY §3.8);
+  ручной `pip install` = дрейф DR-02 → rebuild (CM-19).
+- Схема (`schema/component-manifest.schema.json`): `launch.python`
+  (additionalProperties: false; пин-паттерн в items). Пример
+  `examples/python-child.yaml`; фикстуры `requirements-range.yaml`,
+  `requirements-no-venv-bin.yaml`; сьют — 27 кейсов (было 24); чеклист
+  интегратора CM-01…CM-19.
+- Существующие манифесты 1.0.0 НЕ затронуты: блок опционален; валидация
+  манифестов без `python` в `launch` идентична 1.0.0 байт-в-байт (§7).
+
 ## 1.0.0 — 2026-10-05
 
 Ратификация реализацией (SemVer: `1.0.0-draft.2` → `1.0.0`, статус

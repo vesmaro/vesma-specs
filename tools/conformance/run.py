@@ -597,6 +597,38 @@ def ch_kind_launch_consistency(doc, ctx):
     return True, f"kind={kind} consistent with launch/in_process sections"
 
 
+def ch_requirements_venv_consistency(doc, ctx):
+    """spec.md §3.5.1 (1.1.0): launch.python.requirements <-> {venv_bin}
+    in launch.argv — the cross-field rule JSON-Schema cannot express.
+    Requirements without a {venv_bin} argv reference are a dead
+    declaration (no venv would ever be created); {venv_bin} without
+    requirements leaves the venv unpinned (never silent-empty venv)."""
+    launch = _get(doc, "launch")
+    if not isinstance(launch, dict):
+        return True, "no launch section (n/a)"
+    python_block = launch.get("python")
+    requirements = _get(python_block, "requirements") if isinstance(python_block, dict) else None
+    has_requirements = isinstance(requirements, list) and len(requirements) > 0
+    argv = launch.get("argv")
+    has_venv_ref = isinstance(argv, list) and any(
+        isinstance(arg, str) and "{venv_bin}" in arg for arg in argv)
+    if has_requirements and not has_venv_ref:
+        return False, ("launch.python.requirements declared but launch.argv "
+                       "never references {venv_bin} — dead declaration (§3.5.1)")
+    if has_venv_ref and not has_requirements:
+        return False, ("launch.argv references {venv_bin} but "
+                       "launch.python.requirements is absent — a python child "
+                       "MUST pin its dependencies (§3.5.1)")
+    if has_requirements and has_venv_ref:
+        return True, (f"requirements ({len(requirements)} pin(s)) <-> {venv_placeholder_note()} "
+                      "consistent (§3.5.1)")
+    return True, "no python child declaration (n/a)"
+
+
+def venv_placeholder_note():  # pragma: no cover - trivial formatting helper
+    return "{venv_bin}"
+
+
 def ch_env_file_outside_manifests_dir(doc, ctx):
     env_file = _get(doc, "launch", "env", "env_file")
     if env_file is None:
@@ -657,6 +689,7 @@ CHECKS = {
     "argv_placeholder_allowlist": ch_argv_placeholder_allowlist,
     "checker_block_consistency": ch_checker_block_consistency,
     "kind_launch_consistency": ch_kind_launch_consistency,
+    "requirements_venv_consistency": ch_requirements_venv_consistency,
     "env_file_outside_manifests_dir": ch_env_file_outside_manifests_dir,
     "depends_on_acyclic": ch_depends_on_acyclic,
     "license_spdx": ch_license_spdx,

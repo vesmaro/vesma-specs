@@ -1,9 +1,11 @@
 ---
 contract: component-manifest
-version: 1.0.0
-status: stable
+version: 1.1.0-draft
+status: draft — ratification pending conformance run
 decisions: [ADR-0001]
-ratified: учредительный АрхКом VESMA, 2026-10-04; ратифицирован первой конформной реализацией — движок vesmaro/vesma, main 4a2da5a, 2026-10-05 (конформанс — docs/project/reports/service-conformance-2026-10-06.md в репо движка; раннер 24/24; чеклист интегратора CM-01…CM-17 green)
+ratified: |-
+  1.0.0 — учредительный АрхКом VESMA, 2026-10-04; ратифицирован первой конформной реализацией — движок vesmaro/vesma, main 4a2da5a, 2026-10-05 (конформанс — docs/project/reports/service-conformance-2026-10-06.md в репо движка; раннер 24/24; чеклист интегратора CM-01…CM-17 green).
+  1.1.0-draft — python-чилд зависимости venv (CM §3.5.1; issue vesmaro/vesma#515, окно миграции 2026-10-06): Draft — ratification pending conformance run. Ратификация — ТЛ по evidence первого конформанс-прогона 1.1.0 (раннер + движок-реализация requirements на feature-ветке).
 ---
 
 # component-manifest v1 — контракт манифеста компонента
@@ -165,6 +167,43 @@ Tier, Health check, Grace period, Canonical layout определены в
   specs/service-lifecycle/v1 §3.2); v2-горизонт — fd-passing или
   альтернативная передача секретов.
 
+### 3.5.1 launch.python — зависимости venv python-чилда (1.1.0)
+
+Опциональный блок декларирует зависимости компонентного venv. Введён в
+1.1.0 (аддитивно, не ломает существующие манифесты — §7); до 1.1.0
+содержимое venv наполнял только install-флоу bundled-пака, кастомный
+python-чилд был не поддержан (issue vesmaro/vesma#515).
+
+- **MUST**: `python.version` (опционально) — ограничение версии
+  интерпретатора venv в форме §3.6 (`>=3.11`); семантика проверки —
+  `doctor` DR-05 (интерпретатор venv наследуется от движка).
+- **MUST**: `python.requirements` (опционально) — массив строк, каждый —
+  ТОЧНЫЙ пин `name==version`: URL, `file:`, range- и wildcard-спеки
+  запрещены; источники пакетов — только PyPI (правила идентичны LY §3.8 /
+  LY-08 применённо к декларации, reject на load-валидации, код
+  `REQUIREMENTS_INVALID` с JSON-path элемента и готовой формой исправления).
+- **MUST**: единственная подстановка внутри requirements —
+  `{engine_version}` (заменяется на версию движка в момент install;
+  предназначена для bundled-манифестов, чей пин движка отслеживает
+  релизный поезд). Вне requirements (argv, поля версий) токен
+  неизвестен — `argv_placeholder_allowlist` не изменяется, супервайзер
+  плейсхолдеров requirements никогда не видит.
+- **MUST**: requirements при отсутствии `{venv_bin}` в `launch.argv` —
+  мёртвая декларация (venv не создаётся, пины не устанавливаются) —
+  reject (`REQUIREMENTS_INVALID`). Симметрично: `{venv_bin}` в argv без
+  requirements — reject (`REQUIREMENTS_INVALID`, load-валидация; защита
+  в глубину — инсталлер повторяет проверку: venv без пинов всегда
+  ошибка конфигурации, never silent-empty).
+- **MUST**: install-флоу наполняет venv python-чилда ровно из
+  `python.requirements` и пишет полный freeze venv в lock-файл (LY §3.8);
+  ручной `pip install` внутрь `venvs/<name>/` манифест не меняет —
+  freeze-дрейф против lock = находка `doctor` DR-02 и rebuild при
+  следующем install: ручное наполнение venv = объявленный дрейф (DR-02,
+  specs/layout/v1 §3.8; CM-19).
+- In-process компоненты блок `python.requirements` не имеют: они живут на
+  venv движка; попытка декларировать requirements вне `launch` отвергается
+  схемой (strict validation, §3.2).
+
 ### 3.6 in_process
 
 - **MUST**: `module` — импортируемый python-модуль; `entrypoint` — фабрика
@@ -256,6 +295,7 @@ Tier, Health check, Grace period, Canonical layout определены в
 | `NAME_DUPLICATED` | имя уже занято другим манифестом установки | install-валидация | reject; показать конфликтующий манифест |
 | `SHELL_IN_ARGV` | shell-метасимволы / whitespace / shell-инвокация в `argv` | install-валидация | reject; показать элемент и позицию |
 | `PLACEHOLDER_UNKNOWN` | плейсхолдер вне allowlist | install-валидация | reject; показать allowlist |
+| `REQUIREMENTS_INVALID` | запись `launch.python.requirements` не является точным пином `name==version` (URL/file:/range/wildcard); requirements без `{venv_bin}` в argv либо `{venv_bin}` без requirements | install-валидация | reject; показать JSON-path элемента и форму пина (или инсталлер-сообщение о пустом venv) |
 | `SECRET_IN_VARS` | секретное имя ключа в `env.vars` | install-валидация | reject; ключ удалить, значение перенести в `env_file` |
 | `ENV_FILE_UNSAFE` | `env_file` отсутствует / права не 0600 / чужой владелец / лежит в каталоге манифестов | загрузчик (fail-closed) | отказ старта + готовая команда исправления (`chmod 600`, `chown`, перенос) |
 | `DURATION_INVALID` | длительность не по шаблону | install-валидация | reject |
@@ -277,6 +317,7 @@ Tier, Health check, Grace period, Canonical layout определены в
 | `examples/python-inprocess.yaml` | in-process python-компонент (`board`): `in_process` с фабрикой, `health.callback`, `config.schema_inline` (JSON-Schema с 2-3 свойствами) |
 | `examples/go-child.yaml` | child-process Go-бинарь (`mesh`): `launch.argv` с плейсхолдером `{config_path}`, `health.http`, `provenance.artifact_sha256` |
 | `examples/node-runtime.yaml` | child-process Node-раннтайм (`eyes`): `health.tcp`, `depends_on: [server]` |
+| `examples/python-child.yaml` | child-process python-чилд (`reporter`): `launch.python.requirements` с точными пинами + `{venv_bin}` в argv (§3.5.1, 1.1.0) |
 
 ## 6. Conformance
 
@@ -311,15 +352,17 @@ Tier, Health check, Grace period, Canonical layout определены в
 | `argv_placeholder_allowlist` | плейсхолдеры argv (`launch.argv`, `health.exec.argv`) только из allowlist §2; флагуются только well-formed плейсхолдеры вида `{[a-z_]+}` вне allowlist — литеральные `{}`, `{a` и т.п. плейсхолдерами не являются и не флагуются |
 | `checker_block_consistency` | `health.checker` ↔ соответствующий блок (иф-связка §3.7); `callback` только при in-process |
 | `kind_launch_consistency` | kind ↔ launch/in_process XOR (§3.4) |
+| `requirements_venv_consistency` | `launch.python.requirements` ↔ `{venv_bin}` в `launch.argv` (§3.5.1, 1.1.0): requirements без вени-ссылки — мёртвая декларация; `{venv_bin}` без requirements — пины не объявлены; cross-field правило, JSON-Schema не выразимо |
 | `env_file_outside_manifests_dir` | `env.env_file` вне каталога манифестов |
 | `depends_on_acyclic` | граф `depends_on` установки ацикличен |
 | `license_spdx` | `provenance.license` — форма SPDX-идентификатора (regex `^[A-Za-z0-9.-]+(\+[A-Za-z0-9.-]+)?$`), не реестр |
 
-Кейсы: три позитивных (примеры, `expect: pass`, полный набор уместных
-проверок, все `severity: must`) и негативные по `conformance/fixtures/invalid/`
-(все `severity: must`, `expect: fail`). Проверки `depends_on_acyclic`,
-`no_shell_metacharacters`, `env_file_outside_manifests_dir`,
-`no_secret_in_vars` входят и в позитивные кейсы.
+Кейсы: четыре позитивных (примеры, `expect: pass`, полный набор уместных
+проверок, все `severity: must`; с 1.1.0 — `examples/python-child.yaml`) и
+негативные по `conformance/fixtures/invalid/` (все `severity: must`,
+`expect: fail`). Проверки `depends_on_acyclic`, `no_shell_metacharacters`,
+`env_file_outside_manifests_dir`, `no_secret_in_vars`,
+`requirements_venv_consistency` (у python-чилда) входят и в позитивные кейсы.
 
 ## 7. Совместимость
 
@@ -340,6 +383,15 @@ Tier, Health check, Grace period, Canonical layout определены в
   capabilities/permissions; resource limits; replicas; декларация
   metrics/alerts-webhook; подписи артефактов (v1 даёт только
   `artifact_sha256` — подписи требуют корневого ключа).
+- **1.1.0 (аддитивно, 2026-10-06, issue vesmaro/vesma#515)**:
+  `launch.python` — опциональный блок декларации python-чилда
+  (`version`, `requirements[]` — точные == пины, PyPI-only; §3.5.1).
+  Не ломает существующие манифесты: блок опционален, у манифестов без
+  `python` в `launch` вся валидация 1.0.0 проходит байт-в-байт.
+  Ратификация — первый конформанс-прогон 1.1.0 (Draft — ratification
+  pending conformance run). Для вендоров v1-манифестов блок остаётся
+  необязательным; `{engine_version}` — плейсхолдер только внутри
+  requirements.
 - Шаблон `templates/manifest-template.yaml` — производный от этой спеки;
   при расхождении нормативны спека и `schema/`.
 
