@@ -13,6 +13,12 @@ StartLimitBurst=5
 
 [Service]
 Type=exec
+# RuntimeDirectory is systemd-created writable even under
+# ProtectSystem=strict + ProtectHome=read-only (which make /run/user
+# read-only) — the control socket dir ${XDG_RUNTIME_DIR}/vesma must
+# exist inside the unit namespace (issue vesmaro/vesma#509).
+RuntimeDirectory=vesma
+RuntimeDirectoryMode=0700
 ExecStart=%h/.local/share/vesma/venv/bin/vesma service run
 # ExecStop is intentionally NOT generated: the default SIGTERM to the main
 # process IS the contract stop (reverse-topological graceful stop of children

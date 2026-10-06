@@ -21,7 +21,7 @@ Terminology / Терминология — [GLOSSARY.md](GLOSSARY.md).
 | vesma server | in-process | core | component-manifest, service-lifecycle, control-socket (реализует как супервайзер) | супервайзер движка; первая конформная реализация контрактов — main `4a2da5a`, 2026-10-05 | [vesma](https://github.com/vesmaro/vesma) |
 | vesma board | in-process (python) | optional | component-manifest | манифест не заявлен (фаза 4) | [vesma](https://github.com/vesmaro/vesma) |
 | vesma mesh | child-process (Go) | optional | component-manifest, service-lifecycle | манифест не заявлен (фаза 4) | [vesma-mesh](https://github.com/vesmaro/vesma-mesh) |
-| vesma eyes | child-process (Node) | optional | component-manifest, service-lifecycle | манифест не заявлен (фаза 4) | [vesma-eyes](https://github.com/vesmaro/vesma-eyes) |
+| vesma eyes | web-сервис (python / FastAPI-uvicorn) | optional | component-manifest, service-lifecycle | манифест не заявлен (фаза 4) | [vesma-eyes](https://github.com/vesmaro/vesma-eyes) |
 | vesma agent | child-process (Go) | optional | component-manifest, service-lifecycle | манифест не заявлен (фаза 4) | [vesma-agent](https://github.com/vesmaro/vesma-agent) |
 | vesma cortex-metrics | child-process (python / скрипт) | optional | component-manifest, service-lifecycle | манифест не заявлен (фаза 4) | [vesma-cortex](https://github.com/vesmaro/vesma-cortex) |
 
