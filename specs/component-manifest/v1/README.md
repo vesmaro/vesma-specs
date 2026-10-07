@@ -28,20 +28,26 @@ itself with a manifest — no per-component CLI code.
 | [examples/python-inprocess.yaml](examples/python-inprocess.yaml) | in-process Python module (`board`): factory, `health.callback`, `config.schema_inline` |
 | [examples/go-child.yaml](examples/go-child.yaml) | child-process Go binary (`mesh`): `launch.argv` with `{config_path}`, `health.http`, `artifact_sha256` |
 | [examples/node-runtime.yaml](examples/node-runtime.yaml) | external Node runtime (`eyes`): `health.tcp`, `depends_on: [server]` |
+| [examples/python-child.yaml](examples/python-child.yaml) | child-process Python child (`reporter`): `launch.python.requirements` exact pins + `{venv_bin}` in argv (1.1.0) |
 
 ## Validate
 
 From the repo root: `python3 tools/conformance/run.py specs/component-manifest/v1`. The suite is
 [conformance/cases.yaml](conformance/cases.yaml) — positive cases from `examples/` plus negative fixtures under
 `conformance/fixtures/invalid/`. The runner (stdlib + `jsonschema`, declarations only) is a separate tooling
-deliverable. Integrator checklist: [conformance/checklist.md](conformance/checklist.md) (CM-01…CM-17).
+deliverable. Integrator checklist: [conformance/checklist.md](conformance/checklist.md) (CM-01…CM-19).
 
 ## Status
 
+`1.1.0` — python-child venv dependencies (`launch.python.requirements`, §3.5.1 — issue
+vesmaro/vesma#515, 2026-10-06). Additive minor: the block is optional, 1.0.0 manifests validate
+unchanged. Draft — ratification pending conformance run (the first 1.1.0 runner run + the engine's
+requirements implementation on a feature branch).
+
 `1.0.0-draft.2` — deep-review wave 2 normative amendments (2026-10-05, pre-implementation): reserved
 names `venv`/`venvs`, `artifact_sha256` mandatory for `tier: core`. Shape ratified by the founding
-VESMA ArchCom on 2026-10-04 (ADR-0001); becomes stable (`1.0.0`) with the first conformant
-implementation in the `vesma` engine.
+VESMA ArchCom on 2026-10-04 (ADR-0001); became stable (`1.0.0`) with the first conformant
+implementation in the `vesma` engine (2026-10-05).
 
 ## See also
 

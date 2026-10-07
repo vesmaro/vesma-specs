@@ -1,0 +1,42 @@
+# Пример-минимум component-manifest v1 (1.1.0): python child-process с
+# объявлениями зависимостей venv (§3.5.1). requirements — ТОЧНЫЕ «==» пины,
+# только PyPI; {engine_version} — единственная допустимая подстановка
+# внутри requirements (расширяется install-флоу, не супервайзером).
+apiVersion: vesma.component/v1
+kind: child-process
+metadata:
+  name: reporter
+  version: 1.0.0
+  tier: optional
+  description: "Python-чилд оператора: генерация отчётов из data-каталога (child-process, venv из launch.python.requirements)."
+  provenance:
+    repo: https://example.com/vesma-reporter
+    license: MIT
+launch:
+  python:
+    version: ">=3.11"
+    requirements:
+      - "pydantic==2.14.2"
+      - "rich==14.2.0"
+      - "vesma=={engine_version}"
+  argv:
+    - "{venv_bin}/python"
+    - "-m"
+    - "reporter"
+    - "--out"
+    - "{data_dir}/reports"
+stop:
+  signal: SIGTERM
+  grace_period: 10s
+health:
+  checker: tcp
+  tcp:
+    host: 127.0.0.1
+    port: 8094
+    interval: 10s
+    timeout: 2s
+    unhealthy_threshold: 3
+  startup:
+    grace: 20s
+    interval: 2s
+    timeout: 2s

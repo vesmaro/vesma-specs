@@ -1,7 +1,8 @@
 # Conformance checklist — component-manifest v1
 
 Человеческий чеклист соответствия **компонента** контракту
-`specs/component-manifest/v1/spec.md` (версия 1.0.0-draft.2) — для
+`specs/component-manifest/v1/spec.md` (версия 1.1.0-draft — python-чилд
+зависимости venv; ратификация pending conformance run) — для
 интегратора, подключающего компонент к экосистеме. Исполняемый гейт —
 зелёный MUST-прогон `conformance/cases.yaml` раннером `tools/conformance`;
 чеклист дополняет его тем, что раннер не видит (права файлов, поведение
@@ -26,6 +27,8 @@
 | CM-15 | Манифест написан install-флоу CLI, не руками; компонент не имеет записи в каталог манифестов; `doctor` расхождений не показывает | §3.1 |
 | CM-16 | `metadata.name` не входит в зарезервированное множество {`venv`, `venvs`} — коллизия с venv-каталогами лэйаута (specs/layout/v1 §3.8); валидатор отвергает | §3.3 |
 | CM-17 | При `tier: core` задан `provenance.artifact_sha256` (hex64, совпадает с артефактом); для `optional` отсутствие хэша — осознанно и видно как `doctor` WARN | §3.3 |
+| CM-18 | `launch.python.requirements` (при наличии): каждая запись — точный пин `name==version` (URL/file:/range/wildcard отвергаются валидатором, код `REQUIREMENTS_INVALID`); `{engine_version}` — единственная допустимая подстановка и только внутри requirements | §3.5.1 |
+| CM-19 | Venv python-чилда наполняется только install-флоу из `launch.python.requirements` (lock = полный freeze); ручной `pip install` внутрь `venvs/<name>/` — freeze-дрейф против lock = `doctor` DR-02 FAIL и rebuild при следующем install — ручной pip не становится каноном | §3.5.1, LY §3.8 (DR-02) |
 
 Прохождение: все пункты зелёные + зелёный MUST-прогон `cases.yaml`.
 Статус контракта — `draft` до первого конформанса реализации в движке

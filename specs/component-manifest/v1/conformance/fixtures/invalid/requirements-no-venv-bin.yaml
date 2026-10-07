@@ -1,0 +1,34 @@
+# Негативная фикстура component-manifest 1.1.0 (§3.5.1): requirements без
+# {venv_bin} в launch.argv — мёртвая декларация (venv не создаётся), reject.
+apiVersion: vesma.component/v1
+kind: child-process
+metadata:
+  name: req-dead
+  version: 1.0.0
+  tier: optional
+  description: "requirements без {venv_bin} в argv — reject (REQUIREMENTS_INVALID, dead declaration)."
+  provenance:
+    repo: https://example.com/vesma-reporter
+    license: MIT
+launch:
+  python:
+    requirements:
+      - "pydantic==2.14.2"
+  argv:
+    - "/usr/bin/reporter"
+    - "--daily"
+stop:
+  signal: SIGTERM
+  grace_period: 10s
+health:
+  checker: tcp
+  tcp:
+    host: 127.0.0.1
+    port: 8094
+    interval: 10s
+    timeout: 2s
+    unhealthy_threshold: 3
+  startup:
+    grace: 20s
+    interval: 2s
+    timeout: 2s

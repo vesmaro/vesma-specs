@@ -1,0 +1,35 @@
+# Негативная фикстура component-manifest 1.1.0 (§3.5.1): requirements-запись —
+# НЕ точный пин (range «>=» запрещён; URL/file:/wildcard — те же код).
+apiVersion: vesma.component/v1
+kind: child-process
+metadata:
+  name: req-range
+  version: 1.0.0
+  tier: optional
+  description: "Python-чилд с range-пином в requirements — reject (REQUIREMENTS_INVALID)."
+  provenance:
+    repo: https://example.com/vesma-reporter
+    license: MIT
+launch:
+  python:
+    requirements:
+      - "pydantic>=2.14"
+  argv:
+    - "{venv_bin}/python"
+    - "-m"
+    - "reporter"
+stop:
+  signal: SIGTERM
+  grace_period: 10s
+health:
+  checker: tcp
+  tcp:
+    host: 127.0.0.1
+    port: 8094
+    interval: 10s
+    timeout: 2s
+    unhealthy_threshold: 3
+  startup:
+    grace: 20s
+    interval: 2s
+    timeout: 2s
