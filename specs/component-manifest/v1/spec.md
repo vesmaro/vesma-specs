@@ -1,11 +1,11 @@
 ---
 contract: component-manifest
-version: 1.1.0-draft
-status: draft — ratification pending conformance run
+version: 1.1.0
+status: stable
 decisions: [ADR-0001]
 ratified: |-
   1.0.0 — учредительный АрхКом VESMA, 2026-10-04; ратифицирован первой конформной реализацией — движок vesmaro/vesma, main 4a2da5a, 2026-10-05 (конформанс — docs/project/reports/service-conformance-2026-10-06.md в репо движка; раннер 24/24; чеклист интегратора CM-01…CM-17 green).
-  1.1.0-draft — python-чилд зависимости venv (CM §3.5.1; issue vesmaro/vesma#515, окно миграции 2026-10-06): Draft — ratification pending conformance run. Ратификация — ТЛ по evidence первого конформанс-прогона 1.1.0 (раннер + движок-реализация requirements на feature-ветке).
+  1.1.0 — python-чилд зависимости venv (`launch.python`, CM §3.5.1) + auth-injecting прокси как trust boundary (CM §3.12; issue vesmaro/vesma#515, окно миграции 2026-10-06; АрхКом 2026-10-06 ADR-0042 — условие (а)). Ратифицирован первой конформной реализацией — движок vesmaro/vesma, main aad0d0a, 2026-10-07 (TL-гейт: полный сьют 6328 passed / 8 skipped / 0 failed личным перепрогоном; раннер 27/27).
 ---
 
 # component-manifest v1 — контракт манифеста компонента

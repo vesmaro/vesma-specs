@@ -39,7 +39,7 @@ deliverable. Integrator checklist: [conformance/checklist.md](conformance/checkl
 
 ## Status
 
-`1.1.0-draft` — python-child venv dependencies (`launch.python.requirements`, §3.5.1 — issue
+`1.1.0` — python-child venv dependencies (`launch.python.requirements`, §3.5.1 — issue
 vesmaro/vesma#515, 2026-10-06). Additive minor: the block is optional, 1.0.0 manifests validate
 unchanged. Draft — ratification pending conformance run (the first 1.1.0 runner run + the engine's
 requirements implementation on a feature branch).
