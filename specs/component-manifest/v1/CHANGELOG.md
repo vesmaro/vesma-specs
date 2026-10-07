@@ -8,7 +8,7 @@
 Аддитивное минорное: зависимости venv python-чилдов
 (`launch.python`, §3.5.1; issue vesmaro/vesma#515 — инцидент живой
 миграции 2026-10-06: кастомный python-чилд (8788 board face) не имел
-поддержанного пути в v1 install-флоу). **Draft — ratification pending
+поддержанного пути в v1 install-флоу). Плюс §3.12 — auth-injecting компоненты/прокси как trust boundary (ArchCom 2026-10-06, ADR-0042 движка: условие (а) — каскад-ревью обязательно). **Draft — ratification pending
 conformance run** (ратификация — ТЛ по evidence первого конформанс-прогона
 1.1.0; форма поля согласована с реализацией движка на feature-ветке).
 

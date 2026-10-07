@@ -304,6 +304,24 @@ vesmaro/vesma#515).
   health pass of the dependency component (T4 in specs/service-lifecycle/v1);
   start order is topological, stop order is reverse-topological.
 
+### 3.12 Auth-injecting components and proxies (trust boundary)
+
+- **MUST**: a component or proxy that terminates external client
+  credentials and substitutes a kernel-accepted credential into core
+  calls (auth-injection) is a **trust boundary** — regardless of whether
+  it is expressed as a component manifest or as an infrastructure node's
+  internals (example: the B-shim proxy of the mesh node, ADR-0042 of the
+  engine repository).
+- **MUST**: the introduction of an auth-injecting component is recorded
+  explicitly — in the manifest's `metadata.description` or in the
+  infrastructure spec version carrying it; a silent appearance of auth
+  substitution violates the contract. The client credential is the only
+  one on the external contour; the kernel credential substituted inside
+  never leaves the trusted component.
+- **MUST**: the spec version that first carries an auth-injecting node
+  passes a cascade review (security + architecture) before merge — this
+  is the security-boundary class, not "just another proxy".
+
 ## 4. Error codes
 
 A unified registry of validation and start errors. The source is install
