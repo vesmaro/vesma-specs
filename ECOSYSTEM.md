@@ -42,6 +42,12 @@ Notes (EN):
 - The "manifest not declared" status is lifted by the appearance of the
   component's manifest plus a green MUST-pass of its conformance suite (the
   integration gate).
+- `context-lifecycle` v0 (draft) — the public harness-extension spec for
+  the context lifecycle (situation brief, turn budget policy, CCR,
+  lifecycle signals; work item nhi-8, wave 0). Skeleton only, NOT
+  ratified; extension id `io.github.vesmaro/context-lifecycle`. Language
+  policy: EN governs (public-spec exception), the Russian bridge lives in
+  `spec.md`.
 
 Примечания (RU):
 
@@ -58,6 +64,12 @@ Notes (EN):
   ADR-0004 в фазе 2 [roadmap](docs/roadmap.md).
 - Статус «манифест не заявлен» снимается появлением манифеста компонента и
   зелёным MUST-прогоном его conformance-сьюта (гейт интеграции).
+- `context-lifecycle` v0 (draft) — публичная спека расширения харнесов для
+  жизненного цикла контекста (situation brief, turn budget policy, CCR,
+  lifecycle-сигналы; рабочий слайс nhi-8, волна 0). Пока только скелет, НЕ
+  ратифицирована; идентификатор расширения
+  `io.github.vesmaro/context-lifecycle`. Языковая политика: норматив — EN
+  (публичное исключение), русский мост — в `spec.md`.
 
 ## specs layer vs canon / Слой specs vs canon
 
