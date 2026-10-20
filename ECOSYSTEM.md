@@ -42,6 +42,10 @@ Notes (EN):
 - The "manifest not declared" status is lifted by the appearance of the
   component's manifest plus a green MUST-pass of its conformance suite (the
   integration gate).
+- 2026-10-21: `layout` v2 (`2.0.0-draft.1`, dual-profile — a self-contained
+  user profile `~/.vesma` + an FHS system profile) opened as a draft;
+  ratified form: ADR-0045 in the engine repo. The v1 spec stays immutable
+  as the legacy-generation norm.
 
 Примечания (RU):
 
@@ -58,6 +62,10 @@ Notes (EN):
   ADR-0004 в фазе 2 [roadmap](docs/roadmap.md).
 - Статус «манифест не заявлен» снимается появлением манифеста компонента и
   зелёным MUST-прогоном его conformance-сьюта (гейт интеграции).
+- 2026-10-21: `layout` v2 (`2.0.0-draft.1`, dual-profile — самодостаточный
+  user-профиль `~/.vesma` + FHS system-профиль) открыт как draft;
+  ратифицированная форма — ADR-0045 в репо движка. Спека v1 остаётся
+  неизменной как норма legacy-генерации.
 
 ## specs layer vs canon / Слой specs vs canon
 

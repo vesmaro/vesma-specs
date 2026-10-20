@@ -1,0 +1,171 @@
+# Example: the declarative FHS manifest (layout v2 §3.12) — the single
+# source of truth for the system-profile installer, the container build and
+# future deb/rpm packaging. Illustrative excerpt; the contract tables
+# (spec §3.4/§3.5) are normative — this file fixes the FORM.
+
+manifest: vesma-fhs
+spec: layout v2
+profile: system
+
+defaults:
+  owner_user: root
+  owner_group: vesma
+  dir_mode: "0750"
+  file_mode: "0640"
+
+paths:
+  - role: config_root            # /etc/vesma/
+    system_path: /etc/vesma
+    user_path: ~/.vesma
+    kind: dir
+    mode: "0750"
+    owner: root
+    group: vesma
+
+  - role: shared_config          # config.yaml — {config_path}
+    system_path: /etc/vesma/config.yaml
+    user_path: ~/.vesma/config.yaml
+    kind: file
+    mode: "0640"
+    owner: root
+    group: vesma
+    flags: [conffile]
+
+  - role: manifest_dir           # components.d/ (drop-in)
+    system_path: /etc/vesma/components.d
+    user_path: ~/.vesma/components.d
+    kind: dir
+    mode: "0750"
+    owner: root
+    group: vesma
+
+  - role: component_manifest
+    system_path: /etc/vesma/components.d/<name>.yaml
+    user_path: ~/.vesma/components.d/<name>.yaml
+    kind: file
+    mode: "0640"
+    owner: root
+    group: vesma
+    flags: [conffile, drop-in]
+
+  - role: env_secrets            # env.d/ — the doctor FAIL gate (DR-15)
+    system_path: /etc/vesma/env.d/<name>.env
+    user_path: ~/.vesma/env.d/<name>.env
+    kind: file
+    mode: "0600"
+    owner: root
+    group: vesma
+    flags: [fail-closed, drop-in]
+
+  - role: sysusers_fragment
+    system_path: /usr/lib/sysusers.d/vesma.conf
+    user_path: null              # user profile: no sysusers
+    kind: file
+    mode: "0644"
+    owner: root
+    group: root
+
+  - role: system_unit
+    system_path: /etc/systemd/system/vesma.service
+    user_path: ~/.vesma/systemd/user/vesma.service   # canonical storage; installed into ~/.config/systemd/user/
+    kind: file
+    mode: "0644"
+    owner: root
+    group: root
+    flags: [generated, os-mandated-location]
+
+  - role: venv_engine            # root-owned, symlink revisions
+    system_path: /usr/lib/vesma/venv
+    user_path: ~/.vesma/venv
+    kind: dir
+    mode: "0755"
+    owner: root
+    group: root
+    flags: [symlink-revision, installer-materialized]
+
+  - role: venv_component
+    system_path: /usr/lib/vesma/venvs/<name>
+    user_path: ~/.vesma/venvs/<name>
+    kind: symlink
+    mode: "0755"
+    owner: root
+    group: root
+    flags: [symlink-revision, installer-materialized]
+
+  - role: distro_static
+    system_path: /usr/share/vesma
+    user_path: null              # user profile: static ships inside the wheel
+    kind: dir
+    mode: "0755"
+    owner: root
+    group: root
+    flags: [read-only-runtime]
+
+  - role: data_root              # /var/lib/vesma — store home + component data
+    system_path: /var/lib/vesma
+    user_path: ~/.vesma
+    kind: dir
+    mode: "0750"
+    owner: vesma
+    group: vesma
+
+  - role: store_db
+    system_path: /var/lib/vesma/vesma.db
+    user_path: ~/.vesma/vesma.db
+    kind: file
+    mode: "0600"
+    owner: vesma
+    group: vesma
+
+  - role: component_data         # {data_dir}
+    system_path: /var/lib/vesma/<name>
+    user_path: ~/.vesma/components/<name>
+    kind: dir
+    mode: "0750"
+    owner: vesma
+    group: vesma
+
+  - role: supervisor_history
+    system_path: /var/lib/vesma/history
+    user_path: ~/.vesma/history
+    kind: dir
+    mode: "0750"
+    owner: vesma
+    group: vesma
+    flags: [append-only]
+
+  - role: install_state          # exact-inverse uninstall source
+    system_path: /var/lib/vesma/install-state.yaml
+    user_path: null
+    kind: file
+    mode: "0640"
+    owner: root
+    group: vesma
+    flags: [installer-only-writer]
+
+  - role: cache_component
+    system_path: /var/cache/vesma/<name>
+    user_path: ~/.vesma/cache/<name>
+    kind: dir
+    mode: "0750"
+    owner: vesma
+    group: vesma
+    flags: [regenerable, never-secrets]
+
+  - role: file_logs              # opt-in only; journald stays primary
+    system_path: /var/log/vesma/<name>
+    user_path: ~/.vesma/logs/<name>
+    kind: dir
+    mode: "0750"
+    owner: vesma
+    group: vesma
+    flags: [opt-in]
+
+  - role: ipc_runtime            # {runtime_dir}
+    system_path: /run/vesma
+    user_path: ${XDG_RUNTIME_DIR}/vesma
+    kind: dir
+    mode: "0750"
+    owner: null                  # owner = unit User=/Group= at runtime
+    group: null
+    flags: [runtime-directory, os-mandated-location]
