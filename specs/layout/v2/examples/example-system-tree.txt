@@ -1,0 +1,46 @@
+# Example: system-profile tree (layout v2 §3.4, FHS)
+# Placeholders only: <name> is a component name. Service account vesma:vesma
+# is created by the sysusers.d fragment at install time.
+
+/etc/vesma/                                       0750 root:vesma
+├── config.yaml                                   0640 root:vesma   # shared config — {config_path}, conffile
+├── components.d/                                 0750 root:vesma
+│   └── <name>.yaml                               0640 root:vesma   # manifests (drop-in), conffile
+└── env.d/                                        0750 root:vesma
+    └── <name>.env                                0600 root:vesma   # secrets, fail-closed; drift = doctor FAIL
+
+/usr/lib/sysusers.d/vesma.conf                    0644 root:root    # u vesma - "VESMA service" /var/lib/vesma
+/etc/systemd/system/vesma.service                 0644 root:root    # system supervisor unit (install-flow generated)
+
+/usr/lib/vesma/                                   0755 root:root    # venv root — runtime never writes
+├── venv/                                         0755 root:root    # engine venv (supervisor + in-process)
+└── venvs/                                        0755 root:root
+    ├── <name> -> <name>-<rev>/                   0755 root:root    # symlink revision; atomic swap on update
+    └── <name>-<rev>/                             0755 root:root    # materialized revision (uv venv + same-build wheel)
+
+/usr/share/vesma/                                 0755 root:root    # distro static, runtime reads only
+├── components/                                   0755 root:root    # release bundle manifests
+│   └── <name>.yaml                               0644 root:root
+├── schemas/                                      0755 root:root
+│   └── <name>.schema.json                        0644 root:root
+├── units/                                        0755 root:root    # unit templates
+└── completion/                                   0755 root:root    # rc line = external surface
+
+/var/lib/vesma/                                   0750 vesma:vesma  # data root: engine store home + component data
+├── vesma.db                                      0600 vesma:vesma  # engine store DB
+├── data/                                         0750 vesma:vesma  # engine store (ADR-0044 domain)
+├── vault/                                        0750 vesma:vesma
+├── <name>/                                       0750 vesma:vesma  # component data, default cwd — {data_dir}
+│   └── *.db                                      0600 vesma:vesma  # DB files 0600
+├── history/                                      0750 vesma:vesma  # supervisor journal, append-only
+└── install-state.yaml                            0640 root:vesma   # state manifest → exact-inverse uninstall
+
+/var/cache/vesma/                                 0750 vesma:vesma
+└── <name>/                                       0750 vesma:vesma  # regenerable only, never secrets
+
+/var/log/vesma/                                   0750 vesma:vesma  # NOT created without operator opt-in (§3.9)
+└── <name>/                                       0750 vesma:vesma  # opt-in file logs; journald stays primary
+
+/run/vesma/                                       0750 <unit-User>:<unit-Group>  # RuntimeDirectory=vesma, Mode=0750
+├── control.sock                                  (control-socket v1 §3)
+└── pids                                                                # diagnostics only, never single-instance

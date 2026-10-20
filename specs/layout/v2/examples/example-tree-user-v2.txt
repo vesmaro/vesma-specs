@@ -1,0 +1,34 @@
+# Example: self-contained user-profile tree (layout v2, §3.2)
+# Placeholders only: <user> is the supervisor user, <name> a component name.
+# The engine store home (vesma.db, data/, vault/, config.yaml) predates this
+# contract (ADR-0044 canon) and is shown for context only.
+
+/home/<user>/.vesma/                              0700 <user>:<user>
+├── config.yaml                                   0600  # shared config (CM §3.9) — {config_path}
+├── vesma.db                                      0600  # engine store DB (ADR-0044 domain, context)
+├── components.d/                                 0700
+│   └── <name>.yaml                               0600  # component manifest (drop-in)
+├── env.d/                                        0700
+│   └── <name>.env                                0600  # env secrets, fail-closed (CM §3.5)
+├── components/                                   0700
+│   └── <name>/                                   0700  # component data, default cwd — {data_dir}
+│       └── config.schema.json                    0600  # schema resolved from the component data dir
+├── venv/                                         0700  # engine venv (supervisor + in-process modules)
+├── venvs/                                        0700
+│   └── <name>/                                   0700  # python child venv — {venv_bin} = venvs/<name>/bin
+├── logs/                                         0700
+│   ├── vesma.log                                 0600  # engine log (ADR-0044 domain, context)
+│   └── <name>/                                   0700  # files-under-state logs only; rotation 10 MB × 5
+├── history/                                      0700  # supervisor transition journal, append-only
+├── run/                                          0700  # runtime fallback (empty XDG_RUNTIME_DIR) + WARN
+├── cache/                                        0750
+│   └── <name>/                                   0750  # regenerable only, NEVER secrets (taint write-API)
+├── completion/                                   0700  # shell completion (rc line = external surface)
+└── systemd/                                      0700
+    └── user/
+        └── vesma.service                         0600  # canonical unit storage
+
+# OS-mandated exceptions (outside ~/.vesma — §3.2-a):
+/run/user/<uid>/vesma/                            0700  # canonical runtime: control.sock 0600, pids
+/home/<user>/.config/systemd/user/vesma.service   0644  # installed copy/link of the canonical unit
+# shell rc completion lines                        —    # external surface, not owned by the layout
