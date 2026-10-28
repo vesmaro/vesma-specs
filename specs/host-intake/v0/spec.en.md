@@ -260,8 +260,8 @@ The documented string forms of frontmatter/config model rows (contract
 - **MUST**: form 2 — the `provider/model` prefix: a qualified id
   (`ollama-cloud/glm-5.3-flash`) → provider = the prefix, model id = the
   rest.
-- **MUST**: form 3 — the literal vendor form `(copilot)`: the
-  ` (copilot)` suffix → provider = `copilot`; the GitHub-side catalog is
+- **MUST**: form 3 — the literal vendor form `(copilot)`: the suffix
+  is a space followed by `(copilot)` → provider = `copilot`; the GitHub-side catalog is
   server-only — `base_url` is NEVER synthesized (honest absence); the
   server-only honesty lives in the layout-table description and the
   catalog, NOT on the wire row — frontmatter rows carry no note (P4: a

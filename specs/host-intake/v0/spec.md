@@ -251,8 +251,8 @@ vesma-agent); `re-key (v7)` — переключение населения в �
   → provider = slug; сырая строка едет в `models[]` verbatim.
 - **MUST**: форма 2 — префикс `provider/model`: qualified id
   (`ollama-cloud/glm-5.3-flash`) → provider = префикс, model id = остаток.
-- **MUST**: форма 3 — literal vendor-форма `(copilot)`: суффикс
-  ` (copilot)` → provider = `copilot`; GitHub-side каталог server-only —
+- **MUST**: форма 3 — literal vendor-форма `(copilot)`: суффикс —
+  пробел и затем `(copilot)` → provider = `copilot`; GitHub-side каталог server-only —
   `base_url` НЕ синтезируется (honest absence); server-only честность
   живёт в описании layout-таблицы и каталоге, НЕ на проводной строке —
   frontmatter-строки note не несут (P4: note, которую код не может
