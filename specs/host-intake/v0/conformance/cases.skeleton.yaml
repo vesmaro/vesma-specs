@@ -1,0 +1,75 @@
+# =============================================================================
+# Conformance-сьют контракта host-intake v0 (ДЕКЛАРАТИВНЫЙ СКЕЛЕТ).
+#
+# ИМЯ ФАЙЛА — СОЗНАТЕЛЬНОЕ (прецедент agent-discovery v0): раннер
+# tools/conformance/run.py — одиночный профиль словаря component-manifest
+# (заголовок CHECKS в run.py), а CI гоняет `run.py --all specs/` на каждый
+# PR. Сьют с чужим словарём проверок падал бы инфраструктурной ошибкой и
+# ломал бы гейт, поэтому скелет лежит под именем cases.skeleton.yaml — имя
+# cases.yaml он получает волной runner-profile (исполнение проверок §6
+# spec.md; executor-изменение tools/ — через TL-ревью, ADR-0001 §3/§4).
+#
+# Нормативный источник: spec.md («Conformance» §6 + §3) и ADR-0001 §4.
+# Скелет фиксирует: словарь проверок, таргеты (примеры + негативные
+# фикстуры fixtures/invalid/), ожидания pass/fail и severity.
+# Машинная JSON-Schema появляется вместе с борд-зеркальной волной новых
+# полей (spec.md §6, §9).
+#
+# checks — имена ИЗ СЛОВАРЯ ПРОВЕРОК §6 spec.md;
+# expect — pass | fail; severity — must | should.
+# =============================================================================
+
+suite: host-intake-basics
+contract: host-intake
+version: 0.1.0-draft
+
+cases:
+  - id: zcode-frontmatter-installation-valid
+    severity: must
+    target: examples/zcode-frontmatter-installation.json
+    checks:
+      - models_field_shape
+      - fc6_harness_attribution
+      - provider_parse_forms
+      - auth_enum
+      - base_url_normalized
+      - row_caps
+      - no_credential_material
+    expect: pass
+
+  - id: pi-auth-marker-row-valid
+    severity: must
+    target: examples/pi-auth-marker-row.json
+    checks:
+      - models_field_shape
+      - fc6_harness_attribution
+      - provider_parse_forms
+      - auth_enum
+      - row_caps
+      - no_credential_material
+    expect: pass
+
+  - id: mcp-servers-field-valid
+    severity: must
+    target: examples/mcp-servers-field.json
+    checks:
+      - mcp_servers_field_shape
+      - mcp_names_cap30
+      - mcp_names_only
+      - no_credential_material
+    expect: pass
+
+  - id: mcp-over-cap-rejected
+    severity: must
+    target: conformance/fixtures/invalid/mcp-over-cap.json
+    checks:
+      - mcp_names_cap30
+    expect: fail
+
+  - id: credential-in-server-name-rejected
+    severity: must
+    target: conformance/fixtures/invalid/credential-in-server-name.json
+    checks:
+      - mcp_names_only
+      - no_credential_material
+    expect: fail

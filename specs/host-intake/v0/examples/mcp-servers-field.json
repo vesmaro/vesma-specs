@@ -1,0 +1,19 @@
+{
+  "mcp_servers": [
+    {
+      "harness": "pi",
+      "exec_env": "metal",
+      "servers": [
+        "context7",
+        "playwright",
+        "sequentialthinking"
+      ],
+      "transports": {
+        "context7": "http",
+        "playwright": "stdio",
+        "sequentialthinking": "stdio"
+      },
+      "count": 3
+    }
+  ]
+}
