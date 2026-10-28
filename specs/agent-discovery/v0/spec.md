@@ -1,8 +1,8 @@
 ---
 contract: agent-discovery
-version: 0.1.0-draft
+version: 0.1.0-draft.2
 status: draft
-decisions: [ADR-0001, ADR-0002, "AGW-25 — addendum «discovery v6, models fleet leg» в docs/PROTOCOL.md §3 (vesmaro/vesma-agent, main b98960e)", "gate 1 — discovery-contract-draft.md (vesmaro/vesma-eyes, feat/models-fleet-blueprint, daf969b)", "gate 2 — security-verdict.md (там же, 832cd7a)", "gate 3 — ux-blueprint.md (там же, cb166a8)", "директива владельца 2026-10-28 («контракты и документацию актуализировать» в vesma-specs)"]
+decisions: [ADR-0001, ADR-0002, "AGW-25 — addendum «discovery v6, models fleet leg» в docs/PROTOCOL.md §3 (vesmaro/vesma-agent, main b98960e)", "gate 1 — discovery-contract-draft.md (vesmaro/vesma-eyes, feat/models-fleet-blueprint, daf969b)", "gate 2 — security-verdict.md (там же, 832cd7a)", "gate 3 — ux-blueprint.md (там же, cb166a8)", "директива владельца 2026-10-28 («контракты и документацию актуализировать» в vesma-specs)", "draft.2 — re-key per host-intake: [specs/host-intake/v0](../../host-intake/v0/spec.md) (0.1.0-draft, ADR-0003; агентный драфт docs/design/host-intake-contract-draft.md, vesma-agent feat/host-intake-contract, гейты утверждены владельцем)"]
 ratified: |-
   Не ратифицирована (draft). Полномочия текста: агентная нога контракта
   уже влита как протокольная поправка AGW-25 в vesmaro/vesma-agent
@@ -19,13 +19,23 @@ ratified: |-
 
 # agent-discovery v0 — контракт discovery моделей (агент → борда)
 
-> **Статус: draft (0.1.0-draft).** Контракт кодифицирует уже влитую
+> **Статус: draft (0.1.0-draft.2).** Контракт кодифицирует уже влитую
 > агентную ногу — протокольную поправку AGW-25 «Models-fleet addendum —
 > discovery v6» в `docs/PROTOCOL.md` §3 исходящего ЦУП-агента
 > `vesmaro-agent` — как экосистемный контракт спек-слоя (директива
 > владельца 2026-10-28). Борд-зеркало (ingest в `GET /api/models`)
 > контрактом предусмотрено, но ещё не влито — см. §9. Изменения формы
 > после ратификации — только через SemVer-процесс (ADR-0001 §2).
+>
+> **Поправка draft.2 (re-key per host-intake, 2026-10-28).** Правила
+> НАСЕЛЕНИЯ поля `models` переключены на per-harness re-key: нормативный
+> источник населения — [host-intake](../../host-intake/v0/spec.md) §3
+> (per-harness layout-таблица: zcode/copilot frontmatter добавлены; pi —
+> auth-маркерная строка; standalone-таблица §3.3 ниже superseded);
+> новый аддитивный top-level элемент `mcp_servers` (FC-7) — дом
+> host-intake §3.4; probe-нога расширена harness-настроенными loopback
+> base_url (host-intake §3.3.4). Форма строки §3.2 и обязанности борды
+> §3.11 не изменились.
 
 Ключевые слова MUST / MUST NOT / SHOULD / MAY интерпретируются по
 [RFC 2119](https://www.rfc-editor.org/rfc/rfc2119). Проза — русская;
@@ -180,6 +190,17 @@ provider флота моделей — внешний model-serving endpoint, к
 
 ### 3.3 Names-only чтение конфигов: layout-таблица
 
+> **Superseded (draft.2).** Население таблицы этой сборки (список
+> «ровно» ниже) SUPERSEDED per-harness layout-таблицей контракта
+> [host-intake §3.3.2](../../host-intake/v0/spec.md): таблица ATTACHED к
+> fingerprint-inventory (per-harness секции), добавлены zcode/copilot
+> (agent frontmatter `model:`/`tier:`) и pi (auth-маркерная строка
+> provider `pi` с пустым `models[]`); gemini/qwen строк нет. Дисциплина
+> чтения (MUST ниже: JSON-pointer-таблица, запрет scan-эвристик,
+> built-in и версионируемость) НЕ изменилась — host-intake её
+> подтверждает. Расширение таблицы — теперь дом host-intake (его §3.3.2
+> и §7).
+
 - **MUST**: чтение конфига харнеса выполняется ТОЛЬКО по built-in
   per-harness layout-таблице, которая называет — на уровне
   JSON-pointer / секционного пути (напр. `.providers.<name>.name`,
@@ -264,6 +285,15 @@ provider флота моделей — внешний model-serving endpoint, к
 
 ### 3.7 Probe-нога: анонимный loopback
 
+> **Расширение (draft.2).** Помимо фиксированной таблицы портов ниже,
+> `base_url`, сконфигурированный ОБНАРУЖЕННЫМ харнесом и резолвящийся
+> LOOPBACK, MAY опрашиваться анонимно (утверждённый гейт OQ-2; бюджет
+> ≤8 дополнительных целей; никогда non-loopback, никогда credentialed —
+> вердикт H3). Норматив — [host-intake
+> §3.3.4](../../host-intake/v0/spec.md); дисциплины этого раздела
+> (один GET, timeout, документированные формы ответа, quiet zero, без
+> credentials) распространяются на расширение без изменений.
+
 - **MUST**: probe работает ТОЛЬКО по loopback (`127.0.0.1`, `::1`,
   `localhost`) — сканирование внешних хостов конструкцией исключено
   (AGW-25; gate 2 §1 H3).
@@ -308,7 +338,9 @@ provider флота моделей — внешний model-serving endpoint, к
   поле присутствует, даже если `installations` пуст (реальный
   zero-and-ran) (AGW-25).
 - Это единственный knob ноги; отдельных расписаний, портов и
-  credendentials у ноги нет (AGW-25).
+  credendentials у ноги нет (AGW-25). С draft.2 knob управляет И аддитивным
+  элементом `mcp_servers` (FC-7) совместно — [host-intake
+  §3.4](../../host-intake/v0/spec.md).
 
 ### 3.10 Snapshot-семантика и no-wipe
 
@@ -412,7 +444,7 @@ MUST-прогон сьюта после заведения runner-profile = ге
 | `installations_cap64` | `installations[]` ≤ 64 строк |
 | `base_url_normalized` | `base_url` = `scheme://authority[/base-path]`; query/fragment/userinfo отсутствуют |
 | `no_credential_material` | ни одна строка документа не проходит credential-shape скан (`sk-`/`ghp_`/`xox`- префиксы, hex ≥ 40, base64 ≥ 40, key-shaped assignment) — names-only валидатор §3.8 как статическая проверка примеров. Исключение value-scan (прецедент CM `no_secret_in_vars`): пояснительный документ `credential-redaction.json` — его «до»-строки намеренно показывают, что обдирается; скану подлежат только wire-shape документы |
-| `harness_dictionary_spelling` | `source: config` строки несут написание из словаря харнесов (codex, continue, claude-code, aider; zcode в таблице этой сборки отсутствует); `source: probe` строки несут slug probe-источника (§3.2) |
+| `harness_dictionary_spelling` | `source: config` строки несут написание из словаря харнесов (с draft.2 словарь населения — per host-intake §3.3.2: zcode, copilot, codex, continue, claude-code, aider, pi); `source: probe` строки несут slug probe-источника (§3.2) |
 | `knob_values` | декларация knob'а — только `auto` \| `off` (исполнительный таргет — декларация конфига агента; кейс заводится вместе с борд-зеркалом) |
 
 Кейсы: позитивные — wire-примеры §5 (`examples/config-source-installation.json`,
@@ -478,14 +510,16 @@ Names-only дисциплина — центральный контроль; к�
 
 | Нога | Статус | Где живёт |
 |---|---|---|
-| Агентная (писатель поля) | **влита** — протокольная поправка AGW-25 «discovery v6», 2026-10-28 | vesmaro/vesma-agent, main `b98960e`; норма — `docs/PROTOCOL.md` §3 (аддендум) + §7.1 (knob) |
+| Агентная (писатель поля) | v6 **влита** — AGW-25 «discovery v6», 2026-10-28 — и **SUPERSEDED** правилами населения draft.2 (per-harness re-key, [host-intake](../../host-intake/v0/spec.md) §3): v6 standalone-таблица давала ноль строк на реальном флоте (проверено живьём 2026-10-28 на core-51); исполнитель re-key — волна v7 (AGW-26), ветка `feat/host-intake-contract` | vesmaro/vesma-agent; норма населения — host-intake §3; норма провода — эта спека §3.2 |
 | Борд-зеркало (ingest в `GET /api/models`) | **не влита** — следующая волна vesma-eyes | целевая схема ingest'а уже отдаётся бордой: `ModelsDiscoveredItem` в `ModelsRosterOut.discovered` (зона «discovered», MF2 cut) — поле существует, чтобы FE-контракт встал при landing'е ноги; зона честно пуста, пока на проводе нет slice'а `models` |
 | UX ростера (рендер зеркала) | ратифицирован гейтом 3 | `ux-blueprint.md` MF1 «Ростер» (cb166a8), `GET /api/models` — единая точка агрегации (OQ-1) |
 
-Порядок ввода: (1) агентная нога — сделано (AGW-25); борды без зеркала
+Порядок ввода: (1) агентная нога v6 — сделано (AGW-25) и superseded
+населением draft.2; (2) агентная волна v7 (AGW-26): per-harness re-key +
+FC-7 — в полёте на `feat/host-intake-contract`; (3) борды без зеркала
 остаются конформными — поле аддитивно и игнорируется (§3.1, §7);
-(2) борд-зеркало — ingest по §3.11, no-wipe семантика §3.10, честные
-422 §4; (3) ратификация stable — конформанс обеих ног зелёный.
+(4) борд-зеркало — ingest по §3.11, no-wipe семантика §3.10, честные
+422 §4; (5) ратификация stable — конформанс обеих ног зелёный.
 Промежуточные состояния (зеркало есть, поле не ходит; поле ходит,
 зеркала нет) — допустимы и честны: обе стороны читают/пишут аддитивно.
 
@@ -495,6 +529,11 @@ Names-only дисциплина — центральный контроль; к�
 
 ## 10. Ссылки
 
+- [specs/host-intake/v0/spec.md](../../host-intake/v0/spec.md)
+  (0.1.0-draft, ADR-0003) — с draft.2 НОРМАТИВНЫЙ ИСТОЧНИК НАСЕЛЕНИЯ
+  этого поля: per-harness layout-таблица (FC-6), провайдерные формы
+  строк, probe-расширение, аддитивный элемент `mcp_servers` (FC-7);
+  форма строки и обязанности борды остаются здесь (§3.2, §3.10, §3.11).
 - `docs/PROTOCOL.md` §3 (аддендум «Models-fleet addendum — discovery
   v6», AGW-25, 2026-10-28) и §7.1 (`discovery_models`) — нормативный
   источник агентной ноги; vesmaro/vesma-agent, ветка

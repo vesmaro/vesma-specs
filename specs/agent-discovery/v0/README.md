@@ -25,9 +25,11 @@ governs).
 1. **Read nothing but named fields.** A built-in per-harness layout
    table names, per config file, exactly the fields read
    (JSON-pointer / section-path level). Scan heuristics are forbidden.
-   This build's table: codex `~/.codex/config.toml`; continue
-   `~/.continue/config.json`; claude-code `~/.claude/settings.json`;
-   aider `~/.aider.conf.yml`. zcode is deliberately absent.
+   Since the draft.2 re-key the table's population norm is
+   [host-intake §3.3.2](../../host-intake/v0/spec.md): zcode/copilot
+   agent frontmatter (`model:`/`tier:`), codex, continue, claude-code,
+   aider, and the pi auth-marker row (the v6 standalone list below is
+   superseded).
 2. **Never touch credential values.** `auth` is an enum fact —
    `configured | anonymous | unknown` — derived ONLY from the presence
    of the marker fields the table names.

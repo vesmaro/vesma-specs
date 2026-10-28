@@ -1,8 +1,8 @@
 ---
 contract: agent-discovery
-version: 0.1.0-draft
+version: 0.1.0-draft.2
 status: draft
-decisions: [ADR-0001, ADR-0002, "AGW-25 — addendum «discovery v6, models fleet leg» in docs/PROTOCOL.md §3 (vesmaro/vesma-agent, main (merge b98960e))", "gate 1 — discovery-contract-draft.md (vesmaro/vesma-eyes, feat/models-fleet-blueprint, daf969b)", "gate 2 — security-verdict.md (same, 832cd7a)", "gate 3 — ux-blueprint.md (same, cb166a8)", "owner directive 2026-10-28 («update the contracts and documentation» in vesma-specs)"]
+decisions: [ADR-0001, ADR-0002, "AGW-25 — addendum «discovery v6, models fleet leg» in docs/PROTOCOL.md §3 (vesmaro/vesma-agent, main (merge b98960e))", "gate 1 — discovery-contract-draft.md (vesmaro/vesma-eyes, feat/models-fleet-blueprint, daf969b)", "gate 2 — security-verdict.md (same, 832cd7a)", "gate 3 — ux-blueprint.md (same, cb166a8)", "owner directive 2026-10-28 («update the contracts and documentation» in vesma-specs)", "draft.2 — the re-key per host-intake: [specs/host-intake/v0](../../host-intake/v0/spec.md) (0.1.0-draft, ADR-0003; the agent-side draft docs/design/host-intake-contract-draft.md, vesma-agent feat/host-intake-contract, owner-approved gates)"]
 ratified: |-
   Not ratified (draft). Authority trail: the agent leg is already merged
   as protocol amendment AGW-25 in vesmaro/vesma-agent (main (merge b98960e)
@@ -25,7 +25,7 @@ language: en (informative mirror)
 > text prevails. The mirror is maintained in the same change as the
 > Russian text (single-commit sync policy).
 >
-> **Status: draft (0.1.0-draft).** The contract codifies the already
+> **Status: draft (0.1.0-draft.2).** The contract codifies the already
 > merged agent leg — protocol amendment AGW-25 «Models-fleet addendum —
 > discovery v6» in `docs/PROTOCOL.md` §3 of the outbound ЦУП agent
 > `vesmaro-agent` — as an ecosystem contract of the spec layer (owner
@@ -33,6 +33,17 @@ language: en (informative mirror)
 > is provided for by the contract but not merged yet — see §9. Form
 > changes after ratification go through the SemVer process only
 > (ADR-0001 §2).
+>
+> **The draft.2 amendment (the re-key per host-intake, 2026-10-28).**
+> The POPULATION rules of the `models` field are re-keyed per-harness:
+> the normative source of population is
+> [host-intake](../../host-intake/v0/spec.md) §3 (the per-harness
+> layout table: zcode/copilot frontmatter added; pi — the auth-marker
+> row; the §3.3 standalone table below is superseded); the new additive
+> top-level `mcp_servers` element (FC-7) — the host-intake §3.4 domain;
+> the probe leg is extended with harness-configured loopback base_urls
+> (host-intake §3.3.4). The §3.2 row form and the §3.11 board duties
+> are unchanged.
 
 The key words MUST / MUST NOT / SHOULD / MAY are interpreted per
 [RFC 2119](https://www.rfc-editor.org/rfc/rfc2119). Prose is English;
@@ -187,6 +198,17 @@ The form (additive; `notes` — omitempty):
 
 ### 3.3 Names-only config reads: the layout table
 
+> **Superseded (draft.2).** This build's table population (the "exactly"
+> list below) is SUPERSEDED by the per-harness layout table of
+> [host-intake §3.3.2](../../host-intake/v0/spec.md): the table becomes
+> ATTACHED to the fingerprint inventory (per-harness sections);
+> zcode/copilot are added (agent frontmatter `model:`/`tier:`) plus pi
+> (the auth-marker provider `pi` row with an empty `models[]`);
+> gemini/qwen have no rows. The reading discipline (the MUSTs below:
+> the JSON-pointer table, the scan-heuristic ban, built-in and
+> versioned) is UNCHANGED — host-intake confirms it. Table extension is
+> now the host-intake domain (its §3.3.2 and §7).
+
 - **MUST**: a harness config is read ONLY through the built-in
   per-harness layout table, which names — at JSON-pointer / section-path
   level (e.g. `.providers.<name>.name`, `models[]` keys) — exactly the
@@ -274,6 +296,15 @@ The form (additive; `notes` — omitempty):
 
 ### 3.7 The probe leg: anonymous loopback
 
+> **Extension (draft.2).** Besides the fixed port table below, a
+> `base_url` configured BY a DISCOVERED harness that resolves LOOPBACK
+> MAY be probed anonymously (the approved OQ-2 gate; a budget of ≤8
+> extra targets; never non-loopback, never credentialed — the H3
+> verdict). The norm — [host-intake
+> §3.3.4](../../host-intake/v0/spec.md); this section's disciplines
+> (one GET, the timeout, the documented response shapes, quiet zero, no
+> credentials) extend to it unchanged.
+
 - **MUST**: the probe targets ONLY loopback (`127.0.0.1`, `::1`,
   `localhost`) — aiming it at external hosts is impossible by
   construction (AGW-25; gate 2 §1 H3).
@@ -318,7 +349,9 @@ The form (additive; `notes` — omitempty):
   ran = the field is present, even with an empty `installations` (a real
   zero-and-ran) (AGW-25).
 - This is the leg's only knob; the leg has no schedules, ports or
-  credentials of its own (AGW-25).
+  credentials of its own (AGW-25). Since draft.2 the knob governs the
+  additive `mcp_servers` element (FC-7) jointly —
+  [host-intake §3.4](../../host-intake/v0/spec.md).
 
 ### 3.10 Snapshot semantics and no-wipe
 
@@ -423,7 +456,7 @@ The check vocabulary (executor — a future runner profile):
 | `installations_cap64` | `installations[]` ≤ 64 rows |
 | `base_url_normalized` | `base_url` = `scheme://authority[/base-path]`; no query/fragment/userinfo |
 | `no_credential_material` | no string in the document passes the credential-shape scan (`sk-`/`ghp_`/`xox` prefixes, hex ≥ 40, base64 ≥ 40, key-shaped assignment) — the §3.8 names-only validator as a static check of examples. Value-scan exception (the CM `no_secret_in_vars` precedent): the explanatory document `credential-redaction.json` — its «before» lines intentionally show what gets redacted; only wire-shape documents are scanned |
-| `harness_dictionary_spelling` | `source: config` rows carry the harness-dictionary spelling (codex, continue, claude-code, aider; zcode is absent from this build's table); `source: probe` rows carry the probe source's slug (§3.2) |
+| `harness_dictionary_spelling` | `source: config` rows carry the harness-dictionary spelling (since draft.2 the population dictionary — per host-intake §3.3.2: zcode, copilot, codex, continue, claude-code, aider, pi); `source: probe` rows carry the probe source's slug (§3.2) |
 | `knob_values` | a knob declaration is only `auto` \| `off` (executor target — the agent's config declaration; the case lands with the board mirror) |
 
 Cases: positive — the §5 wire examples
@@ -494,14 +527,17 @@ legs' implementation status — honestly:
 
 | Leg | Status | Where it lives |
 |---|---|---|
-| Agent (field writer) | **merged** — protocol amendment AGW-25 «discovery v6», 2026-10-28 | vesmaro/vesma-agent, the main (merge b98960e) branch; the norm — `docs/PROTOCOL.md` §3 (addendum) + §7.1 (knob) |
+| Agent (field writer) | v6 **merged** — AGW-25 «discovery v6», 2026-10-28 — and **SUPERSEDED** by the draft.2 population rules (the per-harness re-key, [host-intake](../../host-intake/v0/spec.md) §3): the v6 standalone table produced zero rows on the real fleet (verified live 2026-10-28 on core-51); the re-key executor — the v7 wave (AGW-26), the `feat/host-intake-contract` branch | vesmaro/vesma-agent; the population norm — host-intake §3; the wire norm — this spec §3.2 |
 | Board mirror (ingest into `GET /api/models`) | **not merged** — the next vesma-eyes wave | the ingest target schema is already served by the board: `ModelsDiscoveredItem` in `ModelsRosterOut.discovered` (the «discovered» zone, the MF2 cut) — the field exists so the FE contract is stable when the discovery leg lands; the zone stays honestly empty while no `models` slice rides the wire |
 | Roster UX (mirror rendering) | ratified by gate 3 | `ux-blueprint.md` MF1 «Ростер» (cb166a8), `GET /api/models` — the single aggregation point (OQ-1) |
 
-Input order: (1) the agent leg — done (AGW-25); boards without the
-mirror stay conformant — the field is additive and ignored (§3.1, §7);
-(2) the board mirror — ingest per §3.11, no-wipe semantics §3.10,
-honest 422 §4; (3) stable ratification — both legs' conformance green.
+Input order: (1) the agent leg v6 — done (AGW-25) and superseded by the
+draft.2 population; (2) the agent wave v7 (AGW-26): the per-harness
+re-key + FC-7 — in flight on `feat/host-intake-contract`; (3) boards
+without the mirror stay conformant — the field is additive and ignored
+(§3.1, §7); (4) the board mirror — ingest per §3.11, no-wipe semantics
+§3.10, honest 422 §4; (5) stable ratification — both legs' conformance
+green.
 Intermediate states (the mirror exists, the field does not travel; the
 field travels, no mirror) — allowed and honest: both sides read/write
 additively.
@@ -512,6 +548,12 @@ not wait for the mirror, the mirror does not wait for the UX — the
 
 ## 10. References
 
+- [specs/host-intake/v0/spec.md](../../host-intake/v0/spec.md)
+  (0.1.0-draft, ADR-0003) — since draft.2 the NORMATIVE SOURCE OF THIS
+  FIELD'S POPULATION: the per-harness layout table (FC-6), the
+  documented provider string forms, the probe extension, the additive
+  `mcp_servers` element (FC-7); the row form and the board duties stay
+  here (§3.2, §3.10, §3.11).
 - `docs/PROTOCOL.md` §3 (the «Models-fleet addendum — discovery v6»
   addendum, AGW-25, 2026-10-28) and §7.1 (`discovery_models`) — the
   normative source of the agent leg; vesmaro/vesma-agent, the
