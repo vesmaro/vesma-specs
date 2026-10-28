@@ -1,0 +1,16 @@
+{
+  "_comment": "Negative fixture: auth carries a value outside the closed enum (spec section 3.5). Rejected by auth_enum.",
+  "models": {
+    "installations": [
+      {
+        "provider": "example-org",
+        "base_url": "https://api.example.org/v1",
+        "auth": "token",
+        "models": ["z-ai/glm-4.6"],
+        "harness": "codex",
+        "exec_env": "metal",
+        "source": "config"
+      }
+    ]
+  }
+}

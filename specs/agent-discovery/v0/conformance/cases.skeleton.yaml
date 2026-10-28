@@ -1,0 +1,94 @@
+# =============================================================================
+# Conformance-сьют контракта agent-discovery v0 (ДЕКЛАРАТИВНЫЙ СКЕЛЕТ).
+#
+# ИМЯ ФАЙЛА — СОЗНАТЕЛЬНОЕ: раннер tools/conformance/run.py — одиночный
+# профиль словаря component-manifest (заголовок CHECKS в run.py), а CI
+# гоняет `run.py --all specs/` на каждый PR. Сьют с чужим словарём
+# проверок падал бы инфраструктурной ошибкой и ломал бы гейт, поэтому
+# скелет лежит под именем cases.skeleton.yaml — имя cases.yaml он
+# получает волной runner-profile (исполнение проверок §6 spec.md;
+# executor-изменение tools/ — через TL-ревью, ADR-0001 §3/§4).
+#
+# Нормативный источник: spec.md («Conformance» §6 + §3) и ADR-0001 §4.
+# Скелет фиксирует: словарь проверок, таргеты (примеры + негативные
+# фикстуры fixtures/invalid/), ожидания pass/fail и severity.
+# Машинная JSON-Schema формы models появится вместе с борд-зеркалом
+# (spec.md §9).
+#
+# checks — имена ИЗ СЛОВАРЯ ПРОВЕРОК §6 spec.md;
+# expect — pass | fail; severity — must | should.
+# =============================================================================
+
+suite: agent-discovery-basics
+contract: agent-discovery
+version: 0.1.0-draft
+
+cases:
+  - id: config-source-installation-valid
+    severity: must
+    target: examples/config-source-installation.json
+    checks:
+      - models_object_shape
+      - row_required_fields
+      - auth_enum
+      - source_enum
+      - exec_env_metal_only
+      - provider_length_cap
+      - models_sorted_cap50
+      - installations_cap64
+      - base_url_normalized
+      - no_credential_material
+      - harness_dictionary_spelling
+    expect: pass
+
+  - id: probe-source-installation-valid
+    severity: must
+    target: examples/probe-source-installation.json
+    checks:
+      - models_object_shape
+      - row_required_fields
+      - auth_enum
+      - source_enum
+      - exec_env_metal_only
+      - provider_length_cap
+      - models_sorted_cap50
+      - installations_cap64
+      - base_url_normalized
+      - no_credential_material
+      - harness_dictionary_spelling
+    expect: pass
+
+  - id: bad-auth-enum-rejected
+    severity: must
+    target: conformance/fixtures/invalid/bad-auth-enum.json
+    checks:
+      - auth_enum
+    expect: fail
+
+  - id: unknown-source-rejected
+    severity: must
+    target: conformance/fixtures/invalid/unknown-source.json
+    checks:
+      - source_enum
+    expect: fail
+
+  - id: credential-in-note-rejected
+    severity: must
+    target: conformance/fixtures/invalid/credential-in-note.json
+    checks:
+      - no_credential_material
+    expect: fail
+
+  - id: base-url-with-query-rejected
+    severity: must
+    target: conformance/fixtures/invalid/base-url-with-query.json
+    checks:
+      - base_url_normalized
+    expect: fail
+
+  - id: over-cap-models-rejected
+    severity: must
+    target: conformance/fixtures/invalid/over-cap-models.json
+    checks:
+      - models_sorted_cap50
+    expect: fail

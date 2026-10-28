@@ -1,0 +1,16 @@
+{
+  "models": {
+    "installations": [
+      {
+        "provider": "ollama",
+        "base_url": "http://127.0.0.1:11434",
+        "auth": "anonymous",
+        "models": ["qwen3:8b", "llama3.1:8b"],
+        "harness": "ollama",
+        "exec_env": "metal",
+        "source": "probe",
+        "note": "model list from local server (GET /api/tags)"
+      }
+    ]
+  }
+}
