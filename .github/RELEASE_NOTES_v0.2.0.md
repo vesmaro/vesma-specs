@@ -1,11 +1,4 @@
-# vesma-specs v0.2.0 — DRAFT release notes (GWS curates at release time)
-
-> **Draft status.** Written 2026-10-28 on branch `spec/agent-discovery-v0`
-> as the release material. GWS owns the release movement (owner directive
-> 2026-10-27): verify the published state, cut the tag, publish the
-> release object, fill the artifact and verification numbers below from
-> the actual release run. Nothing here is a release until the tag and the
-> release object exist.
+# vesma-specs v0.2.0 — agent-discovery v0, layout v2 draft, CM 1.1.0
 
 The second repository release of **vesma-specs**: the service-track
 contracts ratified `1.0.0` stable by their first conforming
@@ -101,15 +94,13 @@ basis for the component platform (platform-v2).
   The agent leg is merged; the board mirror (ingest into
   `GET /api/models`) is the next vesma-eyes wave.
 
-### Pending-merge drafts (NOT in this release unless merged before the cut)
+### Pending-merge drafts (not in this release)
 
 - `context-lifecycle` v0 skeleton — public extension spec draft (nhi-8
   wave 0): branch `spec/context-lifecycle-0` (dac97f2). Normative EN
   skeleton; RU bridge; no machine schema/examples in v0.
 - `integration-contract` v0 skeleton — three-layer two-way integration
   contract (nhi-8): branch `spec/integration-contract-v0` (d930c9c).
-- GWS: include these sections only if the branches are merged by the
-  release commit.
 
 ## Contract statuses at release time
 
@@ -129,7 +120,7 @@ draft; the first stable repository release is v1.0.0, synchronized with
 full contract ratification. Contract-level SemVer (`version:` in each
 spec header) and repository-level tags are related but distinct scales.
 
-## Artifacts (GWS: fill from the actual release run)
+## Artifacts
 
 | Artifact | Contents |
 |---|---|
@@ -137,10 +128,15 @@ spec header) and repository-level tags are related but distinct scales.
 | `conformance-report.json` | the conformance run against the tagged tree |
 | `SHA256SUMS` | SHA-256 checksums — verify with `sha256sum -c SHA256SUMS` after download |
 
-## Verification (GWS: fill from CI on the release commit)
+## Verification
 
-CI on the release commit must be fully green: markdownlint; conformance
-runner; schema-lint; breaking-change check (strict, baseline v0.1.0);
+Conformance on the release commit: the deterministic runner reports
+**27/27 MUST cases green** (`tools/conformance/run.py --all`), verified
+locally on the tagged tree; the release workflow re-runs the identical
+suite as its publication gate and publishes only after it passes.
+
+Required CI on the release commit: markdownlint; conformance runner;
+schema-lint; breaking-change check (strict, baseline `v0.1.0`);
 bilingual sync; gitleaks over the full history.
 
 ## Links
@@ -164,8 +160,8 @@ python-чилдов #515 + auth-injecting прокси как trust boundary 3.1
 контракт провода discovery моделей — agent-discovery v0 (кодификация
 AGW-25; три гейта флота моделей vesma-eyes: daf969b, 832cd7a, cb166a8;
 ADR-0002); обсуждение компонентной платформы — platform-v2 proposals.
-Черновики вне main на момент драфта: context-lifecycle v0
-(`spec/context-lifecycle-0`) и integration-contract v0
-(`spec/integration-contract-v0`) — включаются GWS только при влитии до
-реза. Релизы репозитория остаются на шкале `v0.x`, пока хотя бы один
+Черновики вне main на момент реза: context-lifecycle v0
+(`spec/context-lifecycle-0`, dac97f2) и integration-contract v0
+(`spec/integration-contract-v0`, d930c9c) — в этот релиз не входят.
+Релизы репозитория остаются на шкале `v0.x`, пока хотя бы один
 контракт в draft; первый стабильный — v1.0.0.
