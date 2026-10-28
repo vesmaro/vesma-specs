@@ -224,9 +224,14 @@ vesma-agent); `re-key (v7)` — переключение населения в �
 - **MUST**: файл сверх read-cap 8 KiB, не-regular или непарсируемый в
   пределах капа = honest absence строки, никогда не ошибка (contract
   §3.4; P4).
-- **MUST**: default model — из названных таблицей указателей (tier-1 /
-  primary scalar frontmatter; codex top-level `model`). Wire-форма
-  re-key — per-row note (решение спека-фазы в рамках утверждённого OQ-5:
+- **MUST**: default model — ТОЛЬКО из указателей, названных таблицей:
+  codex top-level `model` → per-row note («default model from harness
+  settings»). **MUST NOT**: default-факта на frontmatter-строках
+  (zcode/copilot): `model:`/`tier:` декодируются, но НИКОГДА не
+  интерпретируются — модели per-agent (списки в каждом определении
+  агента), единственный «per-harness default» был бы догадкой
+  (reconciliation с landed-реализацией AGW-26, 2026-10-28). Wire-форма
+  — per-row note (решение спека-фазы в рамках утверждённого OQ-5:
   «default model of harness `<slug>`» едет в `note` строки, чей
   `models[]` содержит строку default'а; top-level `notes` MAY
   опускаться — поле omitempty и в agent-discovery §3.2, устаревший
@@ -342,9 +347,11 @@ vesma-agent); `re-key (v7)` — переключение населения в �
   **MUST**: `count` — ПОЛНЫЙ итог найденных имён, даже когда
   `servers[]` усечён до 30 (честный счётчик; brief 2026-10-28).
 - **MUST**: источники — ТОЛЬКО документированные кэши/конфиги, типовые
-  декоды: pi `~/.pi/agent/mcp-cache.json` — ТОЛЬКО имена из
-  документированной структуры (`servers[]` / dict-KEYS как имена);
-  значения кэша НИКОГДА не декодируются; zcode/copilot mcp-секции —
+  декоды: pi `~/.pi/agent/mcp-cache.json` — поле `servers` — СЛОВАРЬ:
+  имена серверов — ТОЛЬКО dict-KEYS этого словаря; значения кэша
+  НИКОГДА не декодируются (landed-форма AGW-26; списковая формулировка
+  `{version, servers[]}` драфта контракта была ошибочной и правится на
+  стороне репо агента); zcode/copilot mcp-секции —
   где документированы (contract §4).
 - **MUST NOT**: argv, env, URLs и любые значения кэша/конфига не
   декодируются и не эмитятся — только имена и transport kind
@@ -421,7 +428,7 @@ endpoint'ы — никаких реальных токенов, путей и ho
 
 | Файл | Что показывает |
 |---|---|
-| `examples/zcode-frontmatter-installation.json` | zcode-строка, выведенная из frontmatter: `models[]` — сырые строки verbatim (display-форма и qualified id), provider распарсен документированной формой суффикса; `base_url` omitempty (frontmatter endpoint не называет); default model — per-row note |
+| `examples/zcode-frontmatter-installation.json` | zcode-строка, выведенная из frontmatter: `models[]` — сырые строки verbatim (display-форма и qualified id), provider распарсен документированной формой суффикса; `base_url` omitempty (frontmatter endpoint не называет); default-факта на frontmatter-строке нет (§3.3.2) |
 | `examples/pi-auth-marker-row.json` | pi auth-маркерная строка: provider `pi`, пустой `models[]` (документированного каталога нет — honest absence), `auth: configured` из EXISTENCE `auth.json` (значение никогда не читается) |
 | `examples/mcp-servers-field.json` | аддитивный top-level `mcp_servers`: элемент pi из `mcp-cache.json` — только имена, sorted, `count` = полный итог, опциональная карта `transports` |
 | `examples/credential-redaction.json` | дисциплина до/после: нормализация `base_url`; harness-настроенный loopback `base_url` БЕЗ маркера → анонимный probe разрешён; с маркером → НИКОГДА не наблюдается; credential-строка в неожиданном поле → строка dropped до marshal |

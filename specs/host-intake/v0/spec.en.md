@@ -231,14 +231,18 @@ only through a contract amendment (P5).
 - **MUST**: a file over the 8 KiB read cap, non-regular or unparsable
   within the cap = an honest row absence, never an error (contract
   §3.4; P4).
-- **MUST**: the default model — from the table's named pointers (the
-  tier-1/primary frontmatter scalar; codex top-level `model`). The
-  re-key wire form — the per-row note (the spec-phase resolution under
-  the approved OQ-5: "default model of harness `<slug>`" rides the
-  `note` of the row whose `models[]` contains the default string; the
-  top-level `notes` MAY be omitted — the field is omitempty already in
-  agent-discovery §3.2, and a global `default_model` scalar is not an
-  honest per-harness fact).
+- **MUST**: the default model — ONLY from the pointers the table names:
+  codex top-level `model` → a per-row note ("default model from harness
+  settings"). **MUST NOT**: a default fact on frontmatter rows
+  (zcode/copilot): `model:`/`tier:` are decoded but NEVER interpreted —
+  models are per-agent (lists in every agent definition), a single
+  per-harness default would be a guess (reconciled with the landed
+  AGW-26 implementation, 2026-10-28). The wire form — the per-row note
+  (the spec-phase resolution under the approved OQ-5: "default model of
+  harness `<slug>`" rides the `note` of the row whose `models[]`
+  contains the default string; the top-level `notes` MAY be omitted —
+  the field is omitempty already in agent-discovery §3.2, and a global
+  `default_model` scalar is not an honest per-harness fact).
 - **MUST**: a row's `base_url` MAY be absent (omitempty) for sources
   that name no endpoint (the zcode/copilot frontmatter rows; the pi row)
   — honest absence, URL guessing forbidden (P4; an additive extension of
@@ -351,9 +355,11 @@ CHANGES (contract §3.4 "carried verbatim"):
   **MUST**: `count` — the FULL total of names found, even when
   `servers[]` is truncated at 30 (an honest counter; brief 2026-10-28).
 - **MUST**: the sources — documented caches/configs ONLY, typed decodes:
-  pi `~/.pi/agent/mcp-cache.json` — ONLY the names from the documented
-  structure (`servers[]` / the dict KEYS as names); the cache VALUES are
-  never decoded; zcode/copilot mcp sections — where documented
+  pi `~/.pi/agent/mcp-cache.json` — the `servers` field is a DICT: the
+  server names are ONLY the dict KEYS of that map; the cache VALUES are
+  never decoded (the landed AGW-26 shape; the contract draft's list
+  wording `{version, servers[]}` was wrong and is being fixed on the
+  agent-repo side); zcode/copilot mcp sections — where documented
   (contract §4).
 - **MUST NOT**: argv, env, URLs and any cache/config values are never
   decoded or emitted — names and transport kind only (contract §2 FC-7,
@@ -433,7 +439,7 @@ endpoints only — no real tokens, owner-machine paths or hostnames
 
 | File | What it shows |
 |---|---|
-| `examples/zcode-frontmatter-installation.json` | a zcode row derived from frontmatter: `models[]` — raw strings verbatim (the display form and the qualified id), the provider parsed by the documented suffix form; `base_url` omitempty (the frontmatter names no endpoint); the default model — a per-row note |
+| `examples/zcode-frontmatter-installation.json` | a zcode row derived from frontmatter: `models[]` — raw strings verbatim (the display form and the qualified id), the provider parsed by the documented suffix form; `base_url` omitempty (the frontmatter names no endpoint); no default fact on a frontmatter row (§3.3.2) |
 | `examples/pi-auth-marker-row.json` | the pi auth-marker row: provider `pi`, an empty `models[]` (no documented catalog — honest absence), `auth: configured` from the EXISTENCE of `auth.json` (the value never read) |
 | `examples/mcp-servers-field.json` | the additive top-level `mcp_servers`: a pi element from `mcp-cache.json` — names only, sorted, `count` = the full total, the optional `transports` map |
 | `examples/credential-redaction.json` | the discipline before/after: `base_url` normalization; a harness-configured loopback `base_url` WITHOUT a marker → an anonymous probe allowed; with a marker → never dialed; a credential string in an unexpected field → the row dropped before marshal |

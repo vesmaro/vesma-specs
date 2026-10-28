@@ -5,6 +5,18 @@
 
 ## 0.1.0-draft — 2026-10-28
 
+### Changed
+
+- Reconciliation с landed-реализацией AGW-26 (2026-10-28): default
+  model — ТОЛЬКО из указателей, названных таблицей (codex top-level
+  `model` → per-row note); frontmatter-строки (zcode/copilot) default
+  НЕ эмитят — `model:`/`tier:` декодируются, но не интерпретируются
+  (модели per-agent; единственный «per-harness default» был бы
+  догадкой). §3.4: форма pi `mcp-cache.json` зафиксирована как
+  СЛОВАРЬ — имена = dict-KEYS, значения не декодируются (списковая
+  формулировка `{version, servers[]}` драфта контракта была ошибочной;
+  правится на стороне репо агента).
+
 ### Added
 
 - [spec.md](spec.md) — нормативная спека явного каталога сбора

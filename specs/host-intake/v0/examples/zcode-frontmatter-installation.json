@@ -11,7 +11,7 @@
         "harness": "zcode",
         "exec_env": "metal",
         "source": "config",
-        "note": "provider parsed from the documented (provider) suffix form (raw strings emitted verbatim in models[]); no endpoint named by the frontmatter - base_url honestly absent; default model of harness zcode: GLM 5.3 Flash (ollama-cloud)"
+        "note": "provider parsed from the documented (provider) suffix form (raw strings emitted verbatim in models[]); no endpoint named by the frontmatter - base_url honestly absent; no default-model fact on a frontmatter row (per-agent model lists - a single per-harness default would be a guess)"
       }
     ]
   }

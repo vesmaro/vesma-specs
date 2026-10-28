@@ -79,7 +79,7 @@ governs).
    "harness": "zcode",
    "exec_env": "metal",
    "source": "config",
-   "note": "provider parsed from the documented (provider) suffix form; default model of harness zcode"}]}}
+   "note": "provider parsed from the documented (provider) suffix form; no default-model fact on a frontmatter row"}]}}
 
 {"mcp_servers": [{"harness": "pi", "exec_env": "metal",
   "servers": ["context7", "playwright"], "count": 5}]}
