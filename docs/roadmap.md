@@ -70,9 +70,15 @@ ADR-0001, четыре контракта v1, conformance-раннер v0, CI). 
 - [ ] Манифесты компонентов vesma-eyes / vesma-mesh / vesma-agent
       (контрибуции в соответствующие репы, ссылки отсюда)
 - [ ] Контракт discovery моделей агент → борда:
-      `specs/agent-discovery/v0` (0.1.0-draft, ADR-0002) — агентная нога
-      влита (AGW-25); борд-зеркало (ingest в `GET /api/models`) ждёт
-      волны vesma-eyes
+      `specs/agent-discovery/v0` (0.1.0-draft.2, ADR-0002) — v6 влита
+      (AGW-25) и superseded per-harness re-key'ем (draft.2);
+      борд-зеркало (ingest в `GET /api/models`) ждёт волны vesma-eyes
+- [ ] Контракт явного каталога сбора хост-агента:
+      `specs/host-intake/v0` (0.1.0-draft, ADR-0003) — спека открыта
+      (каталог FC-1…FC-9; FC-6 re-key + FC-7 нормативны; FC-8/9 —
+      DEFERRED v2); агентная волна v7 (AGW-26) — ветка
+      `feat/host-intake-contract` vesma-agent; борд-зеркало + рендер
+      прозрачности ждут волны vesma-eyes
 - [ ] Публичная витрина: README-раздел «подключение компонента за 3 шага»
 - [ ] Ретроспектива слоя спек (что показали первые потребители) → аддендум
       концепции
