@@ -1,0 +1,10 @@
+{
+  "compute": {
+    "cpu_cores": 16,
+    "mem_total_bytes": 33554432000,
+    "disk_free_bytes": 107374182400,
+    "gpus": [
+      "NVIDIA GeForce RTX 4090"
+    ]
+  }
+}

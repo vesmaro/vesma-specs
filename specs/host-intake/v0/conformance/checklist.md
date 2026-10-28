@@ -7,8 +7,10 @@ spec.md §3; ссылки HI-nn — для отчётов конформанса
 ## Агент (соблюдение каталога)
 
 - [ ] **HI-01** Собираются ТОЛЬКО классы каталога §3.2; в коде агента нет
-      ног чтения, не названных каталогом; FC-8/FC-9 не собираются до
-      активации v2 (P1).
+      ног чтения, не названных каталогом; FC-8/FC-9 собираются ТОЛЬКО
+      под knob'ом `discovery_host_facts: auto|off` (норматив с v8,
+      AGW-27; `off` → поля `tooling`/`compute` отсутствуют целиком)
+      (P1, §3.4a).
 - [ ] **HI-02** Граница §3.5 соблюдена: в payload нет содержимого файлов
       (вне названных исключений), имён проектов/workspace'ов, промптов и
       содержимого сессий, значений env-переменных, трафика,
@@ -69,3 +71,28 @@ spec.md §3; ссылки HI-nn — для отчётов конформанса
 - [ ] **HI-16** Негативные фикстуры используют zero-entropy fake-формы
       (префикс+длина), чтобы триггерить shape-скан, но не gitleaks
       (прецедент agent-discovery AD-18).
+
+## Агент — волна discovery v8 (AGW-27, 2026-10-29)
+
+- [ ] **HI-17** FC-8 tooling: knob `discovery_host_facts: auto|off`
+      (дефолт `auto`; неизвестное значение — отказ старта) управляет
+      FC-8 и FC-9 совместно; `off` → `tooling` и `compute` отсутствуют
+      целиком; per инструмент — LookPath + ОДИН вызов версии ≤2 с,
+      quiet zero; версия — первая строка ≤200 рун через names-only
+      валидатор, drop-on-shape; `tools[]` sorted ≤40 + честный `count`,
+      8 KiB shrink-to-fit (§3.4a).
+- [ ] **HI-18** FC-9 compute: числа только, поля omitempty НЕЗАВИСИМО
+      (P4); GPU — ОДИН вызов `nvidia-smi -L`, только имена ≤8,
+      валидатор-gated; НИКАКИХ serials и utilization-телеметрии; без
+      hostname'ов (§3.4b, §3.5).
+- [ ] **HI-19** Каталожный knob `discovery_models_catalogs` (§3.3.2):
+      только ЯВНЫЕ записи владельца `{path, harness}`; read-cap 8 KiB,
+      типизированный декод, ВСЕ строки (primary+fallback); provider по
+      документированным формам (суффикс-приоритет), иначе harness
+      bucket; строки `source=config`, `auth=unknown`, note «model
+      catalog (owner-declared)»; невалидная запись = skip + info-лог;
+      едут под `discovery_models`; PATH'и каталогов на проводе нет.
+- [ ] **HI-20** Кнопочная гигиена: декларации `discovery_models` и
+      `discovery_host_facts` принимают ТОЛЬКО `auto` \| `off`;
+      неизвестное значение knob'а = отказ старта, не тихий fallback
+      (§3.4, §3.4a; прецедент agent-discovery §3.9).

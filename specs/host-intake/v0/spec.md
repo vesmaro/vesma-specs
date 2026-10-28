@@ -1,8 +1,8 @@
 ---
 contract: host-intake
-version: 0.1.0-draft
+version: 0.1.0-draft.3
 status: draft
-decisions: [ADR-0001, ADR-0002, "директива владельца 2026-10-28 (два пункта: per-harness re-key моделей + явный контракт поверхности сбора)", "агентный драфт контракта — docs/design/host-intake-contract-draft.md (vesmaro/vesma-agent, ветка feat/host-intake-contract); гейты драфта утверждены владельцем (FC-6+FC-7 эта волна; FC-8/9 — DEFERRED v2; loopback-probe утверждён; dual-form emission утверждён)", "перенесённые гейты: fleet security-verdict (vesma-eyes, feat/models-fleet-blueprint, 832cd7a) — красные линии", "линия AGW-25/AGW-26 (discovery v6 → v7 re-key)"]
+decisions: [ADR-0001, ADR-0002, "директива владельца 2026-10-28 (два пункта: per-harness re-key моделей + явный контракт поверхности сбора)", "агентный драфт контракта — docs/design/host-intake-contract-draft.md (vesmaro/vesma-agent, ветка feat/host-intake-contract); гейты драфта утверждены владельцем (FC-6+FC-7 эта волна; loopback-probe утверждён; dual-form emission утверждён; FC-8/9 исходно DEFERRED v2)", "перенесённые гейты: fleet security-verdict (vesma-eyes, feat/models-fleet-blueprint, 832cd7a) — красные линии", "линия AGW-25/AGW-26 (discovery v6 → v7 re-key)", "поправка discovery v8 (AGW-27, 2026-10-29; директива владельца «делай» 2026-10-29): FC-8/FC-9 un-deferred → норматив (§3.4a/§3.4b), knob discovery_host_facts, knob discovery_models_catalogs (owner-declared каталоги моделей)"]
 ratified: |-
   Не ратифицирована (draft). Полномочия текста: директива владельца
   2026-10-28 — два пункта (per-harness re-key моделей; явный контракт
@@ -10,25 +10,32 @@ ratified: |-
   драфт контракта (docs/design/host-intake-contract-draft.md,
   vesmaro/vesma-agent, feat/host-intake-contract) — источник каталога,
   принципов, per-harness таблицы и дисциплин; его гейт-решения
-  утверждены владельцем (FC-6+FC-7 в этой волне, FC-8/9 отложены в v2,
-  loopback-probe утверждён, dual-form emission утверждён); красные
-  линии чтения конфигов перенесены из ратифицированного вердикта
-  security-verdict (832cd7a, гейт 2 флота моделей); линия протокола —
-  AGW-25 (discovery v6, влит) → AGW-26 (v7 re-key, ветка
-  feat/host-intake-contract). Ратификация stable — первая конформная
-  реализация каталожных ног агентом (v7) и зелёный конформанс.
+  утверждены владельцем (FC-6+FC-7 в этой волне, loopback-probe
+  утверждён, dual-form emission утверждён; FC-8/9 исходно отложены
+  в v2); красные линии чтения конфигов перенесены из
+  ратифицированного вердикта security-verdict (832cd7a, гейт 2 флота
+  моделей); линия протокола — AGW-25 (discovery v6, влит) → AGW-26
+  (v7 re-key) → AGW-27 (discovery v8, 2026-10-29 — поправка этой
+  спеки: FC-8/FC-9 норматив, knobs discovery_host_facts и
+  discovery_models_catalogs; директива владельца «делай» от
+  2026-10-29; агентная нормативная форма — addendum «discovery v8
+  (AGW-27, 2026-10-29)» в docs/PROTOCOL.md vesma-agent, lands
+  параллельно). Ратификация stable — первая конформная
+  реализация каталожных ног агентом (v7+) и зелёный конформанс.
 ---
 
 # host-intake v0 — контракт явного каталога сбора хост-агента
 
-> **Статус: draft (0.1.0-draft).** Контракт фиксирует ПОЛНЫЙ явный
+> **Статус: draft (0.1.0-draft.3).** Контракт фиксирует ПОЛНЫЙ явный
 > каталог того, что исходящий ЦУП-агент (`vesmaro-agent`) собирает на
 > хосте, — поверхность доверия и прозрачности флота (пункт 2 директивы
-> владельца 2026-10-28) — и нормативно определяет две новые/переключённые
-> ноги: FC-6 (models per-harness — re-key, superseding v6 standalone-таблицу
-> AGW-25) и FC-7 (mcp_servers). Всё, что не названо в каталоге §3.2, агент
-> не собирает. Изменения формы после ратификации — только через
-> SemVer-процесс (ADR-0001 §2).
+> владельца 2026-10-28) — и нормативно определяет новые/переключённые
+> ноги: FC-6 (models per-harness — re-key, superseding v6
+> standalone-таблицу AGW-25), FC-7 (mcp_servers), а с поправки discovery
+> v8 (AGW-27, 2026-10-29; директива владельца «делай») — FC-8 (tooling,
+> §3.4a) и FC-9 (compute envelope, §3.4b) — статус DEFERRED снят. Всё,
+> что не названо в каталоге §3.2, агент не собирает. Изменения формы
+> после ратификации — только через SemVer-процесс (ADR-0001 §2).
 
 Ключевые слова MUST / MUST NOT / SHOULD / MAY интерпретируются по
 [RFC 2119](https://www.rfc-editor.org/rfc/rfc2119). Проза — русская;
@@ -36,16 +43,20 @@ ratified: |-
 требования — агентный драфт контракта («contract §…» =
 `docs/design/host-intake-contract-draft.md`, гейты драфта утверждены
 владельцем 2026-10-28), перенесённый вердикт security-verdict («gate 2»,
-832cd7a) либо линия протокола AGW-25/AGW-26; в тексте они помечены.
-Бюджеты, названные «(brief 2026-10-28)», — спека-фазовые бюджеты волны
-поверх утверждённых гейтов (перечислены в §10).
+832cd7a), линия протокола AGW-25/AGW-26 либо поправка discovery v8
+(AGW-27, 2026-10-29 — TC-pinned дельты, утверждённые владельцем
+«делай» 2026-10-29; агентная нормативная форма — addendum «discovery
+v8 (AGW-27, 2026-10-29)» в `docs/PROTOCOL.md` vesma-agent); в тексте
+они помечены. Бюджеты, названные «(brief 2026-10-28)» и
+«(brief 2026-10-29)», — спека-фазовые бюджеты волн поверх утверждённых
+гейтов (перечислены в §10).
 
 ## 1. Scope
 
 Контракт фиксирует **явный каталог сбора** — полный перечень классов
 фактов (fact classes, FC), которые агент вправе собирать на хосте, с
-принципами поверхности (P1–P6), нормативными формами провода новых ног
-(FC-6, FC-7) и границей «никогда не собирается». Принцип доверия:
+принципами поверхности (P1–P6), нормативными формами провода
+нормативных ног (FC-6…FC-9) и границей «никогда не собирается». Принцип доверия:
 **владелец может увидеть полный список «что агенты собирают»** — каталог
 публичен, версионирован и диффабелен по релизам; каждое поле провода
 отчёта отображается ровно на один FC-id (§3.6).
@@ -62,15 +73,22 @@ ratified: |-
   линии v6 (§3.3);
 - FC-7 — mcp_servers per harness: имена + transport kind из
   документированных кэшей/конфигов, форма провода, капы (§3.4);
+- FC-8 — tooling: наличие + версия фиксированного built-in списка
+  хост-инструментов, knob `discovery_host_facts` (§3.4a; норматив с
+  discovery v8, AGW-27);
+- FC-9 — compute envelope: CPU cores, RAM total, disk free, GPU-имена,
+  knob `discovery_host_facts` (§3.4b; норматив с discovery v8, AGW-27);
+- owner-declared каталоги моделей — knob `discovery_models_catalogs`
+  как расширение per-harness таблицы FC-6 (§3.3.2; discovery v8,
+  AGW-27);
 - поверхность прозрачности борды: рендер «что агенты собирают» ИЗ этого
   контракта, по версии агента; карта поле → FC-id (§3.6);
 - честный статус реализации (§9).
 
 **Вне скоупа (домены соседних документов):**
 
-- FC-8 (tooling) и FC-9 (compute envelope) — **каталогизированы, статус
-  DEFERRED: v2** — решение владельца зафиксировано на гейте драфта;
-  реализация — отдельная волна классов v2 (§3.2);
+- контейнерные поверхности конфигов (`exec_env` сверх `"metal"`) —
+  последующая волна (§3.3.6, §9);
 - проводная дисциплина СУЩЕСТВУЮЩЕГО поля `models` (форма строки,
   нормализация `base_url`, snapshot/no-wipe, обязанности борды на
   ingest) — норма [agent-discovery](../../agent-discovery/v0/spec.md) v0;
@@ -108,7 +126,8 @@ ratified: |-
 | surface прозрачности | Рендер бордой «что агенты собирают» ИЗ текста этого контракта, по версии агента: карточка на FC-id (что, зачем, капы, линия приватности); построение — по handshake версий контракт↔агент (§3.6; contract §7). |
 | harness bucket | Провайдерная атрибуция строки FC-6, когда ни одна документированная форма строки модели не распарсилась: provider = slug харнеса; причина — факт локального лога, никогда провод; имя advisory для борды (§3.3.3). Угадывание провайдера запрещено (contract §3.2; гейт драфта OQ-3: never guess). |
 | dual-form emission | Утверждённая гейтом OQ-3 форма эмиссии FC-6: `models[]` несёт СЫРЫЕ строки frontmatter/конфига verbatim; распарсенный provider едет в поле `provider` строки — и только когда документированная форма распарсилась (§3.3.3). |
-| DEFERRED (v2) | Статус класса каталога: класс описан (что, источник, капы), реализация отложена решением владельца в волну классов v2; агент его НЕ собирает до активации (§3.2, §9). |
+| DEFERRED (v2) | Статус класса каталога: класс описан (что, источник, капы), реализация отложена решением владельца; агент его НЕ собирает до активации (§3.2, §9). Исходно носили FC-8/FC-9; отложение снято поправкой discovery v8 (AGW-27, 2026-10-29, «делай» владельца) — статус в каталоге больше не используется, остаётся в словаре статусов для возможных будущих отложений. |
+| knob ноги | Конфигурационный переключатель ноги в конфиге агента с enum-значениями (прецедент agent-discovery §3.9): `auto` — нога исполняется; `off` — поля ноги отсутствуют на проводе целиком; неизвестное значение — отказ старта (никогда тихий fallback). Ноги этого контракта несут два knob'а: `discovery_models` (FC-6/FC-7, §3.3/§3.4) и `discovery_host_facts` (FC-8/FC-9, §3.4a/§3.4b); расширение FC-6 — список `discovery_models_catalogs` (§3.3.2). |
 
 ## 3. Контракт
 
@@ -160,13 +179,15 @@ vesma-agent); `re-key (v7)` — переключение населения в �
 | FC-5 | `runtime`, `k8s_nodes/pods/verdicts` | Честность runtime-поверхности; content-free списки кластера | multi-signal detect; stdlib REST | факты | нога 30 с | live (v5) |
 | FC-6 | `models` per-harness | Per ОБНАРУЖЕННЫЙ харнес: сконфигурированные провайдеры (name, base_url normalized, auth enum), доступные модели (что называют конфиг/каталог + анонимная доступность локальных серверов), default model | per-harness layout-таблица §3.3.2 | имена/enums/нормализованные URL | 64 строки, 50/строку, 16 KiB, 8 KiB/файл | **re-key (v7, AGW-26)** — superseding v6 standalone-таблицу |
 | FC-7 | `mcp_servers` per harness | Имена MCP/extension-серверов + transport kind | документированные кэши/конфиги (pi `mcp-cache.json`; zcode/copilot mcp-секции где документированы) | только имена/kinds — никогда argv, env, URLs | ≤30 имён/harness, 8 KiB | **утверждён (v7)** — новый |
-| FC-8 | tooling | Наличие + версия ФИКСИРОВАННОГО built-in списка хост-инструментов (git, podman, docker, python3, node, go, …) | LookPath + одна строка `--version` | имена/версии | ≤40 инструментов, read-cap 4096 симв. | **DEFERRED (v2)** |
-| FC-9 | compute envelope | CPU cores, RAM total, disk free на state-томе, GPU presence (только имя) | /proc + statvfs + `nvidia-smi -L` (строка имени) | hardware-факты | one-shot per pass | **DEFERRED (v2)** |
+| FC-8 | tooling | Наличие + версия ФИКСИРОВАННОГО built-in списка хост-инструментов (git, podman, docker, python3, node, go, …) | LookPath + ОДИН вызов версии ≤2 с (brief 2026-10-29) | имена/версии; версия — первая строка ≤200 рун через names-only валидатор, drop-on-shape | ≤40 инструментов sorted + честный `count`; 8 KiB shrink-to-fit | **норматив (v8, AGW-27)** — §3.4a |
+| FC-9 | compute envelope | CPU cores, RAM total, disk free на state-томе, GPU presence (только имена) | /proc + statvfs + ОДИН вызов `nvidia-smi -L` (brief 2026-10-29) | числа только; GPU-имена — strings ≤8, валидатор-gated; никогда serials/utilization | поля omitempty НЕЗАВИСИМО (P4); one-shot per pass | **норматив (v8, AGW-27)** — §3.4b |
 
-**MUST**: FC-8 и FC-9 агентом НЕ собираются до активации волны v2 —
-каталогизация ≠ активация (гейт драфта; contract §2 строки PROPOSED →
-решение владельца «deferred»). **MUST**: статусная колонка обновляется
-только поправкой контракта (P5).
+**MUST**: статусная колонка обновляется только поправкой контракта
+(P5); активация DEFERRED-класса = такая поправка с гейтом владельца
+(P1: добавление собираемого класса — всегда гейт). Поправка discovery
+v8 (AGW-27, 2026-10-29; директива владельца «делай») сняла DEFERRED с
+FC-8/FC-9 — оба класса нормативны (§3.4a, §3.4b) и управляются knob'ом
+`discovery_host_facts: auto|off` (§3.4a).
 
 **Карта поле → FC** (полная; основа рендера §3.6):
 
@@ -179,6 +200,8 @@ vesma-agent); `re-key (v7)` — переключение населения в �
 | `runtime`, `k8s_nodes`, `k8s_pods`, `k8s_verdicts` | FC-5 |
 | `models` | FC-6 |
 | `mcp_servers` (с v7) | FC-7 |
+| `tooling` (с v8, AGW-27) | FC-8 |
+| `compute` (с v8, AGW-27) | FC-9 |
 | `sessions[]` | **НЕ агент** — eyes-сканер борды (см. §9) |
 
 ### 3.3 FC-6 — models per-harness (переключённое ядро)
@@ -200,7 +223,7 @@ vesma-agent); `re-key (v7)` — переключение населения в �
 
 | harness | источник | поля, названные таблицей | credential-маркер (presence only) | grounded |
 |---|---|---|---|---|
-| zcode | `~/.zcode/agents/*.md` frontmatter (frontmatter-first read; ≤64 файлов, 8 KiB/файл — brief 2026-10-28) | `model:` (scalar или list — try-in-order), `tier:`, agent `name:` (provider из документированных форм строк: `(provider)` суффикс, `provider/model` префикс; display-name и qualified id — обе легальны) | — (tier-массивы несут provider-слаги) | 2026-10-28: GCW-инсталлер рендерит fleet `models.yaml` в эти файлы; живые id документированы (`ollama-cloud/glm-5.3-flash`, `z/glm-5.3`) (contract §3.2) |
+| zcode | `~/.zcode/agents/*.md` frontmatter (frontmatter-first read; ≤64 файлов, 8 KiB/файл — brief 2026-10-28); + owner-declared каталоги моделей через knob `discovery_models_catalogs` (v8, AGW-27 — блок ниже) | `model:` (scalar или list — try-in-order), `tier:`, agent `name:` (provider из документированных форм строк: `(provider)` суффикс, `provider/model` префикс; display-name и qualified id — обе легальны) | — (tier-массивы несут provider-слаги) | 2026-10-28: GCW-инсталлер рендерит fleet `models.yaml` в эти файлы; живые id документированы (`ollama-cloud/glm-5.3-flash`, `z/glm-5.3`) (contract §3.2) |
 | copilot | `~/.copilot/agents/*.agent.md` frontmatter (те же бюджеты) | те же `model:`/`tier:` поля; конвенция суффикса `" (copilot)"` | — | 2026-10-28: `model: GLM 5.3 Flash (ollama-cloud)`, `tier: 1` проверены живьём; GitHub-side каталоги моделей server-only — ЛОКАЛЬНЫЙ факт = то, что называют определения (server-only честность живёт в этом описании/каталоге, не на проводной строке) (contract §3.2) |
 | codex | `~/.codex/config.toml` | top-level `model`, `model_provider`; `model_providers.<name>.{name, base_url, env_key}` | `env_key` непуст → configured | v6, перенесено (contract §3.2; AGW-25) |
 | continue | `~/.continue/config.json` | `models[].{provider, model, apiBase, apiKey}` | поле `apiKey` присутствует → configured | v6, перенесено (AGW-25) |
@@ -241,6 +264,45 @@ vesma-agent); `re-key (v7)` — переключение населения в �
   pi-строка) — honest absence, угадывание URL запрещено (P4; расширение
   формы строки agent-discovery §3.2, аддитивное: поле опционально в
   новых источниках, обязательные поля остальных не тронуты).
+
+**Owner-declared каталоги моделей — knob `discovery_models_catalogs`
+(FC-6; discovery v8, AGW-27, 2026-10-29):**
+
+- **MUST**: knob `discovery_models_catalogs` — YAML-список записей
+  `{path, harness}`: ЯВНО объявленные владельцем файлы модельных
+  каталогов (P1: агент НИКОГДА не ищет пути каталогов сам — только
+  записи владельца; прецедент — GCW `models.yaml`: словарь `tiers` с
+  `primary`/`fallback` строками формы `Name (vendor)`; grounding:
+  models.yaml репозитория GCW).
+- **MUST**: чтение файла под read-cap 8 KiB; декод типизированный
+  (структура `tiers` — словарь tier → `{primary, fallback[]}`); собираются
+  ВСЕ строки моделей — primary И fallback (P5: полный каталог, а не
+  только primary).
+- **MUST**: атрибуция provider — по документированным формам строк
+  (§3.3.3, суффикс-приоритет: форма суффикса `(provider)` проверяется
+  первой, затем префикс `provider/model`); ни одна форма не
+  распарсилась → harness bucket харнеса записи (§3.3.3, never guess).
+- **MUST**: строка каталога несёт `source: config`, `auth: unknown` и
+  note «model catalog (owner-declared)» — владелец декларирует факт
+  конфигурации, маркеров credential-поля в файле каталога таблица не
+  называет (P3: значения каталога — имена моделей, не credential
+  материал; auth unknown, не anonymous — прецедент §3.3.2 pi).
+- **MUST**: `harness` строки = написание из ЗАПИСИ владельца
+  (`harness`-поле записи, verbatim); словарь борды решает допуск
+  (неизвестный → drop + аудит, agent-discovery §3.11). Отличие от
+  структурной атрибуции §3.3.1: frontmatter/config-строки возможны
+  только для харнеса, ОБНАРУЖЕННОГО inventory; строка каталога —
+  owner-declared факт, её допуск решает словарь борды, а не discovery
+  агента (AGW-27).
+- **MUST**: невалидная запись (нет `path`/`harness`, файл не читается,
+  не регулярный, сверх 8 KiB, YAML не парсится, декод не сошёлся с
+  типизированной формой) = skip записи + info-лог — никогда ошибка,
+  никогда догадка (P4; quiet zero).
+- **MUST**: каталожные строки едут в общем поле `models` семейства FC-6
+  и управляются knob'ом `discovery_models: auto|off` (§3.3/§3.4):
+  `off` → поле `models` отсутствует целиком, каталожных строк нет.
+  Сами PATH'и каталогов НА ПРОВОД не едут — только строки моделей
+  (§3.5).
 
 #### 3.3.3 Провайдерные формы строк (dual-form emission, never guess)
 
@@ -378,6 +440,84 @@ vesma-agent); `re-key (v7)` — переключение населения в �
   [agent-discovery §3.11](../../agent-discovery/v0/spec.md): неизвестный
   `harness`/`exec_env` → drop + аудит; сверх-кап объект → честный 422.
 
+### 3.4a FC-8 — tooling (норматив; discovery v8, AGW-27)
+
+Статус: DEFERRED снят поправкой discovery v8 (AGW-27, 2026-10-29;
+директива владельца «делай»). Спека пинит ДИСЦИПЛИНУ сбора; сам
+built-in список инструментов — агентная ратификация (версионируется в
+агенте, ~25–30 известных хост-инструментов: git, podman, docker,
+python3, node, go, …).
+
+- **MUST**: knob `discovery_host_facts: auto|off` (дефолт `auto`;
+  неизвестное значение — отказ старта агента, никогда тихий fallback)
+  управляет FC-8 и FC-9 СОВМЕСТНО: `off` → аддитивные top-level поля
+  `tooling` и `compute` отсутствуют на проводе ЦЕЛИКОМ; исполнение
+  (`auto`) → поля присутствуют, отдельные факты могут быть пустыми или
+  опущенными (honest absence, P4; knob-прецедент agent-discovery §3.9).
+- **MUST**: per инструмент из built-in таблицы — LookPath + ОДИН вызов
+  получения версии, timeout ≤2 с (brief 2026-10-29); нет на PATH,
+  сбой/таймаут/непарсируемый вывод → quiet zero по инструменту
+  (P4), не ошибка и не ретрай.
+- **MUST**: строка версии — ПЕРВАЯ строка вывода, ≤200 рун, через
+  names-only валидатор (length-caps + credential-shape скан, §3.3.6 —
+  drop, never mangle); credential-подобная строка версии → drop поля
+  `version` (запись остаётся name-only), значение никогда не эхоится
+  (drop-on-shape; P3).
+- **MUST**: провод — аддитивный top-level элемент:
+
+```json
+{"tooling": {"tools": [{"name": "git", "version": "2.47.1"},
+                       {"name": "python3"}],
+             "count": 2}}
+```
+
+- **MUST**: элемент = `{tools[], count}`; запись = `{name, version?}` —
+  `version` omitempty (версия не получилась → запись name-only, честное
+  отсутствие, не догадка); инструмент НЕ на PATH → записи нет вовсе
+  (класс эмитит факты НАЛИЧИЯ: отсутствие инструмента = отсутствие
+  записи — quiet zero).
+- **MUST**: `tools[]` sorted по имени, ≤40 (contract §2 FC-8); **MUST**:
+  `count` — ПОЛНЫЙ итог найденных инструментов, даже когда `tools[]`
+  усечён до 40 (честный счётчик; семантика count §3.4).
+- **MUST**: кап поля — 8 KiB marshaled, shrink-to-fit до отправки
+  (§3.3.5); усечение факта — `count` остаётся полным (§3.4).
+- Инструменты контейнерного рантайма (podman/docker) собираются как
+  ФАКТЫ ПРИСУТСТВИЯ/ВЕРСИЙ — никаких контейнерных поверхностей конфигов
+  этот класс не трогает (`exec_env` остаётся `"metal"`; §3.3.6, §9).
+
+### 3.4b FC-9 — compute envelope (норматив; discovery v8, AGW-27)
+
+Статус: DEFERRED снят той же поправкой (AGW-27). Класс —
+hardware-envelope факты; линия приватности: только конверт железа —
+никаких hostname'ов, serials и идентификаторов машины сверх фактов
+класса (§3.5).
+
+- **MUST**: провод — аддитивный top-level элемент; КАЖДОЕ поле omitempty
+  НЕЗАВИСИМО по честному отсутствию (P4: нет надёжного факта → поля
+  нет, не ноль-подставка):
+
+```json
+{"compute": {"cpu_cores": 16, "mem_total_bytes": 33554432000,
+             "disk_free_bytes": 107374182400,
+             "gpus": ["NVIDIA GeForce RTX 4090"]}}
+```
+
+- **MUST**: элемент = `{cpu_cores?, mem_total_bytes?, disk_free_bytes?,
+  gpus?}` — числа ТОЛЬКО (целые; память/диск в байтах; `cpu_cores` —
+  логические ядра). `disk_free_bytes` — свободное место на state-томе
+  (contract §2 FC-9).
+- **MUST**: GPU — ОДИН вызов `nvidia-smi -L` за проход (brief
+  2026-10-29); собираются ТОЛЬКО строки ИМЁН, ≤8 записей, через
+  names-only валидатор (§3.3.6); **MUST NOT**: serials, utilization,
+  телеметрия — никогда; вызов не удался, вывод не распарсился либо имена
+  сверх 8 → `gpus` опускается или усекается честно (P4; честное
+  усечение — drop, never mangle).
+- **MUST**: кап — shrink-to-fit 8 KiB marshaled (семейная дисциплина
+  §3.3.5); поле сверх капа на борде — честный 422 (§4).
+- **MUST**: knobs и честность отсутствия — как в §3.4a (единый
+  `discovery_host_facts: auto|off`; quiet zero per факт; one-shot per
+  pass, без собственного таймера).
+
 ### 3.5 Никогда не собирается (дословная граница)
 
 **Никогда не собирается** (contract §2, дословно): содержимое файлов
@@ -385,6 +525,11 @@ vesma-agent); `re-key (v7)` — переключение населения в �
 промпты и содержимое сессий, значения environment-переменных, сетевой
 трафик, credential-материал в любой форме. MANAGED allowlist и
 shim-волна — отдельные, этим контрактом не трогаемые поверхности.
+С поправки discovery v8 (AGW-27) граница дополняется явными строками
+hardware-классов FC-8/FC-9: **никогда не собираются** аппаратные
+serials, utilization-телеметрия и телеметрия нагрузки любого рода;
+PATH'и owner-declared каталогов моделей на провод не едут — только
+факты строк каталога (§3.3.2, §3.4b).
 
 - **MUST NOT**: ни один класс каталога не читает и не эмитит ничего из
   перечисленного; конфликт каталога с этой границей разрешается в
@@ -407,8 +552,9 @@ shim-волна — отдельные, этим контрактом не тр�
 
 ## 4. Коды ошибок
 
-Новых кодов контракт не вводит: каталожные ноги (FC-6, FC-7) едут по
-СУЩЕСТВУЮЩЕМУ маршруту `POST /api/executors/{executor_id}/discovery`, и
+Новых кодов контракт не вводит: каталожные ноги (FC-6, FC-7 и с v8 —
+FC-8, FC-9) едут по СУЩЕСТВУЮЩЕМУ маршруту
+`POST /api/executors/{executor_id}/discovery`, и
 реестр исходов маршрута наследуется от
 [agent-discovery §4](../../agent-discovery/v0/spec.md) без изменений:
 `200` (принято, `last_seen` тикнул), `401`/`403` (token/identity/revoked),
@@ -419,8 +565,8 @@ shim-волна — отдельные, этим контрактом не тр�
 
 | Код | Применение к полям этого контракта |
 |---|---|
-| `422` | `models` сверх 16 KiB marshaled; `installations[]` > 64; `models[]` > 50; `mcp_servers` элемент сверх 8 KiB; `servers[]` > 30; неизвестное enum-значение формы — честный отказ, никогда тихий trim (shrink-to-fit агента делает сверх-кап отправку дефектом агента) |
-| `404` | нога FC-6/FC-7 молчит ниже info на борде без маршрута — аддитивность не создаёт нового расписания и новых ретраев (§3.1 P5) |
+| `422` | `models` сверх 16 KiB marshaled; `installations[]` > 64; `models[]` > 50; `mcp_servers` элемент сверх 8 KiB; `servers[]` > 30; `tooling`/`compute` сверх 8 KiB; `tools[]` > 40; `gpus` > 8; неизвестное enum-значение формы — честный отказ, никогда тихий trim (shrink-to-fit агента делает сверх-кап отправку дефектом агента) |
+| `404` | нога FC-6/FC-7/FC-8/FC-9 молчит ниже info на борде без маршрута — аддитивность не создаёт нового расписания и новых ретраев (§3.1 P5) |
 
 ## 5. Примеры
 
@@ -434,6 +580,9 @@ endpoint'ы — никаких реальных токенов, путей и ho
 | `examples/zcode-frontmatter-installation.json` | zcode-строка, выведенная из frontmatter: `models[]` — сырые строки verbatim (display-форма и qualified id), provider распарсен документированной формой суффикса; `base_url` omitempty (frontmatter endpoint не называет); default- и note-фактов на frontmatter-строке нет (§3.3.2, §3.3.3) |
 | `examples/pi-auth-marker-row.json` | pi auth-маркерная строка: provider `pi`, поле `models` опущено (omitempty; документированного каталога нет — honest absence), `auth: configured` из EXISTENCE `auth.json` (значение никогда не читается) |
 | `examples/mcp-servers-field.json` | аддитивный top-level `mcp_servers`: элемент pi из `mcp-cache.json` — только имена, sorted, `count` = полный итог, опциональная карта `transports` |
+| `examples/tooling-field.json` | аддитивный top-level `tooling` (FC-8, §3.4a): `{tools[], count}` — записи `{name, version?}`, `version` omitempty у инструмента без полученной версии, `count` = полный итог, sorted |
+| `examples/compute-envelope.json` | аддитивный top-level `compute` (FC-9, §3.4b): числа только, поля omitempty независимо, `gpus` — только имена (никогда serials/utilization) |
+| `examples/catalog-row-owner-declared.json` | строка FC-6 из owner-declared каталога (knob `discovery_models_catalogs`, §3.3.2): `source: config`, `auth: unknown`, note «model catalog (owner-declared)», primary+fallback строки каталога, provider из документированной формы суффикса |
 | `examples/credential-redaction.json` | дисциплина до/после: нормализация `base_url`; harness-настроенный loopback `base_url` БЕЗ маркера → анонимный probe разрешён; с маркером → НИКОГДА не наблюдается; credential-строка в неожиданном поле → строка dropped до marshal |
 
 ## 6. Conformance
@@ -465,6 +614,12 @@ component-manifest, поэтому скелет лежит под именем
 | `mcp_names_cap30` | `servers[]` sorted ≤ 30 на harness (§3.4) |
 | `mcp_names_only` | в `servers[]`/`transports` нет argv/env/URL-подобных строк — имена и kinds только (§3.4) |
 | `knob_values` | декларация knob'а `discovery_models` — только `auto` \| `off`; управляет FC-6 и FC-7 совместно (§3.4) |
+| `tooling_field_shape` | top-level `tooling` = `{tools[], count}`; записи `{name, version?}` sorted ≤ 40; `count` — полный итог; при knob `off` поле отсутствует целиком (§3.4a) |
+| `tooling_version_discipline` | присутствующая `version` — ≤200 рун, одна строка, чистая по names-only валидатору; credential-подобная версия → записи `version` нет (drop-on-shape) (§3.4a) |
+| `compute_field_shape` | top-level `compute` = `{cpu_cores?, mem_total_bytes?, disk_free_bytes?, gpus?}`; поля — числа только, omitempty НЕЗАВИСИМО; при knob `off` поле отсутствует целиком (§3.4b) |
+| `compute_gpu_names_only` | `gpus` — strings ≤ 8, чистые по валидатору; serials/utilization-подобные строки отсутствуют (§3.4b) |
+| `catalog_rows_shape` | строки из owner-declared каталога: `source=config`, `auth=unknown`, note «model catalog (owner-declared)»; `harness` = написание записи владельца; PATH каталога на проводе отсутствует (§3.3.2) |
+| `host_facts_knob_values` | декларация knob'а `discovery_host_facts` — только `auto` \| `off`; управляет FC-8 и FC-9 совместно (§3.4a) |
 
 Кейсы: позитивные — wire-примеры §5 (`examples/…`; `expect: pass`,
 `severity: must`; пояснительный `credential-redaction.json` — вне
@@ -473,13 +628,19 @@ component-manifest, поэтому скелет лежит под именем
 
 ## 7. Совместимость
 
-- **SemVer**: `0.1.0-draft`; ратификация stable — первая конформная
+- **SemVer**: `0.1.0-draft.3`; ратификация stable — первая конформная
   реализация агентом (v7) и зелёный конформанс. Ломающее изменение =
   MAJOR + окно `max(90 дней, 2 минорных релиза)` с dual-поддержкой;
   до 1.0 окно — 14 дней (ADR-0001 §2).
 - **Аддитивность**: FC-7 (`mcp_servers`) — новое аддитивное top-level
   поле: борда, игнорирующая его, конформна (правило неизвестного поля);
-  старый агент (без поля) конформен. Re-key FC-6 меняет ПРАВИЛА
+  старый агент (без поля) конформен. FC-8 (`tooling`) и FC-9
+  (`compute`) с v8 (AGW-27) — новые аддитивные top-level поля с той же
+  дисциплиной: борда без их поддержки конформна, старый агент конформен
+  (§3.4a, §3.4b). Расширение FC-6 — каталожные строки owner-declared
+  каталогов — расширяет НАСЕЛЕНИЕ существующего поля `models`
+  аддитивно (форма строки не меняется; §3.3.2). Re-key FC-6 меняет
+  ПРАВИЛА
   НАСЕЛЕНИЯ существующего поля `models` (per-harness атрибуция,
   frontmatter-строки, `base_url` omitempty для endpoint-less
   источников) при НЕизменной форме строки: старая борда читает новые
@@ -487,10 +648,12 @@ component-manifest, поэтому скелет лежит под именем
   agent-discovery §7).
 - **REMOVING именованного поля = MAJOR** (наследуется); расширение
   per-harness таблицы (новый харнес, новое названное поле) — минорное
-  изменение с уведомлением комитета; активация DEFERRED классов
-  (FC-8/FC-9) — минорное изменение ЭТОГО контракта с гейтом владельца
-  (P1: добавление собираемого класса — всегда гейт).
-- **Потребители**: агент — соблюдает каталог и формы §3.3/§3.4; борда —
+  изменение с уведомлением комитета; активация DEFERRED классов —
+  минорное изменение ЭТОГО контракта с гейтом владельца (P1: добавление
+  собираемого класса — всегда гейт); такая активация исполнена
+  поправкой discovery v8 (AGW-27, 2026-10-29) для FC-8/FC-9.
+- **Потребители**: агент — соблюдает каталог и формы §3.3/§3.4/§3.4a/
+  §3.4b; борда —
   ingest по семейству agent-discovery §3.11 + рендер прозрачности
   §3.6; FE — гейт 3 (ux-blueprint MF1/MF2) для ростера.
 
@@ -510,6 +673,7 @@ reader агента; (б) агент ↔ борда (аутентифициро�
 | **I**nformation Disclosure | новая нога читает сверх названных таблицей полей (drift каталога) | closed catalog P1 + layout-таблица на уровне JSON-pointer; scan-эвристики запрещены (§3.1, §3.3.2); рендер прозрачности показывает ВСЁ собираемое — расхождение кода с каталогом видимо владельцу (§3.6) | `models_field_shape` + ревью таблицы (операционный контроль) |
 | **I**nformation Disclosure | credential-подобная строка в свободном поле (`note`) | names-only валидатор: drop ВСЕЙ строки до marshal, громкий лог без значения (§3.3.6); bord-детектор — вторая линия (§4) | `no_credential_material` |
 | **I**nformation Disclosure | credential в URL | нормализация `base_url` (§3.3.6): query/fragment/userinfo всегда обдираются; unparsable — omit | `base_url_normalized` |
+| **I**nformation Disclosure | идентифицирующий/credential-подобный контент в новых строках FC-8/FC-9 (версия инструмента с секретом, GPU serial, телеметрия) | версия — первая строка ≤200 рун через names-only валидатор, drop-on-shape (§3.4a); GPU — только имена ≤8, валидатор-gated, serials/utilization никогда (§3.4b); граница §3.5 | `tooling_version_discipline`, `compute_gpu_names_only` |
 | **I**nformation Disclosure | harness-настроенный probe как канал к чужому/credentialed endpoint | ТОЛЬКО loopback; `auth: configured` → никогда не наблюдается; ≤8 целей; zero-redirect; один GET, quiet zero (§3.3.4; H3) | `mcp_names_only` n/a; ревью probe-правил (операционный контроль) |
 | **S**poofing | чужой executor шлёт отчёт | executor-token + identity-match маршрута (наследуется; agent-discovery §3.1) | интеграционные тесты маршрута (операционный контроль) |
 | **E**levation of Privilege | discovery-факт выдаёт себе полномочия | advisory, never authority: поле не создаёт строк, не расширяет словарей (agent-discovery §3.1, §3.11) | конформанс борды (операционный контроль) |
@@ -532,7 +696,7 @@ superseded, но поле совместимо (§7). Статус ног — ч
 | Агентная v6 (standalone `models`) | **ходила** (AGW-25, влита 2026-10-28) — SUPERSEDED правилами населения этого контракта; ноль строк на реальном флоте (проверено живьём 2026-10-28 на core-51: четыре v6 конфиг-файла отсутствуют; реальные харнесы fleet — zcode/copilot — несут каталоги в frontmatter определений) | vesmaro/vesma-agent, main (merge b98960e); `docs/PROTOCOL.md` §3 |
 | Агентная v7 (per-harness re-key + FC-7) | **в полёте** — ветка `feat/host-intake-contract`, AGW-26; драфт контракта — `docs/design/host-intake-contract-draft.md` (этой спеки источник) | vesmaro/vesma-agent |
 | Борд-зеркало новых полей (ingest `models` per-harness, `mcp_servers`; рендер прозрачности §3.6) | **не влита** — отдельная волна vesma-eyes (pending; contract §9) | vesma-eyes |
-| FC-8 / FC-9 | **DEFERRED (v2)** — решение владельца на гейте драфта; активация = минор этого контракта с гейтом | — |
+| FC-8 / FC-9 (tooling, compute) | **норматив с discovery v8** (AGW-27, 2026-10-29; DEFERRED снят директивой владельца «делай» 2026-10-29) — нормативный текст этой спеки §3.4a/§3.4b; агентная нормативная форма — addendum «discovery v8 (AGW-27, 2026-10-29)» в `docs/PROTOCOL.md` (lands параллельно этой поправке); контейнерные поверхности конфигов (`exec_env` сверх `"metal"`) остаются отложенной последующей волной | vesmaro/vesma-agent, `docs/PROTOCOL.md` |
 
 `sessions[]` — вне поверхности сбора агента (проверено 2026-10-28):
 поле существует в `ExecutorDiscoveryBody` борды (аддитивная нога
@@ -548,8 +712,12 @@ directory-стора в fingerprint-маркерах FC-2 (store name + count, v
 Порядок ввода: (1) спека (этот документ) — да; (2) агентная волна v7
 (AGW-26): re-key + FC-7, фикстуры на GROUNDED формах, гейты + cascade,
 release v0.11.0, fleet update — стоящая волновая дисциплина (contract
-§10); (3) борд-зеркальная волна — ingest + рендер прозрачности;
-(4) ратификация stable — конформанс обеих сторон зелёный. Промежуточные
+§10); (2a) поправка discovery v8 (AGW-27, 2026-10-29): FC-8/FC-9
+(§3.4a/§3.4b) + каталожный knob `discovery_models_catalogs` —
+норматив этой спеки готов, агентная форма (PROTOCOL addendum) lands
+параллельно; (3) борд-зеркальная волна — ingest + рендер прозрачности
+(включая аддитивные `tooling`/`compute`); (4) ратификация stable —
+конформанс обеих сторон зелёный. Промежуточные
 состояния конформны по аддитивности (§7).
 
 ## 10. Ссылки
@@ -582,6 +750,16 @@ release v0.11.0, fleet update — стоящая волновая дисципл
   `count` = полный итог, pi-строка provider `pi` с опущенным `models`
   (omitempty),
   per-row note как OQ-5 wire-форма.
+- Поправка discovery v8 (AGW-27, 2026-10-29) — TC-pinned дельты,
+  утверждённые владельцем «делай» 2026-10-29: FC-8/FC-9 un-deferred →
+  норматив (§3.4a/§3.4b), knob `discovery_host_facts` для обоих,
+  каталожный knob `discovery_models_catalogs` (§3.3.2), дополнение
+  границы §3.5; агентная нормативная форма — addendum «discovery v8
+  (AGW-27, 2026-10-29)» в `docs/PROTOCOL.md` vesma-agent. Спека-фазовые
+  бюджеты волны (brief 2026-10-29): version-call timeout ≤2 с,
+  первая строка версии ≤200 рун, `tools[]` ≤40, `gpus` ≤8,
+  read-cap 8 KiB на файл каталога, поля `tooling`/`compute` по 8 KiB
+  shrink-to-fit.
 - [Глоссарий](../../../GLOSSARY.md), [карта
   экосистемы](../../../ECOSYSTEM.md), [roadmap](../../../docs/roadmap.md).
 - [RFC 2119](https://www.rfc-editor.org/rfc/rfc2119) — интерпретация

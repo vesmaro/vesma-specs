@@ -8,13 +8,17 @@ wave touches — FC-6 (models keyed to discovered harnesses) and FC-7
 This is the fleet's trust and transparency surface: the complete "what
 agents collect" list is public, versioned and diffable per release.
 
-Status: **draft** (`0.1.0-draft`). Authority: owner directive
+Status: **draft** (`0.1.0-draft.3`). Authority: owner directive
 2026-10-28 (two clauses: the per-harness models re-key + the explicit
 collection contract); the agent-side contract draft
 (`docs/design/host-intake-contract-draft.md`, vesma-agent
 `feat/host-intake-contract`) with owner-approved gates; the carried
-fleet security-verdict red lines (832cd7a). The agent v7 wave (AGW-26)
-is in flight; the board mirror wave is pending.
+fleet security-verdict red lines (832cd7a); the discovery v8 amendment
+(AGW-27, 2026-10-29 — the owner's «делай»: FC-8/FC-9 un-deferred to
+normative, the `discovery_host_facts` knob, the
+`discovery_models_catalogs` knob; mirrored by the PROTOCOL.md addendum
+«discovery v8 (AGW-27, 2026-10-29)» in vesma-agent). The agent v7 wave
+(AGW-26) is in flight; the board mirror wave is pending.
 
 ## Normative spec
 
@@ -26,20 +30,24 @@ governs).
 ## What an agent MUST do (summary)
 
 1. **Collect only catalogued classes** (P1). The catalog §3.2 is closed:
-   FC-1…FC-7 live/approved, FC-8/FC-9 DEFERRED to v2 (not collected
-   until a gated activation).
+   FC-1…FC-7 live/approved; FC-8/FC-9 normative since discovery v8
+   (AGW-27) under the `discovery_host_facts: auto|off` knob — `off`
+   keeps the `tooling`/`compute` fields absent entirely.
 2. **Respect the never-collected boundary** (P2/P3, §3.5): file contents
    (outside the named exceptions), project/workspace names, prompts and
-   session content, env VALUES, network traffic, credential material —
-   never.
+   session content, env VALUES, network traffic, credential material,
+   hardware serials, utilization telemetry — never.
 3. **Attribute per harness, structurally** (FC-6/FC-7): a row exists
    only for a harness the inventory actually discovered; the scan runs
    over the inventory results. The v6 standalone table is superseded.
 4. **Read configs through the per-harness layout table only**
    (§3.3.2): zcode/copilot agent frontmatter (`model:`/`tier:`,
    ≤64 files, 8 KiB/file), codex TOML, continue JSON, claude-code
-   settings, aider YAML, pi `auth.json` existence marker. gemini/qwen —
-   no rows. Scan heuristics are forbidden.
+   settings, aider YAML, pi `auth.json` existence marker; plus the
+   owner-declared model catalogs via `discovery_models_catalogs`
+   (explicit `{path, harness}` entries — the agent never discovers
+   catalog paths itself). gemini/qwen — no rows. Scan heuristics are
+   forbidden.
 5. **Emit dual forms, never guess** (§3.3.3): raw model strings in
    `models[]`; the parsed provider in the row's `provider` — only via a
    documented form (`(provider)` suffix, `provider/model` prefix, the
@@ -56,6 +64,12 @@ governs).
    `mcp_servers` field — `{harness, exec_env, servers[] ≤30 sorted,
    count = full total}`; pi `mcp-cache.json` keys as names, values never
    decoded; governed by the same `discovery_models: auto|off` knob.
+9. **Host facts under one knob** (FC-8/FC-9, §3.4a/§3.4b): `tooling` —
+   fixed built-in list, LookPath + one version call ≤2 s, first version
+   line ≤200 runes through the names-only validator, ≤40 sorted +
+   honest `count`, 8 KiB; `compute` — numbers only, fields independently
+   omitempty, GPU = one `nvidia-smi -L`, name strings ≤8 — never
+   serials, never utilization.
 
 ## What a board MUST do (summary)
 
@@ -82,11 +96,20 @@ governs).
 
 {"mcp_servers": [{"harness": "pi", "exec_env": "metal",
   "servers": ["context7", "playwright"], "count": 5}]}
+
+{"tooling": {"tools": [{"name": "git", "version": "2.47.1"},
+                       {"name": "rsync"}],
+             "count": 2}}
+
+{"compute": {"cpu_cores": 16, "mem_total_bytes": 33554432000,
+             "disk_free_bytes": 107374182400,
+             "gpus": ["NVIDIA GeForce RTX 4090"]}}
 ```
 
 Worked examples: [examples/](examples/) — a zcode frontmatter row, the
-pi auth-marker row, the `mcp_servers` field, and a credential-redaction
-before/after.
+pi auth-marker row, the `mcp_servers` field, a credential-redaction
+before/after, the `tooling` field, the `compute` envelope, and an
+owner-declared catalog row.
 
 ## How to verify
 

@@ -1,0 +1,18 @@
+{
+  "models": {
+    "installations": [
+      {
+        "provider": "ollama-cloud",
+        "auth": "unknown",
+        "models": [
+          "GLM 5.3 Flash (ollama-cloud)",
+          "Glm 5.3 Flash (z)"
+        ],
+        "harness": "zcode",
+        "exec_env": "metal",
+        "source": "config",
+        "note": "model catalog (owner-declared)"
+      }
+    ]
+  }
+}

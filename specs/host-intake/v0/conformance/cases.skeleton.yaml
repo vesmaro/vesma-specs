@@ -21,7 +21,7 @@
 
 suite: host-intake-basics
 contract: host-intake
-version: 0.1.0-draft
+version: 0.1.0-draft.3
 
 cases:
   - id: zcode-frontmatter-installation-valid
@@ -56,6 +56,37 @@ cases:
       - mcp_servers_field_shape
       - mcp_names_cap30
       - mcp_names_only
+      - no_credential_material
+    expect: pass
+
+  - id: tooling-field-valid
+    severity: must
+    target: examples/tooling-field.json
+    checks:
+      - tooling_field_shape
+      - tooling_version_discipline
+      - no_credential_material
+    expect: pass
+
+  - id: compute-envelope-valid
+    severity: must
+    target: examples/compute-envelope.json
+    checks:
+      - compute_field_shape
+      - compute_gpu_names_only
+      - no_credential_material
+    expect: pass
+
+  - id: catalog-row-owner-declared-valid
+    severity: must
+    target: examples/catalog-row-owner-declared.json
+    checks:
+      - models_field_shape
+      - fc6_harness_attribution
+      - provider_parse_forms
+      - auth_enum
+      - row_caps
+      - catalog_rows_shape
       - no_credential_material
     expect: pass
 
