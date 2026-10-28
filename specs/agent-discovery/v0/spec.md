@@ -2,11 +2,11 @@
 contract: agent-discovery
 version: 0.1.0-draft
 status: draft
-decisions: [ADR-0001, ADR-0002, "AGW-25 — addendum «discovery v6, models fleet leg» в docs/PROTOCOL.md §3 (vesmaro/vesma-agent, ветка feat/models-discovery)", "gate 1 — discovery-contract-draft.md (vesmaro/vesma-eyes, feat/models-fleet-blueprint, daf969b)", "gate 2 — security-verdict.md (там же, 832cd7a)", "gate 3 — ux-blueprint.md (там же, cb166a8)", "директива владельца 2026-10-28 («контракты и документацию актуализировать» в vesma-specs)"]
+decisions: [ADR-0001, ADR-0002, "AGW-25 — addendum «discovery v6, models fleet leg» в docs/PROTOCOL.md §3 (vesmaro/vesma-agent, main b98960e)", "gate 1 — discovery-contract-draft.md (vesmaro/vesma-eyes, feat/models-fleet-blueprint, daf969b)", "gate 2 — security-verdict.md (там же, 832cd7a)", "gate 3 — ux-blueprint.md (там же, cb166a8)", "директива владельца 2026-10-28 («контракты и документацию актуализировать» в vesma-specs)"]
 ratified: |-
   Не ратифицирована (draft). Полномочия текста: агентная нога контракта
   уже влита как протокольная поправка AGW-25 в vesmaro/vesma-agent
-  (ветка feat/models-discovery, аддендум «discovery v6» в §3
+  (main b98960e, аддендум «discovery v6» в §3
   docs/PROTOCOL.md); красные линии ратифицированы гейтом 2
   (security-verdict, 832cd7a, поправки 1–2 к OQ-4); форма провода
   ратифицирована гейтом 1 (discovery-contract-draft, daf969b); потребитель
@@ -478,7 +478,7 @@ Names-only дисциплина — центральный контроль; к�
 
 | Нога | Статус | Где живёт |
 |---|---|---|
-| Агентная (писатель поля) | **влита** — протокольная поправка AGW-25 «discovery v6», 2026-10-28 | vesmaro/vesma-agent, ветка `feat/models-discovery`; норма — `docs/PROTOCOL.md` §3 (аддендум) + §7.1 (knob) |
+| Агентная (писатель поля) | **влита** — протокольная поправка AGW-25 «discovery v6», 2026-10-28 | vesmaro/vesma-agent, main `b98960e`; норма — `docs/PROTOCOL.md` §3 (аддендум) + §7.1 (knob) |
 | Борд-зеркало (ingest в `GET /api/models`) | **не влита** — следующая волна vesma-eyes | целевая схема ingest'а уже отдаётся бордой: `ModelsDiscoveredItem` в `ModelsRosterOut.discovered` (зона «discovered», MF2 cut) — поле существует, чтобы FE-контракт встал при landing'е ноги; зона честно пуста, пока на проводе нет slice'а `models` |
 | UX ростера (рендер зеркала) | ратифицирован гейтом 3 | `ux-blueprint.md` MF1 «Ростер» (cb166a8), `GET /api/models` — единая точка агрегации (OQ-1) |
 
@@ -498,7 +498,7 @@ Names-only дисциплина — центральный контроль; к�
 - `docs/PROTOCOL.md` §3 (аддендум «Models-fleet addendum — discovery
   v6», AGW-25, 2026-10-28) и §7.1 (`discovery_models`) — нормативный
   источник агентной ноги; vesmaro/vesma-agent, ветка
-  `feat/models-discovery`.
+  main (merge b98960e).
 - Gate 1 — `docs/design/models-fleet/discovery-contract-draft.md`
   (vesmaro/vesma-eyes, ветка `feat/models-fleet-blueprint`, daf969b):
   wire shape §2, red lines §2.2, trust boundaries §4.

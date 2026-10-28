@@ -2,10 +2,10 @@
 contract: agent-discovery
 version: 0.1.0-draft
 status: draft
-decisions: [ADR-0001, ADR-0002, "AGW-25 — addendum «discovery v6, models fleet leg» in docs/PROTOCOL.md §3 (vesmaro/vesma-agent, feat/models-discovery branch)", "gate 1 — discovery-contract-draft.md (vesmaro/vesma-eyes, feat/models-fleet-blueprint, daf969b)", "gate 2 — security-verdict.md (same, 832cd7a)", "gate 3 — ux-blueprint.md (same, cb166a8)", "owner directive 2026-10-28 («update the contracts and documentation» in vesma-specs)"]
+decisions: [ADR-0001, ADR-0002, "AGW-25 — addendum «discovery v6, models fleet leg» in docs/PROTOCOL.md §3 (vesmaro/vesma-agent, main (merge b98960e))", "gate 1 — discovery-contract-draft.md (vesmaro/vesma-eyes, feat/models-fleet-blueprint, daf969b)", "gate 2 — security-verdict.md (same, 832cd7a)", "gate 3 — ux-blueprint.md (same, cb166a8)", "owner directive 2026-10-28 («update the contracts and documentation» in vesma-specs)"]
 ratified: |-
   Not ratified (draft). Authority trail: the agent leg is already merged
-  as protocol amendment AGW-25 in vesmaro/vesma-agent (feat/models-discovery
+  as protocol amendment AGW-25 in vesmaro/vesma-agent (main (merge b98960e)
   branch, the «discovery v6» addendum in §3 docs/PROTOCOL.md); the red
   lines are ratified by gate 2 (security-verdict, 832cd7a, amendments
   1–2 to OQ-4); the wire shape is ratified by gate 1
@@ -494,7 +494,7 @@ legs' implementation status — honestly:
 
 | Leg | Status | Where it lives |
 |---|---|---|
-| Agent (field writer) | **merged** — protocol amendment AGW-25 «discovery v6», 2026-10-28 | vesmaro/vesma-agent, the `feat/models-discovery` branch; the norm — `docs/PROTOCOL.md` §3 (addendum) + §7.1 (knob) |
+| Agent (field writer) | **merged** — protocol amendment AGW-25 «discovery v6», 2026-10-28 | vesmaro/vesma-agent, the main (merge b98960e) branch; the norm — `docs/PROTOCOL.md` §3 (addendum) + §7.1 (knob) |
 | Board mirror (ingest into `GET /api/models`) | **not merged** — the next vesma-eyes wave | the ingest target schema is already served by the board: `ModelsDiscoveredItem` in `ModelsRosterOut.discovered` (the «discovered» zone, the MF2 cut) — the field exists so the FE contract is stable when the discovery leg lands; the zone stays honestly empty while no `models` slice rides the wire |
 | Roster UX (mirror rendering) | ratified by gate 3 | `ux-blueprint.md` MF1 «Ростер» (cb166a8), `GET /api/models` — the single aggregation point (OQ-1) |
 
@@ -515,7 +515,7 @@ not wait for the mirror, the mirror does not wait for the UX — the
 - `docs/PROTOCOL.md` §3 (the «Models-fleet addendum — discovery v6»
   addendum, AGW-25, 2026-10-28) and §7.1 (`discovery_models`) — the
   normative source of the agent leg; vesmaro/vesma-agent, the
-  `feat/models-discovery` branch.
+  main (merge b98960e) branch.
 - Gate 1 — `docs/design/models-fleet/discovery-contract-draft.md`
   (vesmaro/vesma-eyes, the `feat/models-fleet-blueprint` branch,
   daf969b): wire shape §2, red lines §2.2, trust boundaries §4.

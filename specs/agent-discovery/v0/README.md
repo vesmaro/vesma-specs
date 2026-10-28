@@ -9,7 +9,7 @@ providers and models are actually configured on the executor's host —
 credential material is never read, never emitted, in any encoding.
 
 Status: **draft** (`0.1.0-draft`). The agent leg is already merged as
-protocol amendment AGW-25 (vesma-agent, `feat/models-discovery`); the
+protocol amendment AGW-25 (vesma-agent, main (merge b98960e)); the
 board mirror (ingest into `GET /api/models`) is the next vesma-eyes
 wave.
 

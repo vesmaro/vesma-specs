@@ -53,7 +53,7 @@ Notes (EN):
   vesma-eyes — discovery-contract-draft `daf969b`, security-verdict
   `832cd7a`, ux-blueprint `cb166a8` — plus the owner directive of
   2026-10-28; the decision record is ADR-0002). The agent leg is merged
-  (vesma-agent `feat/models-discovery`); the board mirror (ingest into
+  (vesma-agent main (merge b98960e)); the board mirror (ingest into
   `GET /api/models`) is not — intermediate states are conformant by the
   additive rule. Credential storage, grants and the proxy stay outside
   the contract (gate 2's domain).
@@ -84,7 +84,7 @@ Notes (EN):
   vesma-eyes — discovery-contract-draft `daf969b`, security-verdict
   `832cd7a`, ux-blueprint `cb166a8` — плюс директива владельца
   2026-10-28; запись решения — ADR-0002). Агентная нога влита
-  (vesma-agent `feat/models-discovery`); борд-зеркало (ingest в
+  (vesma-agent main (merge b98960e)); борд-зеркало (ingest в
   `GET /api/models`) не влито — промежуточные состояния конформны по
   правилу аддитивности. Хранение credential'ов, гранты и прокси — вне
   контракта (дом гейта 2).

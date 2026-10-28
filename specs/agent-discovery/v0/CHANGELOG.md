@@ -57,7 +57,7 @@
 ### Status
 
 Draft, не ратифицирована. Агентная нога влита (AGW-25, ветка
-`feat/models-discovery`); борд-зеркало (ingest в `GET /api/models`,
+main (merge b98960e)); борд-зеркало (ingest в `GET /api/models`,
 зона `discovered`) НЕ влито — целевая схема `ModelsDiscoveredItem`
 бордой уже отдаётся, зона честно пуста. Ратификация stable — зелёный
 конформанс обеих ног.

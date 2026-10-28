@@ -93,7 +93,7 @@ carve-out'ом (§3.2, §3.11 спеки).
 - [specs/agent-discovery/v0/spec.md](../specs/agent-discovery/v0/spec.md)
   — кодифицированный контракт (RU-норматив)
 - `docs/PROTOCOL.md` §3 (AGW-25) и §7.1 — vesmaro/vesma-agent, ветка
-  `feat/models-discovery` — нормативный источник агентной ноги
+  main (merge b98960e) — нормативный источник агентной ноги
 - Gate 1: `discovery-contract-draft.md` (daf969b), gate 2:
   `security-verdict.md` (832cd7a), gate 3: `ux-blueprint.md`
   (cb166a8) — vesmaro/vesma-eyes, ветка `feat/models-fleet-blueprint`

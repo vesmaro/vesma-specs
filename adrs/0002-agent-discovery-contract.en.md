@@ -96,7 +96,7 @@ process, never by silently rewriting the trace.
 - [specs/agent-discovery/v0/spec.md](../specs/agent-discovery/v0/spec.md)
   — the codified contract (RU canon)
 - `docs/PROTOCOL.md` §3 (AGW-25) and §7.1 — vesmaro/vesma-agent, the
-  `feat/models-discovery` branch — the agent leg's normative source
+  main (merge b98960e) branch — the agent leg's normative source
 - Gate 1: `discovery-contract-draft.md` (daf969b), gate 2:
   `security-verdict.md` (832cd7a), gate 3: `ux-blueprint.md`
   (cb166a8) — vesmaro/vesma-eyes, the `feat/models-fleet-blueprint`
