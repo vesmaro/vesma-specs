@@ -4,11 +4,10 @@
       {
         "provider": "pi",
         "auth": "configured",
-        "models": [],
         "harness": "pi",
         "exec_env": "metal",
         "source": "config",
-        "note": "auth marker from ~/.pi/agent/auth.json EXISTENCE (configured; the value is never read); no documented model catalog - models honestly empty"
+        "note": "auth marker from ~/.pi/agent/auth.json EXISTENCE (configured; the value is never read); no documented model catalog - the models field is omitted (omitempty, honest absence)"
       }
     ]
   }

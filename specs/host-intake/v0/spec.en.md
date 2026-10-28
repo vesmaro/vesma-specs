@@ -114,7 +114,7 @@ redefined here. Contract-local terms:
 | per-harness attribution | The structural rule of FC-6/FC-7: a fact row may carry only such a `harness` as the agent ACTUALLY discovered on this host via the inventory (FC-1/FC-2). The models/MCP scan runs OVER the inventory results — a row for an undiscovered harness is impossible by construction (contract §3.1). |
 | never collected | The catalog's verbatim boundary: file contents (outside the named per-class exceptions), project/workspace names, prompts and session content, environment-variable VALUES, network traffic, credential material in any form (§3.5). |
 | transparency surface | The board's rendering of "what agents collect" FROM this contract, per agent version: one card per FC id (what, why, caps, privacy line); built via the contract↔agent version handshake (§3.6; contract §7). |
-| harness bucket | The FC-6 provider attribution when NO documented string form parses: provider = the harness slug, the `note` names the reason; an advisory name board-side (§3.3.3). Provider guessing is forbidden (contract §3.2; draft gate OQ-3: never guess). |
+| harness bucket | The FC-6 provider attribution when NO documented string form parses: provider = the harness slug; the reason is a local-log fact, never the wire; an advisory name board-side (§3.3.3). Provider guessing is forbidden (contract §3.2; draft gate OQ-3: never guess). |
 | dual-form emission | The OQ-3-approved emission form of FC-6: `models[]` carries the RAW frontmatter/config strings verbatim; the parsed provider rides the row's `provider` field — and only when the documented form parses (§3.3.3). |
 | DEFERRED (v2) | A catalog-class status: the class is described (what, source, caps), implementation deferred by the owner's decision to the v2 class wave; the agent does NOT collect it until activation (§3.2, §9). |
 
@@ -208,12 +208,12 @@ only through a contract amendment (P5).
 | harness | source | fields named by the table | credential marker (presence only) | grounded |
 |---|---|---|---|---|
 | zcode | `~/.zcode/agents/*.md` frontmatter (frontmatter-first read; ≤64 files, 8 KiB/file — brief 2026-10-28) | `model:` (scalar or list — try-in-order), `tier:`, agent `name:` (provider from the documented string forms: the `(provider)` suffix, the `provider/model` prefix; display-name and qualified id are both legal) | — (tier arrays carry provider slugs) | 2026-10-28: the GCW installer renders the fleet `models.yaml` into these files; live ids documented (`ollama-cloud/glm-5.3-flash`, `z/glm-5.3`) (contract §3.2) |
-| copilot | `~/.copilot/agents/*.agent.md` frontmatter (same budgets) | the same `model:`/`tier:` fields; the `" (copilot)"` suffix convention | — | 2026-10-28: `model: GLM 5.3 Flash (ollama-cloud)`, `tier: 1` verified live; GitHub-side model catalogs are server-only — the LOCAL fact is what the definitions name (an honest note on the row) (contract §3.2) |
+| copilot | `~/.copilot/agents/*.agent.md` frontmatter (same budgets) | the same `model:`/`tier:` fields; the `" (copilot)"` suffix convention | — | 2026-10-28: `model: GLM 5.3 Flash (ollama-cloud)`, `tier: 1` verified live; GitHub-side model catalogs are server-only — the LOCAL fact is what the definitions name (the server-only honesty lives in this description/the catalog, not on the wire row) (contract §3.2) |
 | codex | `~/.codex/config.toml` | top-level `model`, `model_provider`; `model_providers.<name>.{name, base_url, env_key}` | `env_key` non-empty → configured | v6, carried (contract §3.2; AGW-25) |
 | continue | `~/.continue/config.json` | `models[].{provider, model, apiBase, apiKey}` | the `apiKey` field present → configured | v6, carried (AGW-25) |
 | claude-code | `~/.claude/settings.json` | `model`; from `env` — only KEY NAMES with the `ANTHROPIC_` prefix | any `ANTHROPIC_*` name → configured; none → unknown | v6, carried (contract §3.2; AGW-25) |
 | aider | `~/.aider.conf.yml` | `model`, `openai-api-base`, `openai-api-key` | `openai-api-key` present → configured; absent → unknown | v6, carried (AGW-25) |
-| pi | `<home>/.pi/agent/` | no documented model catalog today → honest absence (model rows: none); `auth.json` EXISTENCE → the pi auth fact | `auth.json` exists → configured (the value is NEVER read); no file → unknown | 2026-10-28: `auth.json` present on core-51's pi (contract §3.2); emission: one provider `pi` row with an empty `models[]` (brief 2026-10-28) |
+| pi | `<home>/.pi/agent/` | no documented model catalog today → honest absence (model rows: none); `auth.json` EXISTENCE → the pi auth fact | `auth.json` exists → configured (the value is NEVER read); no file → unknown | 2026-10-28: `auth.json` present on core-51's pi (contract §3.2); emission: one provider `pi` row, the `models` field omitted (omitempty; an empty list would be a zero-and-ran claim — the key is not emitted) (brief 2026-10-28) |
 
 - **MUST**: the table is built-in and versioned in the agent; reads go
   ONLY through the named fields at JSON-pointer/section-path level;
@@ -262,13 +262,15 @@ The documented string forms of frontmatter/config model rows (contract
   rest.
 - **MUST**: form 3 — the literal vendor form `(copilot)`: the
   ` (copilot)` suffix → provider = `copilot`; the GitHub-side catalog is
-  server-only — `base_url` is NEVER synthesized (honest absence), the
-  row's `note` records the server-only fact.
+  server-only — `base_url` is NEVER synthesized (honest absence); the
+  server-only honesty lives in the layout-table description and the
+  catalog, NOT on the wire row — frontmatter rows carry no note (P4: a
+  note the code cannot fill must not be promised).
 - **MUST**: no documented form parsed → the harness bucket: provider =
-  the harness slug, the `note` names the reason ("no documented provider
-  form"); an advisory name board-side (agent-discovery §3.11).
-  **MUST NOT**: provider guessing, display-name → id conversion, any
-  "looks-like-a-provider" heuristics.
+  the harness slug; the reason ("no documented provider form") is a
+  LOCAL-LOG fact, never the wire; an advisory name board-side
+  (agent-discovery §3.11). **MUST NOT**: provider guessing,
+  display-name → id conversion, any "looks-like-a-provider" heuristics.
 - **MUST**: dual-form emission — `models[]` carries the RAW strings
   verbatim (sorted, ≤50); the parsed provider rides the row's
   `provider`; both facts in one row (OQ-3 gate: raw string + parsed pair
@@ -439,8 +441,8 @@ endpoints only — no real tokens, owner-machine paths or hostnames
 
 | File | What it shows |
 |---|---|
-| `examples/zcode-frontmatter-installation.json` | a zcode row derived from frontmatter: `models[]` — raw strings verbatim (the display form and the qualified id), the provider parsed by the documented suffix form; `base_url` omitempty (the frontmatter names no endpoint); no default fact on a frontmatter row (§3.3.2) |
-| `examples/pi-auth-marker-row.json` | the pi auth-marker row: provider `pi`, an empty `models[]` (no documented catalog — honest absence), `auth: configured` from the EXISTENCE of `auth.json` (the value never read) |
+| `examples/zcode-frontmatter-installation.json` | a zcode row derived from frontmatter: `models[]` — raw strings verbatim (the display form and the qualified id), the provider parsed by the documented suffix form; `base_url` omitempty (the frontmatter names no endpoint); no default or note fact on a frontmatter row (§3.3.2, §3.3.3) |
+| `examples/pi-auth-marker-row.json` | the pi auth-marker row: provider `pi`, the `models` field omitted (omitempty; no documented catalog — honest absence), `auth: configured` from the EXISTENCE of `auth.json` (the value never read) |
 | `examples/mcp-servers-field.json` | the additive top-level `mcp_servers`: a pi element from `mcp-cache.json` — names only, sorted, `count` = the full total, the optional `transports` map |
 | `examples/credential-redaction.json` | the discipline before/after: `base_url` normalization; a harness-configured loopback `base_url` WITHOUT a marker → an anonymous probe allowed; with a marker → never dialed; a credential string in an unexpected field → the row dropped before marshal |
 
@@ -463,7 +465,7 @@ The check vocabulary (executor — a future runner profile):
 
 | Check | What it does |
 |---|---|
-| `models_field_shape` | top-level `models` carries `installations[]` rows of the agent-discovery §3.2 form; `base_url` omitempty ONLY for endpoint-less sources (§3.3.2) |
+| `models_field_shape` | top-level `models` carries `installations[]` rows of the agent-discovery §3.2 form; `base_url` omitempty ONLY for endpoint-less sources; the pi row MAY omit `models` (omitempty, §3.3.2) |
 | `fc6_harness_attribution` | every row's `harness` — a discovered-harness dictionary spelling; no rows of undiscovered harnesses (§3.3.1) |
 | `provider_parse_forms` | `provider` — a documented-form result (suffix/prefix/`copilot` vendor) or the harness bucket with a `note` reason; no guessed providers (§3.3.3) |
 | `auth_enum` | `auth` ∈ `configured` \| `anonymous` \| `unknown`, derived from marker-field presence only (§3.3.6) |
@@ -592,8 +594,9 @@ Intermediate states are conformant by additivity (§7).
 - The TL spec-phase brief 2026-10-28 — the spec-phase wave budgets laid
   over the approved gates: ≤64 frontmatter-read files, ≤8
   harness-configured probe targets, the `discovery_models` knob for
-  FC-7, `count` = the full total, the pi provider `pi` row with an empty
-  `models[]`, the per-row note as the OQ-5 wire form.
+  FC-7, `count` = the full total, the pi provider `pi` row with the
+  `models` field omitted (omitempty), the per-row note as the OQ-5 wire
+  form.
 - The [glossary](../../../GLOSSARY.md), the
   [ecosystem map](../../../ECOSYSTEM.md), the
   [roadmap](../../../docs/roadmap.md).

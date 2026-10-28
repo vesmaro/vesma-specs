@@ -7,6 +7,14 @@
 
 ### Changed
 
+- Reconciliation с wire AGW-26 (QA DOC-2, 2026-10-28): frontmatter-строки
+  (zcode/copilot) note НЕ несут — server-only честность `(copilot)`
+  живёт в описании layout-таблицы/каталоге; причина harness-bucket —
+  факт локального лога, никогда провод (P4: note, которую код не может
+  заполнить, не обещается). Pi-строка опускает поле `models` (omitempty;
+  пустой список — ноль-и-отработал, ключ не эмитится). Примеры и
+  чеклист синхронизированы (zcode-пример без note; pi-пример без ключа
+  `models`).
 - Reconciliation с landed-реализацией AGW-26 (2026-10-28): default
   model — ТОЛЬКО из указателей, названных таблицей (codex top-level
   `model` → per-row note); frontmatter-строки (zcode/copilot) default

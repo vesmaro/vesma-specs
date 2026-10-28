@@ -106,7 +106,7 @@ ratified: |-
 | per-harness атрибуция | Структурное правило FC-6/FC-7: строка факта может нести только такой `harness`, который агент ДЕЙСТВИТЕЛЬНО обнаружил на этом хосте по inventory (FC-1/FC-2). Скан моделей/MCP исполняется ПОВЕРХ результатов inventory — строка для необнаруженного харнеса невозможна по построению (contract §3.1). |
 | никогда не собирается | Дословная граница каталога: содержимое файлов (вне названных per-class исключений), имена проектов/workspace'ов, промпты и содержимое сессий, значения env-переменных, сетевой трафик, credential-материал в любой форме (§3.5). |
 | surface прозрачности | Рендер бордой «что агенты собирают» ИЗ текста этого контракта, по версии агента: карточка на FC-id (что, зачем, капы, линия приватности); построение — по handshake версий контракт↔агент (§3.6; contract §7). |
-| harness bucket | Провайдерная атрибуция строки FC-6, когда ни одна документированная форма строки модели не распарсилась: provider = slug харнеса, `note` называет причину; имя advisory для борды (§3.3.3). Угадывание провайдера запрещено (contract §3.2; гейт драфта OQ-3: never guess). |
+| harness bucket | Провайдерная атрибуция строки FC-6, когда ни одна документированная форма строки модели не распарсилась: provider = slug харнеса; причина — факт локального лога, никогда провод; имя advisory для борды (§3.3.3). Угадывание провайдера запрещено (contract §3.2; гейт драфта OQ-3: never guess). |
 | dual-form emission | Утверждённая гейтом OQ-3 форма эмиссии FC-6: `models[]` несёт СЫРЫЕ строки frontmatter/конфига verbatim; распарсенный provider едет в поле `provider` строки — и только когда документированная форма распарсилась (§3.3.3). |
 | DEFERRED (v2) | Статус класса каталога: класс описан (что, источник, капы), реализация отложена решением владельца в волну классов v2; агент его НЕ собирает до активации (§3.2, §9). |
 
@@ -201,12 +201,12 @@ vesma-agent); `re-key (v7)` — переключение населения в �
 | harness | источник | поля, названные таблицей | credential-маркер (presence only) | grounded |
 |---|---|---|---|---|
 | zcode | `~/.zcode/agents/*.md` frontmatter (frontmatter-first read; ≤64 файлов, 8 KiB/файл — brief 2026-10-28) | `model:` (scalar или list — try-in-order), `tier:`, agent `name:` (provider из документированных форм строк: `(provider)` суффикс, `provider/model` префикс; display-name и qualified id — обе легальны) | — (tier-массивы несут provider-слаги) | 2026-10-28: GCW-инсталлер рендерит fleet `models.yaml` в эти файлы; живые id документированы (`ollama-cloud/glm-5.3-flash`, `z/glm-5.3`) (contract §3.2) |
-| copilot | `~/.copilot/agents/*.agent.md` frontmatter (те же бюджеты) | те же `model:`/`tier:` поля; конвенция суффикса `" (copilot)"` | — | 2026-10-28: `model: GLM 5.3 Flash (ollama-cloud)`, `tier: 1` проверены живьём; GitHub-side каталоги моделей server-only — ЛОКАЛЬНЫЙ факт = то, что называют определения (честная note на строке) (contract §3.2) |
+| copilot | `~/.copilot/agents/*.agent.md` frontmatter (те же бюджеты) | те же `model:`/`tier:` поля; конвенция суффикса `" (copilot)"` | — | 2026-10-28: `model: GLM 5.3 Flash (ollama-cloud)`, `tier: 1` проверены живьём; GitHub-side каталоги моделей server-only — ЛОКАЛЬНЫЙ факт = то, что называют определения (server-only честность живёт в этом описании/каталоге, не на проводной строке) (contract §3.2) |
 | codex | `~/.codex/config.toml` | top-level `model`, `model_provider`; `model_providers.<name>.{name, base_url, env_key}` | `env_key` непуст → configured | v6, перенесено (contract §3.2; AGW-25) |
 | continue | `~/.continue/config.json` | `models[].{provider, model, apiBase, apiKey}` | поле `apiKey` присутствует → configured | v6, перенесено (AGW-25) |
 | claude-code | `~/.claude/settings.json` | `model`; из `env` — ТОЛЬКО ИМЕНА ключей с префиксом `ANTHROPIC_` | любое имя `ANTHROPIC_*` → configured; ни одного → unknown | v6, перенесено (contract §3.2; AGW-25) |
 | aider | `~/.aider.conf.yml` | `model`, `openai-api-base`, `openai-api-key` | `openai-api-key` присутствует → configured; отсутствует → unknown | v6, перенесено (AGW-25) |
-| pi | `<home>/.pi/agent/` | документированного каталога моделей сегодня НЕТ → honest absence (строки моделей — none); `auth.json` EXISTENCE → pi auth-факт | `auth.json` существует → configured (значение НИКОГДА не читается); файла нет → unknown | 2026-10-28: `auth.json` присутствует на pi core-51 (contract §3.2); эмиссия: одна строка provider `pi` с пустым `models[]` (brief 2026-10-28) |
+| pi | `<home>/.pi/agent/` | документированного каталога моделей сегодня НЕТ → honest absence (строки моделей — none); `auth.json` EXISTENCE → pi auth-факт | `auth.json` существует → configured (значение НИКОГДА не читается); файла нет → unknown | 2026-10-28: `auth.json` присутствует на pi core-51 (contract §3.2); эмиссия: одна строка provider `pi`, поле `models` опускается (omitempty; пустой список — ноль-и-отработал, ключ не эмитится) (brief 2026-10-28) |
 
 - **MUST**: таблица built-in и версионируется в агенте; чтение ТОЛЬКО по
   названным полям на уровне JSON-pointer/секционного пути;
@@ -253,13 +253,16 @@ vesma-agent); `re-key (v7)` — переключение населения в �
   (`ollama-cloud/glm-5.3-flash`) → provider = префикс, model id = остаток.
 - **MUST**: форма 3 — literal vendor-форма `(copilot)`: суффикс
   ` (copilot)` → provider = `copilot`; GitHub-side каталог server-only —
-  `base_url` НЕ синтезируется (honest absence), `note` строки фиксирует
-  server-only факт.
+  `base_url` НЕ синтезируется (honest absence); server-only честность
+  живёт в описании layout-таблицы и каталоге, НЕ на проводной строке —
+  frontmatter-строки note не несут (P4: note, которую код не может
+  заполнить, не обещается).
 - **MUST**: ни одна документированная форма не распарсилась →
-  harness bucket: provider = slug харнеса, `note` называет причину
-  («no documented provider form»); имя advisory для борды
-  (agent-discovery §3.11). **MUST NOT**: угадывание провайдера,
-  display-name → id конвертация, любые эвристики «похоже на провайдера».
+  harness bucket: provider = slug харнеса; причина («no documented
+  provider form») — факт ЛОКАЛЬНОГО лога, никогда провод; имя advisory
+  для борды (agent-discovery §3.11). **MUST NOT**: угадывание
+  провайдера, display-name → id конвертация, любые эвристики «похоже на
+  провайдера».
 - **MUST**: dual-form emission — `models[]` несёт СЫРЫЕ строки
   verbatim (sorted, ≤50); распарсенный provider едет в `provider`
   строки; оба факта в одной строке (гейт OQ-3: raw string + parsed pair
@@ -428,8 +431,8 @@ endpoint'ы — никаких реальных токенов, путей и ho
 
 | Файл | Что показывает |
 |---|---|
-| `examples/zcode-frontmatter-installation.json` | zcode-строка, выведенная из frontmatter: `models[]` — сырые строки verbatim (display-форма и qualified id), provider распарсен документированной формой суффикса; `base_url` omitempty (frontmatter endpoint не называет); default-факта на frontmatter-строке нет (§3.3.2) |
-| `examples/pi-auth-marker-row.json` | pi auth-маркерная строка: provider `pi`, пустой `models[]` (документированного каталога нет — honest absence), `auth: configured` из EXISTENCE `auth.json` (значение никогда не читается) |
+| `examples/zcode-frontmatter-installation.json` | zcode-строка, выведенная из frontmatter: `models[]` — сырые строки verbatim (display-форма и qualified id), provider распарсен документированной формой суффикса; `base_url` omitempty (frontmatter endpoint не называет); default- и note-фактов на frontmatter-строке нет (§3.3.2, §3.3.3) |
+| `examples/pi-auth-marker-row.json` | pi auth-маркерная строка: provider `pi`, поле `models` опущено (omitempty; документированного каталога нет — honest absence), `auth: configured` из EXISTENCE `auth.json` (значение никогда не читается) |
 | `examples/mcp-servers-field.json` | аддитивный top-level `mcp_servers`: элемент pi из `mcp-cache.json` — только имена, sorted, `count` = полный итог, опциональная карта `transports` |
 | `examples/credential-redaction.json` | дисциплина до/после: нормализация `base_url`; harness-настроенный loopback `base_url` БЕЗ маркера → анонимный probe разрешён; с маркером → НИКОГДА не наблюдается; credential-строка в неожиданном поле → строка dropped до marshal |
 
@@ -451,7 +454,7 @@ component-manifest, поэтому скелет лежит под именем
 
 | Проверка | Что делает |
 |---|---|
-| `models_field_shape` | top-level `models` несёт `installations[]` строк формы agent-discovery §3.2; `base_url` omitempty ТОЛЬКО у endpoint-less источников (§3.3.2) |
+| `models_field_shape` | top-level `models` несёт `installations[]` строк формы agent-discovery §3.2; `base_url` omitempty ТОЛЬКО у endpoint-less источников; pi-строка MAY опускать `models` (omitempty, §3.3.2) |
 | `fc6_harness_attribution` | `harness` каждой строки — написание обнаруженного харнеса из словаря; строк необнаруженных харнесов нет (§3.3.1) |
 | `provider_parse_forms` | `provider` — результат документированной формы (суффикс/префикс/`copilot` vendor) либо harness bucket с `note`-причиной; угаданных провайдеров нет (§3.3.3) |
 | `auth_enum` | `auth` ∈ `configured` \| `anonymous` \| `unknown`, выведен только из наличия маркерных полей (§3.3.6) |
@@ -576,7 +579,8 @@ release v0.11.0, fleet update — стоящая волновая дисципл
 - Brief TL спека-фазы 2026-10-28 — спека-фазовые бюджеты волны поверх
   утверждённых гейтов: ≤64 файлов frontmatter-read, ≤8
   harness-настроенных probe-целей, knob `discovery_models` для FC-7,
-  `count` = полный итог, pi-строка provider `pi` с пустым `models[]`,
+  `count` = полный итог, pi-строка provider `pi` с опущенным `models`
+  (omitempty),
   per-row note как OQ-5 wire-форма.
 - [Глоссарий](../../../GLOSSARY.md), [карта
   экосистемы](../../../ECOSYSTEM.md), [roadmap](../../../docs/roadmap.md).

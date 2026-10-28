@@ -30,8 +30,9 @@ spec.md §3; ссылки HI-nn — для отчётов конформанса
       → host-only/omit) (§3.3.2, §3.3.6).
 - [ ] **HI-07** `auth` — только из наличия маркерных полей; значений
       маркеров нет в payload ни в какой кодировке; pi-строка — provider
-      `pi`, пустой `models[]`, `auth` из existence `auth.json` (§3.3.2,
-      §3.3.6).
+      `pi`, поле `models` опущено (omitempty), `auth` из existence
+      `auth.json`; frontmatter-строки (zcode/copilot) note не несут
+      (§3.3.2, §3.3.3, §3.3.6).
 - [ ] **HI-08** Probe: фиксированная loopback-таблица + ≤8
       harness-настроенных base_url — только loopback, только анонимно
       (credentialed — никогда), zero-redirect, один GET, quiet zero
