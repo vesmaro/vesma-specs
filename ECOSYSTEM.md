@@ -22,7 +22,7 @@ Terminology / Терминология — [GLOSSARY.md](GLOSSARY.md).
 | vesma board | in-process (python) | optional | component-manifest | манифест не заявлен (фаза 4) | [vesma](https://github.com/vesmaro/vesma) |
 | vesma mesh | child-process (Go) | optional | component-manifest, service-lifecycle | манифест не заявлен (фаза 4) | [vesma-mesh](https://github.com/vesmaro/vesma-mesh) |
 | vesma eyes | web-сервис (python / FastAPI-uvicorn) | optional | component-manifest, service-lifecycle | манифест не заявлен (фаза 4) | [vesma-eyes](https://github.com/vesmaro/vesma-eyes) |
-| vesma agent | child-process (Go) | optional | component-manifest, service-lifecycle, agent-discovery (агент-нога) | манифест не заявлен (фаза 4); agent-discovery v0 (draft): агент-нога влита (AGW-25), борд-зеркало не влито | [vesma-agent](https://github.com/vesmaro/vesma-agent) |
+| vesma agent | child-process (Go) | optional | component-manifest, service-lifecycle, agent-discovery (агент-нога), host-intake (каталог сбора) | манифест не заявлен (фаза 4); agent-discovery v0 (draft.2): v6 влита (AGW-25, superseded re-key'ем), борд-зеркало не влито; host-intake v0 (draft): агент v7 (AGW-26) — ветка feat/host-intake-contract, не влита | [vesma-agent](https://github.com/vesmaro/vesma-agent) |
 | vesma cortex-metrics | child-process (python / скрипт) | optional | component-manifest, service-lifecycle | манифест не заявлен (фаза 4) | [vesma-cortex](https://github.com/vesmaro/vesma-cortex) |
 
 Notes (EN):
@@ -56,7 +56,26 @@ Notes (EN):
   (vesma-agent main (merge b98960e)); the board mirror (ingest into
   `GET /api/models`) is not — intermediate states are conformant by the
   additive rule. Credential storage, grants and the proxy stay outside
-  the contract (gate 2's domain).
+  the contract (gate 2's domain). Amended to `0.1.0-draft.2` the same
+  day: the field's POPULATION rules re-keyed per host-intake (the v6
+  standalone table superseded; the probe extended with harness-
+  configured loopback base_urls; the `mcp_servers` field added).
+- 2026-10-28: `host-intake` v0 (`0.1.0-draft`) opened as a draft — the
+  explicit collection catalog: the COMPLETE list of fact classes the
+  agent gathers on a host (the trust/transparency surface, clause 2 of
+  the owner directive 2026-10-28). Normative here: the per-harness
+  models re-key (FC-6, superseding the v6 standalone table — zero rows
+  on the real fleet, verified live 2026-10-28) and the new
+  `mcp_servers` field (FC-7); FC-8/FC-9 catalogued DEFERRED (v2);
+  `sessions[]` recorded OUTSIDE the agent's surface (it is fed by the
+  eyes-side scanner). Authority: the agent-side contract draft
+  (`docs/design/host-intake-contract-draft.md`, vesma-agent
+  `feat/host-intake-contract`, owner-approved gates: FC-6+FC-7 this
+  wave, the loopback probe approved, dual-form emission approved), the
+  carried security-verdict red lines (832cd7a), the AGW-25/AGW-26
+  lineage. Decision record: ADR-0003. The agent v7 wave (AGW-26) is in
+  flight on `feat/host-intake-contract`; the board mirror + the
+  transparency rendering are the pending vesma-eyes wave.
 
 Примечания (RU):
 
@@ -87,7 +106,27 @@ Notes (EN):
   (vesma-agent main (merge b98960e)); борд-зеркало (ingest в
   `GET /api/models`) не влито — промежуточные состояния конформны по
   правилу аддитивности. Хранение credential'ов, гранты и прокси — вне
-  контракта (дом гейта 2).
+  контракта (дом гейта 2). В тот же день поправлен до
+  `0.1.0-draft.2`: правила НАСЕЛЕНИЯ поля re-key'нуты per host-intake
+  (v6 standalone-таблица superseded; probe расширен
+  harness-настроенными loopback base_url; добавлено поле
+  `mcp_servers`).
+- 2026-10-28: `host-intake` v0 (`0.1.0-draft`) открыт как draft —
+  явный каталог сбора: ПОЛНЫЙ перечень классов фактов, которые агент
+  собирает на хосте (поверхность доверия/прозрачности, пункт 2
+  директивы владельца 2026-10-28). Нормативно здесь: per-harness
+  re-key моделей (FC-6, superseding v6 standalone-таблицу — ноль строк
+  на реальном флоте, проверено живьём 2026-10-28) и новое поле
+  `mcp_servers` (FC-7); FC-8/FC-9 каталогизированы DEFERRED (v2);
+  `sessions[]` записано ВНЕ поверхности агента (поле наполняет
+  eyes-сканер). Полномочия: агентный драфт контракта
+  (`docs/design/host-intake-contract-draft.md`, vesma-agent
+  `feat/host-intake-contract`, гейты утверждены владельцем: FC-6+FC-7 —
+  эта волна, loopback-probe утверждён, dual-form emission утверждён),
+  перенесённые красные линии security-verdict (832cd7a), линия
+  AGW-25/AGW-26. Запись решения — ADR-0003. Агентная волна v7 (AGW-26)
+  в полёте на `feat/host-intake-contract`; борд-зеркало + рендер
+  прозрачности — ожидающая волна vesma-eyes.
 
 ## specs layer vs canon / Слой specs vs canon
 

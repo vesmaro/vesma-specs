@@ -1,0 +1,43 @@
+{
+  "_comment": "Negative fixture: mcp_servers carries 31 sorted names - over the cap of 30 per harness (spec section 3.4, contract section 4 cap). Rejected by mcp_names_cap30; on the real wire the element shrinks to fit and the honest count field stays the FULL total, so an over-cap report is an agent defect (the 422 family).",
+  "mcp_servers": [
+    {
+      "harness": "pi",
+      "exec_env": "metal",
+      "servers": [
+        "server-000",
+        "server-001",
+        "server-002",
+        "server-003",
+        "server-004",
+        "server-005",
+        "server-006",
+        "server-007",
+        "server-008",
+        "server-009",
+        "server-010",
+        "server-011",
+        "server-012",
+        "server-013",
+        "server-014",
+        "server-015",
+        "server-016",
+        "server-017",
+        "server-018",
+        "server-019",
+        "server-020",
+        "server-021",
+        "server-022",
+        "server-023",
+        "server-024",
+        "server-025",
+        "server-026",
+        "server-027",
+        "server-028",
+        "server-029",
+        "server-030"
+      ],
+      "count": 31
+    }
+  ]
+}
