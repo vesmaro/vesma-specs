@@ -1,0 +1,16 @@
+{
+  "_comment": "Negative fixture: base_url carries query and fragment (spec section 3.4). Wire facts are scheme://authority[/base-path] with query/fragment/userinfo ALWAYS stripped; a credential-shaped query parameter forces host-only redaction or omission. Rejected by base_url_normalized.",
+  "models": {
+    "installations": [
+      {
+        "provider": "example-org",
+        "base_url": "https://api.example.org/v1/models?key=<credential>&beta=1#rotate",
+        "auth": "configured",
+        "models": ["z-ai/glm-4.6"],
+        "harness": "codex",
+        "exec_env": "metal",
+        "source": "config"
+      }
+    ]
+  }
+}

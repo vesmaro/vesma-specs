@@ -1,0 +1,16 @@
+{
+  "_comment": "Negative fixture: source outside the closed enum config|probe (spec section 3.2). Rejected by source_enum.",
+  "models": {
+    "installations": [
+      {
+        "provider": "example-org",
+        "base_url": "https://api.example.org/v1",
+        "auth": "configured",
+        "models": ["z-ai/glm-4.6"],
+        "harness": "codex",
+        "exec_env": "metal",
+        "source": "scan"
+      }
+    ]
+  }
+}
