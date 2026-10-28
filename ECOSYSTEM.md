@@ -22,7 +22,7 @@ Terminology / Терминология — [GLOSSARY.md](GLOSSARY.md).
 | vesma board | in-process (python) | optional | component-manifest | манифест не заявлен (фаза 4) | [vesma](https://github.com/vesmaro/vesma) |
 | vesma mesh | child-process (Go) | optional | component-manifest, service-lifecycle | манифест не заявлен (фаза 4) | [vesma-mesh](https://github.com/vesmaro/vesma-mesh) |
 | vesma eyes | web-сервис (python / FastAPI-uvicorn) | optional | component-manifest, service-lifecycle | манифест не заявлен (фаза 4) | [vesma-eyes](https://github.com/vesmaro/vesma-eyes) |
-| vesma agent | child-process (Go) | optional | component-manifest, service-lifecycle | манифест не заявлен (фаза 4) | [vesma-agent](https://github.com/vesmaro/vesma-agent) |
+| vesma agent | child-process (Go) | optional | component-manifest, service-lifecycle, agent-discovery (агент-нога) | манифест не заявлен (фаза 4); agent-discovery v0 (draft): агент-нога влита (AGW-25), борд-зеркало не влито | [vesma-agent](https://github.com/vesmaro/vesma-agent) |
 | vesma cortex-metrics | child-process (python / скрипт) | optional | component-manifest, service-lifecycle | манифест не заявлен (фаза 4) | [vesma-cortex](https://github.com/vesmaro/vesma-cortex) |
 
 Notes (EN):
@@ -46,6 +46,17 @@ Notes (EN):
   user profile `~/.vesma` + an FHS system profile) opened as a draft;
   ratified form: ADR-0045 in the engine repo. The v1 spec stays immutable
   as the legacy-generation norm.
+- 2026-10-28: `agent-discovery` v0 (`0.1.0-draft`) opened as a draft —
+  the wire contract for the additive `models` field of the outbound
+  agent's discovery report (codifies protocol amendment AGW-25;
+  authority trail: the three ratified models-fleet gates in
+  vesma-eyes — discovery-contract-draft `daf969b`, security-verdict
+  `832cd7a`, ux-blueprint `cb166a8` — plus the owner directive of
+  2026-10-28; the decision record is ADR-0002). The agent leg is merged
+  (vesma-agent `feat/models-discovery`); the board mirror (ingest into
+  `GET /api/models`) is not — intermediate states are conformant by the
+  additive rule. Credential storage, grants and the proxy stay outside
+  the contract (gate 2's domain).
 
 Примечания (RU):
 
@@ -66,6 +77,17 @@ Notes (EN):
   user-профиль `~/.vesma` + FHS system-профиль) открыт как draft;
   ратифицированная форма — ADR-0045 в репо движка. Спека v1 остаётся
   неизменной как норма legacy-генерации.
+- 2026-10-28: `agent-discovery` v0 (`0.1.0-draft`) открыт как draft —
+  проводной контракт аддитивного поля `models` в discovery-отчёте
+  исходящего агента (кодификация протокольной поправки AGW-25;
+  полномочия текста: три ратифицированных гейта флота моделей в
+  vesma-eyes — discovery-contract-draft `daf969b`, security-verdict
+  `832cd7a`, ux-blueprint `cb166a8` — плюс директива владельца
+  2026-10-28; запись решения — ADR-0002). Агентная нога влита
+  (vesma-agent `feat/models-discovery`); борд-зеркало (ingest в
+  `GET /api/models`) не влито — промежуточные состояния конформны по
+  правилу аддитивности. Хранение credential'ов, гранты и прокси — вне
+  контракта (дом гейта 2).
 
 ## specs layer vs canon / Слой specs vs canon
 
