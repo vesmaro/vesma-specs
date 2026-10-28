@@ -1,22 +1,12 @@
 # vesma-specs v0.3.0 — host-intake v0, agent-discovery 0.1.0-draft.2, ADR-0003
 
-> **DRAFT — material for GWS (2026-10-28).** Prepared on the
-> `spec/host-intake-v0` branch BEFORE the cut; not a release document.
-> GWS owns the release movement: verify the published registry state
-> (local tags are NOT proof of a release), confirm the merge state of
-> this branch, fill the Verification section from the actual run on the
-> release commit, and cut per the standing release discipline.
-> Per the ratified policy the next repository number is v0.3.0
-> (contracts remain in draft; the v0.x scale holds until full
-> ratification — see Versioning note).
-
 The third repository release of **vesma-specs**: the host-intake
 contract (the explicit "what the agent collects" catalog — the trust
 and transparency surface), the agent-discovery re-key amendment
 (0.1.0-draft.2), the decision record ADR-0003, and the markdownlint
 hotfix already on main.
 
-## What is in the release (v0.2.0..HEAD, proposed)
+## What is in the release (v0.2.0..main)
 
 ### host-intake v0 — the explicit collection catalog (draft, new contract)
 
@@ -61,10 +51,13 @@ hotfix already on main.
   field, credential-redaction before/after), a declarative conformance
   skeleton (`cases.skeleton.yaml` — the runner-profile precedent), an
   integrator checklist, and a mini-STRIDE threat model.
-- Implementation status (honest, §9 of the spec): the agent v7 wave
-  (AGW-26) is in flight on `feat/host-intake-contract`; the board
-  mirror + transparency rendering are the pending vesma-eyes wave;
-  FC-8/FC-9 deferred to v2.
+- Implementation status (honest, §9 of the spec): the agent side of
+  this contract SHIPS TODAY — vesma-agent v0.11.0 (2026-10-28)
+  implements exactly this wire (discovery v7 per-harness model rows +
+  the `mcp_servers` fact class, live-verified on the core-51 host:
+  a real model row from copilot frontmatter where the v6 table
+  reported none); the board mirror + transparency rendering are the
+  pending vesma-eyes wave; FC-8/FC-9 deferred to v2.
 
 ### agent-discovery v0 amended: 0.1.0-draft → 0.1.0-draft.2
 
@@ -107,7 +100,7 @@ hotfix already on main.
 - `integration-contract` v0 skeleton — three-layer two-way integration
   contract (nhi-8): branch `spec/integration-contract-v0` (d930c9c).
 
-## Contract statuses at release time (proposed)
+## Contract statuses at release time
 
 | Contract | Version | Status |
 |---|---|---|
@@ -115,7 +108,7 @@ hotfix already on main.
 | service-lifecycle | 1.0.0 | stable |
 | control-socket | 1.0.0 | stable |
 | layout | v1 1.0.0 / v2 2.0.0-draft.1 | stable / draft |
-| decision-provider | 1.0.0-draft | draft |
+| decision-provider | 1.0.0-draft.2 | draft |
 | agent-discovery | 0.1.0-draft.2 | draft |
 | host-intake | 0.1.0-draft | draft |
 
@@ -138,15 +131,26 @@ not a renumbering of a released contract version.
 
 ## Verification
 
-**DRAFT — GWS fills from the actual run on the release commit.**
-Expected shape, per the standing discipline: the deterministic runner
-(`tools/conformance/run.py --all`) reports all MUST cases green on the
-tagged tree; the release workflow re-runs the identical suite as its
-publication gate and publishes only after it passes.
+All gates green on the release commit, run before the cut:
 
-Required CI on the release commit: markdownlint; conformance runner;
-schema-lint; breaking-change check (strict, baseline `v0.1.0`);
-bilingual sync; gitleaks over the full history.
+- Conformance: the deterministic runner (`tools/conformance/run.py
+  --all specs/`) reports **27 passed / 0 failed / 0 warned** on the
+  release tree. The release workflow re-runs the identical suite as
+  its publication gate and publishes only after it passes.
+- Schema-lint (`tools/ci/schema_lint.py .`): 2 schema files and 28
+  example/fixture YAML files checked, 0 errors, 0 warnings.
+- Bilingual sync (`tools/ci/bilingual_check.py .`): 8 contract
+  version dirs and 3 ADR mirror pairs checked, 0 violations.
+- Breaking-change check (`tools/ci/breaking_check.py specs/
+  --strict`, baseline = latest tag `v0.2.0`): 0 findings — no
+  breaking schema change without a major bump.
+- Secrets: gitleaks over the full history runs in CI on the push;
+  the wave diff also passed a targeted sensitive-data scan at the
+  cut.
+- markdownlint gates CI on the push (it is deliberately not part of
+  release.yml); the branch content passed a targeted markdown-rule
+  check, and CI is verified green on the release commit before the
+  tag is pushed.
 
 ## Links
 
@@ -159,8 +163,8 @@ bilingual sync; gitleaks over the full history.
 
 ---
 
-**RU.** Третий релиз репозитория vesma-specs (МАТЕРИАЛ-ДРАФТ для GWS,
-2026-10-28): контракт host-intake v0 — явный каталог «что агент
+**RU.** Третий релиз репозитория vesma-specs (2026-10-28): контракт
+host-intake v0 — явный каталог «что агент
 собирает на хосте» (поверхность доверия/прозрачности; пункт 2 директивы
 владельца 2026-10-28): закрытый каталог FC-1…FC-9, принципы P1–P6,
 дословная граница «никогда не собирается»; нормативно — FC-6
@@ -180,7 +184,11 @@ agent-discovery (MD028). Полномочия: агентный драфт
 линия AGW-25/AGW-26. Вне релиза: черновики context-lifecycle v0
 (`spec/context-lifecycle-0`, dac97f2) и integration-contract v0
 (`spec/integration-contract-v0`, d930c9c). Статусы ног — честно:
-агентная волна v7 (AGW-26) в полёте; борд-зеркало + рендер прозрачности
-— ожидающая волна vesma-eyes. Релизные движения — монополия GWS:
-проверить фактическое состояние реестров, заполнить Verification с
-реального прогона на релизном коммите, резать по стоящей дисциплине.
+агентная волна v7 (AGW-26) выпущена как vesma-agent v0.11.0
+(2026-10-28; живая проверка на хосте core-51 — реальная строка моделей
+из copilot frontmatter там, где таблица v6 давала ноль); борд-зеркало +
+рендер прозрачности — ожидающая волна vesma-eyes. Проверка: все гейты
+зелёные на релизном коммите — conformance 27 passed / 0 failed /
+0 warned, schema-lint (0 ошибок), bilingual sync (0 нарушений),
+breaking-check strict (0 находок), gitleaks и markdownlint — в CI на
+пуше; CI проверен зелёным на релизном коммите до резки тега.
