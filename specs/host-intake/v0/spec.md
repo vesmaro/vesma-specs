@@ -206,7 +206,7 @@ vesma-agent); `re-key (v7)` — переключение населения в �
 | continue | `~/.continue/config.json` | `models[].{provider, model, apiBase, apiKey}` | поле `apiKey` присутствует → configured | v6, перенесено (AGW-25) |
 | claude-code | `~/.claude/settings.json` | `model`; из `env` — ТОЛЬКО ИМЕНА ключей с префиксом `ANTHROPIC_` | любое имя `ANTHROPIC_*` → configured; ни одного → unknown | v6, перенесено (contract §3.2; AGW-25) |
 | aider | `~/.aider.conf.yml` | `model`, `openai-api-base`, `openai-api-key` | `openai-api-key` присутствует → configured; отсутствует → unknown | v6, перенесено (AGW-25) |
-| pi | `<home>/.pi/agent/` | документированного каталога моделей сегодня НЕТ → honest absence (строки моделей — none); `auth.json` EXISTENCE → pi auth-факт | `auth.json` существует → configured (значение НИКОГДА не читается); файла нет → anonymous | 2026-10-28: `auth.json` присутствует на pi core-51 (contract §3.2); эмиссия: одна строка provider `pi` с пустым `models[]` (brief 2026-10-28) |
+| pi | `<home>/.pi/agent/` | документированного каталога моделей сегодня НЕТ → honest absence (строки моделей — none); `auth.json` EXISTENCE → pi auth-факт | `auth.json` существует → configured (значение НИКОГДА не читается); файла нет → unknown | 2026-10-28: `auth.json` присутствует на pi core-51 (contract §3.2); эмиссия: одна строка provider `pi` с пустым `models[]` (brief 2026-10-28) |
 
 - **MUST**: таблица built-in и версионируется в агенте; чтение ТОЛЬКО по
   названным полям на уровне JSON-pointer/секционного пути;
@@ -216,6 +216,11 @@ vesma-agent); `re-key (v7)` — переключение населения в �
   grounded-набор драфта их не называют (brief 2026-10-28: absent;
   упоминание «gemini / qwen» в строке draft §3.2 «continue / aider /
   gemini / qwen — as v6 rows» superseded — в v6 таких строк не было).
+- **MUST**: pi при отсутствии `auth.json` эмитит `auth: unknown`, не
+  `anonymous` — прецедент семейства v6 (claude-code/aider,
+  agent-discovery §3.5): отсутствие маркера не доказывает анонимность —
+  credential может жить в env-переменной или OS-сторе, которые эта
+  сборка никогда не читает.
 - **MUST**: файл сверх read-cap 8 KiB, не-regular или непарсируемый в
   пределах капа = honest absence строки, никогда не ошибка (contract
   §3.4; P4).

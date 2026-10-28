@@ -213,7 +213,7 @@ only through a contract amendment (P5).
 | continue | `~/.continue/config.json` | `models[].{provider, model, apiBase, apiKey}` | the `apiKey` field present → configured | v6, carried (AGW-25) |
 | claude-code | `~/.claude/settings.json` | `model`; from `env` — only KEY NAMES with the `ANTHROPIC_` prefix | any `ANTHROPIC_*` name → configured; none → unknown | v6, carried (contract §3.2; AGW-25) |
 | aider | `~/.aider.conf.yml` | `model`, `openai-api-base`, `openai-api-key` | `openai-api-key` present → configured; absent → unknown | v6, carried (AGW-25) |
-| pi | `<home>/.pi/agent/` | no documented model catalog today → honest absence (model rows: none); `auth.json` EXISTENCE → the pi auth fact | `auth.json` exists → configured (the value is NEVER read); no file → anonymous | 2026-10-28: `auth.json` present on core-51's pi (contract §3.2); emission: one provider `pi` row with an empty `models[]` (brief 2026-10-28) |
+| pi | `<home>/.pi/agent/` | no documented model catalog today → honest absence (model rows: none); `auth.json` EXISTENCE → the pi auth fact | `auth.json` exists → configured (the value is NEVER read); no file → unknown | 2026-10-28: `auth.json` present on core-51's pi (contract §3.2); emission: one provider `pi` row with an empty `models[]` (brief 2026-10-28) |
 
 - **MUST**: the table is built-in and versioned in the agent; reads go
   ONLY through the named fields at JSON-pointer/section-path level;
@@ -223,6 +223,11 @@ only through a contract amendment (P5).
   nor the draft's grounded set names them (brief 2026-10-28: absent; the
   draft §3.2 row's «continue / aider / gemini / qwen — as v6 rows»
   mention is superseded — the v6 table had no such rows).
+- **MUST**: pi with `auth.json` absent emits `auth: unknown`, not
+  `anonymous` — the v6 family precedent (claude-code/aider,
+  agent-discovery §3.5): the absence of a marker does not prove
+  anonymity — the credential may live in an env var or an OS store this
+  build never reads.
 - **MUST**: a file over the 8 KiB read cap, non-regular or unparsable
   within the cap = an honest row absence, never an error (contract
   §3.4; P4).
