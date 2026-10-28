@@ -24,7 +24,7 @@ language: en (informative mirror)
 > specification [spec.md](spec.md). In case of divergence, the Russian
 > text prevails. The mirror is maintained in the same change as the
 > Russian text (single-commit sync policy).
-
+>
 > **Status: draft (0.1.0-draft).** The contract codifies the already
 > merged agent leg — protocol amendment AGW-25 «Models-fleet addendum —
 > discovery v6» in `docs/PROTOCOL.md` §3 of the outbound ЦУП agent
