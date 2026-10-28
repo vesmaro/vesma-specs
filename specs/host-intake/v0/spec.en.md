@@ -1,8 +1,8 @@
 ---
 contract: host-intake
-version: 0.1.0-draft
+version: 0.1.0-draft.3
 status: draft
-decisions: [ADR-0001, ADR-0002, "owner directive 2026-10-28 (two clauses: per-harness models re-key + the explicit collection-surface contract)", "the agent-side contract draft — docs/design/host-intake-contract-draft.md (vesmaro/vesma-agent, the feat/host-intake-contract branch); the draft's gates are owner-approved (FC-6+FC-7 this wave; FC-8/9 — DEFERRED to v2; the loopback probe approved; dual-form emission approved)", "gates carried: fleet security-verdict (vesma-eyes, feat/models-fleet-blueprint, 832cd7a) — the red lines", "the AGW-25/AGW-26 lineage (discovery v6 → v7 re-key)"]
+decisions: [ADR-0001, ADR-0002, "owner directive 2026-10-28 (two clauses: per-harness models re-key + the explicit collection-surface contract)", "the agent-side contract draft — docs/design/host-intake-contract-draft.md (vesmaro/vesma-agent, the feat/host-intake-contract branch); the draft's gates are owner-approved (FC-6+FC-7 this wave; the loopback probe approved; dual-form emission approved; FC-8/9 initially DEFERRED to v2)", "gates carried: fleet security-verdict (vesma-eyes, feat/models-fleet-blueprint, 832cd7a) — the red lines", "the AGW-25/AGW-26 lineage (discovery v6 → v7 re-key)", "the discovery v8 amendment (AGW-27, 2026-10-29; the owner's «делай» directive 2026-10-29): FC-8/FC-9 un-deferred → normative (§3.4a/§3.4b), the discovery_host_facts knob, the discovery_models_catalogs knob (owner-declared model catalogs)"]
 ratified: |-
   Not ratified (draft). Authority trail: owner directive 2026-10-28 —
   two clauses (per-harness models re-key; the explicit collection
@@ -10,13 +10,18 @@ ratified: |-
   draft (docs/design/host-intake-contract-draft.md, vesmaro/vesma-agent,
   feat/host-intake-contract) is the source of the catalog, principles,
   the per-harness table and the disciplines; its gate decisions are
-  owner-approved (FC-6+FC-7 this wave, FC-8/9 deferred to v2, the
-  loopback probe approved, dual-form emission approved); the config-read
-  red lines carry over from the ratified security-verdict (832cd7a,
-  models-fleet gate 2); the protocol lineage is AGW-25 (discovery v6,
-  merged) → AGW-26 (v7 re-key, the feat/host-intake-contract branch).
-  Stable ratification — the first conformant implementation of the
-  catalog legs by the agent (v7) and a green conformance run.
+  owner-approved (FC-6+FC-7 this wave, the loopback probe approved,
+  dual-form emission approved; FC-8/9 initially deferred to v2); the
+  config-read red lines carry over from the ratified security-verdict
+  (832cd7a, models-fleet gate 2); the protocol lineage is AGW-25
+  (discovery v6, merged) → AGW-26 (v7 re-key) → AGW-27 (discovery v8,
+  2026-10-29 — this spec's amendment: FC-8/FC-9 normative, the
+  discovery_host_facts and discovery_models_catalogs knobs; the owner's
+  «делай» directive of 2026-10-29; the agent-side normative form — the
+  «discovery v8 (AGW-27, 2026-10-29)» addendum in vesma-agent's
+  docs/PROTOCOL.md, landing in parallel). Stable ratification — the
+  first conformant implementation of the catalog legs by the agent
+  (v7+) and a green conformance run.
 language: en (informative mirror)
 ---
 
@@ -27,32 +32,38 @@ language: en (informative mirror)
 > text prevails. The mirror is maintained in the same change as the
 > Russian text (single-commit sync policy).
 >
-> **Status: draft (0.1.0-draft).** The contract fixes the COMPLETE
+> **Status: draft (0.1.0-draft.3).** The contract fixes the COMPLETE
 > explicit catalog of what the outbound ЦУП agent (`vesmaro-agent`)
 > collects on a host — the fleet's trust and transparency surface
 > (clause 2 of the owner directive 2026-10-28) — and normatively defines
-> two new/re-keyed legs: FC-6 (models per-harness — the re-key
-> superseding the v6 standalone table of AGW-25) and FC-7 (mcp_servers).
-> Anything not named in the catalog of §3.2 is not collected. Form
-> changes after ratification go through the SemVer process only
-> (ADR-0001 §2).
+> the new/re-keyed legs: FC-6 (models per-harness — the re-key
+> superseding the v6 standalone table of AGW-25), FC-7 (mcp_servers),
+> and — since the discovery v8 amendment (AGW-27, 2026-10-29; the
+> owner's «делай») — FC-8 (tooling, §3.4a) and FC-9 (compute envelope,
+> §3.4b), whose DEFERRED status is lifted. Anything not named in the
+> catalog of §3.2 is not collected. Form changes after ratification go
+> through the SemVer process only (ADR-0001 §2).
 
 The key words MUST / MUST NOT / SHOULD / MAY are interpreted per
 [RFC 2119](https://www.rfc-editor.org/rfc/rfc2119). Prose is English;
 identifiers, fields and enum values are EN. Every requirement traces to
 the agent-side contract draft («contract §…» =
 `docs/design/host-intake-contract-draft.md`, its gates owner-approved on
-2026-10-28), the carried security-verdict («gate 2», 832cd7a), or the
-AGW-25/AGW-26 protocol lineage; the text marks them. Budgets marked
-«(brief 2026-10-28)» are spec-phase wave budgets laid over the approved
+2026-10-28), the carried security-verdict («gate 2», 832cd7a), the
+AGW-25/AGW-26 protocol lineage, or the discovery v8 amendment (AGW-27,
+2026-10-29 — the TC-pinned deltas the owner approved with «делай» on
+2026-10-29; the agent-side normative form — the «discovery v8 (AGW-27,
+2026-10-29)» addendum in vesma-agent's `docs/PROTOCOL.md`); the text
+marks them. Budgets marked «(brief 2026-10-28)» and
+«(brief 2026-10-29)» are spec-phase wave budgets laid over the approved
 gates (listed in §10).
 
 ## 1. Scope
 
 The contract fixes the **explicit collection catalog** — the complete
 list of fact classes (FC) the agent may gather on a host, with the
-surface principles (P1–P6), the normative wire forms of the new/re-keyed
-legs (FC-6, FC-7), and the never-collected boundary. The trust
+surface principles (P1–P6), the normative wire forms of the normative
+legs (FC-6…FC-9), and the never-collected boundary. The trust
 principle: **the owner can see the complete "what agents collect" list**
 — the catalog is public, versioned and diffable per release; every wire
 field of the report maps to exactly one FC id (§3.6).
@@ -69,15 +80,23 @@ field of the report maps to exactly one FC id (§3.6).
   (§3.3);
 - FC-7 — mcp_servers per harness: names + transport kind from
   documented caches/configs, the wire form, caps (§3.4);
+- FC-8 — tooling: presence + version of the fixed built-in host-tool
+  list, the `discovery_host_facts` knob (§3.4a; normative since
+  discovery v8, AGW-27);
+- FC-9 — compute envelope: CPU cores, RAM total, disk free, GPU names,
+  the `discovery_host_facts` knob (§3.4b; normative since discovery v8,
+  AGW-27);
+- owner-declared model catalogs — the `discovery_models_catalogs` knob
+  as an extension of the FC-6 per-harness table (§3.3.2; discovery v8,
+  AGW-27);
 - the board's transparency surface: rendering "what agents collect"
   FROM this contract, per agent version; the field → FC map (§3.6);
 - the honest implementation status (§9).
 
 **Out of scope (neighbouring domains):**
 
-- FC-8 (tooling) and FC-9 (compute envelope) — **catalogued, status
-  DEFERRED: v2** — the owner's decision recorded at the draft gate;
-  implementation is a separate v2 class wave (§3.2);
+- container config surfaces (`exec_env` beyond `"metal"`) — the
+  follow-up wave (§3.3.6, §9);
 - the wire discipline of the EXISTING `models` field (the row form,
   `base_url` normalization, snapshot/no-wipe, board ingest duties) — the
   norm of [agent-discovery](../../agent-discovery/v0/spec.md) v0; this
@@ -116,7 +135,8 @@ redefined here. Contract-local terms:
 | transparency surface | The board's rendering of "what agents collect" FROM this contract, per agent version: one card per FC id (what, why, caps, privacy line); built via the contract↔agent version handshake (§3.6; contract §7). |
 | harness bucket | The FC-6 provider attribution when NO documented string form parses: provider = the harness slug; the reason is a local-log fact, never the wire; an advisory name board-side (§3.3.3). Provider guessing is forbidden (contract §3.2; draft gate OQ-3: never guess). |
 | dual-form emission | The OQ-3-approved emission form of FC-6: `models[]` carries the RAW frontmatter/config strings verbatim; the parsed provider rides the row's `provider` field — and only when the documented form parses (§3.3.3). |
-| DEFERRED (v2) | A catalog-class status: the class is described (what, source, caps), implementation deferred by the owner's decision to the v2 class wave; the agent does NOT collect it until activation (§3.2, §9). |
+| DEFERRED (v2) | A catalog-class status: the class is described (what, source, caps), implementation deferred by the owner's decision; the agent does NOT collect it until activation (§3.2, §9). Initially carried by FC-8/FC-9; the deferral was lifted by the discovery v8 amendment (AGW-27, 2026-10-29, the owner's «делай») — the status is unused in the catalog now and stays in the status vocabulary for possible future deferrals. |
+| leg knob | A leg's configuration switch in the agent config with enum values (the agent-discovery §3.9 precedent): `auto` — the leg runs; `off` — the leg's fields are absent from the wire entirely; an unknown value — refuse to start (never a silent fallback). This contract's legs carry two knobs: `discovery_models` (FC-6/FC-7, §3.3/§3.4) and `discovery_host_facts` (FC-8/FC-9, §3.4a/§3.4b); the FC-6 extension — the `discovery_models_catalogs` list (§3.3.2). |
 
 ## 3. Contract
 
@@ -167,13 +187,15 @@ deferred by the owner (draft gate).
 | FC-5 | `runtime`, `k8s_nodes/pods/verdicts` | Runtime-surface honesty; content-free cluster lists | multi-signal detect; stdlib REST | facts | 30 s leg | live (v5) |
 | FC-6 | `models` per-harness | Per DISCOVERED harness: configured providers (name, base_url normalized, auth enum), available models (what the config/catalog names + anonymous local-server availability), default model | the §3.3.2 per-harness layout table | names/enums/normalized URLs | 64 rows, 50/row, 16 KiB, 8 KiB/file | **re-key (v7, AGW-26)** — supersedes the v6 standalone table |
 | FC-7 | `mcp_servers` per harness | MCP/extension server NAMES + transport kind | documented caches/configs (pi `mcp-cache.json`; zcode/copilot mcp sections where documented) | names/kinds only — never argv, env, URLs | ≤30 names/harness, 8 KiB | **approved (v7)** — new |
-| FC-8 | tooling | Presence + version of a FIXED built-in host-tool list (git, podman, docker, python3, node, go, …) | LookPath + one `--version` line | names/versions | ≤40 tools, 4096-char read cap | **DEFERRED (v2)** |
-| FC-9 | compute envelope | CPU cores, RAM total, disk free on the state volume, GPU presence (name string only) | /proc + statvfs + `nvidia-smi -L` (name string) | hardware facts | one-shot per pass | **DEFERRED (v2)** |
+| FC-8 | tooling | Presence + version of a FIXED built-in host-tool list (git, podman, docker, python3, node, go, …) | LookPath + ONE version call ≤2 s (brief 2026-10-29) | names/versions; the version — first line ≤200 runes through the names-only validator, drop-on-shape | ≤40 tools sorted + honest `count`; 8 KiB shrink-to-fit | **normative (v8, AGW-27)** — §3.4a |
+| FC-9 | compute envelope | CPU cores, RAM total, disk free on the state volume, GPU presence (names only) | /proc + statvfs + ONE `nvidia-smi -L` call (brief 2026-10-29) | numbers only; GPU names — strings ≤8, validator-gated; never serials/utilization | fields omitempty INDEPENDENTLY (P4); one-shot per pass | **normative (v8, AGW-27)** — §3.4b |
 
-**MUST**: FC-8 and FC-9 are NOT collected until the v2 wave activates
-them — cataloguing ≠ activation (draft gate; contract §2 PROPOSED rows →
-the owner's "deferred" decision). **MUST**: the status column changes
-only through a contract amendment (P5).
+**MUST**: the status column changes only through a contract amendment
+(P5); activating a DEFERRED class = such an amendment with an owner
+gate (P1: adding a collected class is always gated). The discovery v8
+amendment (AGW-27, 2026-10-29; the owner's «делай») lifted DEFERRED
+from FC-8/FC-9 — both classes are normative (§3.4a, §3.4b) and
+governed by the `discovery_host_facts: auto|off` knob (§3.4a).
 
 **The field → FC map** (complete; the basis of the §3.6 rendering):
 
@@ -186,6 +208,8 @@ only through a contract amendment (P5).
 | `runtime`, `k8s_nodes`, `k8s_pods`, `k8s_verdicts` | FC-5 |
 | `models` | FC-6 |
 | `mcp_servers` (since v7) | FC-7 |
+| `tooling` (since v8, AGW-27) | FC-8 |
+| `compute` (since v8, AGW-27) | FC-9 |
 | `sessions[]` | **NOT the agent** — the board's eyes-side scanner (see §9) |
 
 ### 3.3 FC-6 — models per-harness (the re-keyed core)
@@ -207,7 +231,7 @@ only through a contract amendment (P5).
 
 | harness | source | fields named by the table | credential marker (presence only) | grounded |
 |---|---|---|---|---|
-| zcode | `~/.zcode/agents/*.md` frontmatter (frontmatter-first read; ≤64 files, 8 KiB/file — brief 2026-10-28) | `model:` (scalar or list — try-in-order), `tier:`, agent `name:` (provider from the documented string forms: the `(provider)` suffix, the `provider/model` prefix; display-name and qualified id are both legal) | — (tier arrays carry provider slugs) | 2026-10-28: the GCW installer renders the fleet `models.yaml` into these files; live ids documented (`ollama-cloud/glm-5.3-flash`, `z/glm-5.3`) (contract §3.2) |
+| zcode | `~/.zcode/agents/*.md` frontmatter (frontmatter-first read; ≤64 files, 8 KiB/file — brief 2026-10-28); + owner-declared model catalogs via the `discovery_models_catalogs` knob (v8, AGW-27 — the block below) | `model:` (scalar or list — try-in-order), `tier:`, agent `name:` (provider from the documented string forms: the `(provider)` suffix, the `provider/model` prefix; display-name and qualified id are both legal) | — (tier arrays carry provider slugs) | 2026-10-28: the GCW installer renders the fleet `models.yaml` into these files; live ids documented (`ollama-cloud/glm-5.3-flash`, `z/glm-5.3`) (contract §3.2) |
 | copilot | `~/.copilot/agents/*.agent.md` frontmatter (same budgets) | the same `model:`/`tier:` fields; the `" (copilot)"` suffix convention | — | 2026-10-28: `model: GLM 5.3 Flash (ollama-cloud)`, `tier: 1` verified live; GitHub-side model catalogs are server-only — the LOCAL fact is what the definitions name (the server-only honesty lives in this description/the catalog, not on the wire row) (contract §3.2) |
 | codex | `~/.codex/config.toml` | top-level `model`, `model_provider`; `model_providers.<name>.{name, base_url, env_key}` | `env_key` non-empty → configured | v6, carried (contract §3.2; AGW-25) |
 | continue | `~/.continue/config.json` | `models[].{provider, model, apiBase, apiKey}` | the `apiKey` field present → configured | v6, carried (AGW-25) |
@@ -248,6 +272,45 @@ only through a contract amendment (P5).
   — honest absence, URL guessing forbidden (P4; an additive extension of
   the agent-discovery §3.2 row form: optional in the new sources, the
   required fields of the others untouched).
+
+**Owner-declared model catalogs — the `discovery_models_catalogs` knob
+(FC-6; discovery v8, AGW-27, 2026-10-29):**
+
+- **MUST**: the `discovery_models_catalogs` knob — a YAML list of
+  `{path, harness}` entries: EXPLICITLY owner-declared model-catalog
+  files (P1: the agent NEVER discovers catalog paths by itself — only
+  owner entries; the GCW `models.yaml` precedent — the `tiers` dict of
+  `primary`/`fallback` strings of the `Name (vendor)` form; grounding:
+  the GCW repository's models.yaml).
+- **MUST**: the file read under the 8 KiB read cap; a TYPED decode
+  (the `tiers` structure — a dict tier → `{primary, fallback[]}`);
+  ALL model strings are collected — primaries AND fallbacks (P5: the
+  full catalog, not the primary only).
+- **MUST**: provider attribution — by the documented string forms
+  (§3.3.3, suffix-priority: the `(provider)` suffix form is tried
+  first, then the `provider/model` prefix); no form parsed → the
+  harness bucket of the entry's harness (§3.3.3, never guess).
+- **MUST**: a catalog row carries `source: config`, `auth: unknown` and
+  the note «model catalog (owner-declared)» — the owner declares a
+  configuration fact; the table names no credential-marker field in a
+  catalog file (P3: catalog values are model names, not credential
+  material; auth unknown, not anonymous — the §3.3.2 pi precedent).
+- **MUST**: the row's `harness` = the spelling from the OWNER's ENTRY
+  (the entry's `harness` field, verbatim); the board dictionary decides
+  admission (unknown → drop + audit, agent-discovery §3.11). Difference
+  from the §3.3.1 structural attribution: frontmatter/config rows are
+  possible only for a harness DISCOVERED by the inventory; a catalog
+  row is an owner-declared fact — its admission is decided by the board
+  dictionary, not by the agent's discovery (AGW-27).
+- **MUST**: an invalid entry (missing `path`/`harness`, unreadable or
+  non-regular file, over 8 KiB, unparsable YAML, decode mismatching the
+  typed form) = skip the entry + an info log — never an error, never a
+  guess (P4; quiet zero).
+- **MUST**: catalog rows ride the common FC-6 `models` field and are
+  governed by the `discovery_models: auto|off` knob (§3.3/§3.4):
+  `off` → the `models` field is absent entirely, no catalog rows. The
+  catalog PATHs NEVER ride the wire — only the catalog's model strings
+  (§3.5).
 
 #### 3.3.3 The documented provider string forms (dual-form emission, never guess)
 
@@ -386,13 +449,97 @@ CHANGES (contract §3.4 "carried verbatim"):
   `harness`/`exec_env` → drop + audit; an over-cap object → an honest
   422.
 
+### 3.4a FC-8 — tooling (normative; discovery v8, AGW-27)
+
+Status: DEFERRED lifted by the discovery v8 amendment (AGW-27,
+2026-10-29; the owner's «делай»). The spec pins the COLLECTION
+DISCIPLINE; the built-in tool list itself is agent-side ratification
+(versioned in the agent, ~25–30 well-known host tools: git, podman,
+docker, python3, node, go, …).
+
+- **MUST**: the `discovery_host_facts: auto|off` knob (default `auto`;
+  an unknown value — refuse the agent start, never a silent fallback)
+  governs FC-8 and FC-9 JOINTLY: `off` → the additive top-level
+  `tooling` and `compute` fields are absent from the wire ENTIRELY;
+  a run (`auto`) → the fields are present, individual facts may be
+  empty or omitted (honest absence, P4; the knob precedent,
+  agent-discovery §3.9).
+- **MUST**: per tool from the built-in table — LookPath + ONE version
+  invocation, timeout ≤2 s (brief 2026-10-29); not on PATH,
+  failure/timeout/unparsable output → quiet zero per tool (P4), never
+  an error, never a retry.
+- **MUST**: the version string — the FIRST line of the output, ≤200
+  runes, through the names-only validator (length caps + the
+  credential-shape scan, §3.3.6 — drop, never mangle); a
+  credential-shaped version string → drop the `version` field (the
+  entry stays name-only), the value is never echoed (drop-on-shape; P3).
+- **MUST**: the wire — an additive top-level member:
+
+```json
+{"tooling": {"tools": [{"name": "git", "version": "2.47.1"},
+                       {"name": "python3"}],
+             "count": 2}}
+```
+
+- **MUST**: the member = `{tools[], count}`; an entry = `{name,
+  version?}` — `version` omitempty (no version obtained → a name-only
+  entry, honest absence, never a guess); a tool NOT on PATH → no entry
+  at all (the class emits PRESENCE facts: an absent tool = an absent
+  entry — quiet zero).
+- **MUST**: `tools[]` sorted by name, ≤40 (contract §2 FC-8); **MUST**:
+  `count` — the FULL total of tools found, even when `tools[]` is
+  truncated at 40 (an honest counter; the count semantics of §3.4).
+- **MUST**: the field cap — 8 KiB marshaled, shrink-to-fit before send
+  (§3.3.5); on truncation the `count` stays full (§3.4).
+- Container-runtime tools (podman/docker) are collected as
+  PRESENCE/VERSION facts — this class touches no container config
+  surfaces (`exec_env` stays `"metal"`; §3.3.6, §9).
+
+### 3.4b FC-9 — compute envelope (normative; discovery v8, AGW-27)
+
+Status: DEFERRED lifted by the same amendment (AGW-27). The class is a
+hardware-envelope fact set; the privacy line: the hardware envelope
+only — no hostnames, serials or machine identifiers beyond the class
+facts (§3.5).
+
+- **MUST**: the wire — an additive top-level member; EVERY field is
+  omitempty INDEPENDENTLY by honest absence (P4: no reliable fact → no
+  field, never a zero placeholder):
+
+```json
+{"compute": {"cpu_cores": 16, "mem_total_bytes": 33554432000,
+             "disk_free_bytes": 107374182400,
+             "gpus": ["NVIDIA GeForce RTX 4090"]}}
+```
+
+- **MUST**: the member = `{cpu_cores?, mem_total_bytes?,
+  disk_free_bytes?, gpus?}` — NUMBERS ONLY (integers; memory/disk in
+  bytes; `cpu_cores` — logical cores). `disk_free_bytes` — free space
+  on the state volume (contract §2 FC-9).
+- **MUST**: GPU — ONE `nvidia-smi -L` call per pass (brief 2026-10-29);
+  NAME strings ONLY, ≤8 entries, through the names-only validator
+  (§3.3.6); **MUST NOT**: serials, utilization, telemetry — ever; a
+  failed call, unparsable output, or names beyond 8 → `gpus` is omitted
+  or honestly truncated (P4; honest truncation — drop, never mangle).
+- **MUST**: the cap — shrink-to-fit 8 KiB marshaled (the family
+  discipline of §3.3.5); an over-cap field is an honest 422 board-side
+  (§4).
+- **MUST**: knobs and honest absence — as in §3.4a (the single
+  `discovery_host_facts: auto|off`; quiet zero per fact; one-shot per
+  pass, no timer of its own).
+
 ### 3.5 Never collected (the verbatim boundary)
 
 **Never collected** (contract §2, verbatim): file contents (outside the
 named per-class exceptions), project/workspace names, prompts and
 session content, environment-variable VALUES, network traffic,
 credential material in any form. The MANAGED allowlist and the shim wave
-are separate surfaces this contract does not touch.
+are separate surfaces this contract does not touch. Since the discovery
+v8 amendment (AGW-27) the boundary gains explicit lines for the FC-8/
+FC-9 hardware classes: **never collected** are hardware serials,
+utilization telemetry and load telemetry of any kind; the PATHs of
+owner-declared model catalogs never ride the wire — only the catalog
+row facts (§3.3.2, §3.4b).
 
 - **MUST NOT**: no catalog class reads or emits anything from the list;
   a conflict between the catalog and this boundary resolves in favour of
@@ -416,8 +563,9 @@ are separate surfaces this contract does not touch.
 
 ## 4. Error codes
 
-The contract introduces no new codes: the catalog legs (FC-6, FC-7) ride
-the EXISTING `POST /api/executors/{executor_id}/discovery` route, and
+The contract introduces no new codes: the catalog legs (FC-6, FC-7 and
+since v8 — FC-8, FC-9) ride the EXISTING
+`POST /api/executors/{executor_id}/discovery` route, and
 the route-outcome registry is inherited from
 [agent-discovery §4](../../agent-discovery/v0/spec.md) unchanged: `200`
 (accepted, `last_seen` ticked), `401`/`403` (token/identity/revoked),
@@ -429,8 +577,8 @@ are the same.
 
 | Code | Application to this contract's fields |
 |---|---|
-| `422` | `models` over 16 KiB marshaled; `installations[]` > 64; `models[]` > 50; an `mcp_servers` element over 8 KiB; `servers[]` > 30; an unknown form enum value — honest rejection, never a silent trim (the agent's shrink-to-fit makes an over-cap send an agent defect) |
-| `404` | the FC-6/FC-7 leg stays silent below info on a board without the route — additivity creates no schedule and no retries (§3.1 P5) |
+| `422` | `models` over 16 KiB marshaled; `installations[]` > 64; `models[]` > 50; an `mcp_servers` element over 8 KiB; `servers[]` > 30; `tooling`/`compute` over 8 KiB; `tools[]` > 40; `gpus` > 8; an unknown form enum value — honest rejection, never a silent trim (the agent's shrink-to-fit makes an over-cap send an agent defect) |
+| `404` | the FC-6/FC-7/FC-8/FC-9 leg stays silent below info on a board without the route — additivity creates no schedule and no retries (§3.1 P5) |
 
 ## 5. Examples
 
@@ -444,6 +592,9 @@ endpoints only — no real tokens, owner-machine paths or hostnames
 | `examples/zcode-frontmatter-installation.json` | a zcode row derived from frontmatter: `models[]` — raw strings verbatim (the display form and the qualified id), the provider parsed by the documented suffix form; `base_url` omitempty (the frontmatter names no endpoint); no default or note fact on a frontmatter row (§3.3.2, §3.3.3) |
 | `examples/pi-auth-marker-row.json` | the pi auth-marker row: provider `pi`, the `models` field omitted (omitempty; no documented catalog — honest absence), `auth: configured` from the EXISTENCE of `auth.json` (the value never read) |
 | `examples/mcp-servers-field.json` | the additive top-level `mcp_servers`: a pi element from `mcp-cache.json` — names only, sorted, `count` = the full total, the optional `transports` map |
+| `examples/tooling-field.json` | the additive top-level `tooling` (FC-8, §3.4a): `{tools[], count}` — `{name, version?}` entries, `version` omitempty for a tool with no version obtained, `count` = the full total, sorted |
+| `examples/compute-envelope.json` | the additive top-level `compute` (FC-9, §3.4b): numbers only, fields independently omitempty, `gpus` — names only (never serials/utilization) |
+| `examples/catalog-row-owner-declared.json` | an FC-6 row from an owner-declared catalog (the `discovery_models_catalogs` knob, §3.3.2): `source: config`, `auth: unknown`, the note «model catalog (owner-declared)», the catalog's primary+fallback strings, the provider from the documented suffix form |
 | `examples/credential-redaction.json` | the discipline before/after: `base_url` normalization; a harness-configured loopback `base_url` WITHOUT a marker → an anonymous probe allowed; with a marker → never dialed; a credential string in an unexpected field → the row dropped before marshal |
 
 ## 6. Conformance
@@ -476,6 +627,12 @@ The check vocabulary (executor — a future runner profile):
 | `mcp_names_cap30` | `servers[]` sorted ≤ 30 per harness (§3.4) |
 | `mcp_names_only` | no argv/env/URL-shaped strings in `servers[]`/`transports` — names and kinds only (§3.4) |
 | `knob_values` | a `discovery_models` knob declaration — only `auto` \| `off`; governs FC-6 and FC-7 jointly (§3.4) |
+| `tooling_field_shape` | top-level `tooling` = `{tools[], count}`; `{name, version?}` entries sorted ≤ 40; `count` — the full total; with the knob `off` the field is absent entirely (§3.4a) |
+| `tooling_version_discipline` | a present `version` — ≤200 runes, one line, clean per the names-only validator; a credential-shaped version → the entry has no `version` (drop-on-shape) (§3.4a) |
+| `compute_field_shape` | top-level `compute` = `{cpu_cores?, mem_total_bytes?, disk_free_bytes?, gpus?}`; fields — numbers only, omitempty INDEPENDENTLY; with the knob `off` the field is absent entirely (§3.4b) |
+| `compute_gpu_names_only` | `gpus` — strings ≤ 8, clean per the validator; no serial-/utilization-shaped strings (§3.4b) |
+| `catalog_rows_shape` | owner-declared catalog rows: `source=config`, `auth=unknown`, the note «model catalog (owner-declared)»; `harness` = the owner entry's spelling; the catalog PATH absent from the wire (§3.3.2) |
+| `host_facts_knob_values` | a `discovery_host_facts` knob declaration — only `auto` \| `off`; governs FC-8 and FC-9 jointly (§3.4a) |
 
 Cases: positive — the §5 wire examples (`examples/…`;
 `expect: pass`, `severity: must`; the explanatory
@@ -484,13 +641,19 @@ Cases: positive — the §5 wire examples (`examples/…`;
 
 ## 7. Compatibility
 
-- **SemVer**: `0.1.0-draft`; stable ratification — the first conformant
+- **SemVer**: `0.1.0-draft.3`; stable ratification — the first conformant
   agent implementation (v7) and a green conformance run. A breaking
   change = MAJOR + a `max(90 days, 2 minor releases)` window with dual
   support; below 1.0 the window is 14 days (ADR-0001 §2).
 - **Additivity**: FC-7 (`mcp_servers`) — a new additive top-level field:
   a board ignoring it stays conformant (the unknown-field rule); an
-  older agent without the field stays conformant. The FC-6 re-key
+  older agent without the field stays conformant. FC-8 (`tooling`) and
+  FC-9 (`compute`) since v8 (AGW-27) — new additive top-level fields
+  with the same discipline: a board without their support stays
+  conformant, an older agent stays conformant (§3.4a, §3.4b). The FC-6
+  extension — owner-declared catalog rows — extends the POPULATION of
+  the existing `models` field additively (the row form unchanged;
+  §3.3.2). The FC-6 re-key
   changes the POPULATION rules of the existing `models` field
   (per-harness attribution, frontmatter rows, `base_url` omitempty for
   endpoint-less sources) with the row form UNCHANGED: an old board reads
@@ -498,11 +661,13 @@ Cases: positive — the §5 wire examples (`examples/…`;
   agent-discovery §7).
 - **REMOVING a named field = MAJOR** (inherited); extending the
   per-harness table (a new harness, a new named field) — a minor change
-  with committee notification; activating DEFERRED classes (FC-8/FC-9) —
-  a minor change of THIS contract with an owner gate (P1: adding a
-  collected class is always gated).
-- **Consumers**: the agent — obeys the catalog and the §3.3/§3.4 forms;
-  the board — ingest per the agent-discovery §3.11 family + the §3.6
+  with committee notification; activating DEFERRED classes — a minor
+  change of THIS contract with an owner gate (P1: adding a collected
+  class is always gated); such an activation was executed by the
+  discovery v8 amendment (AGW-27, 2026-10-29) for FC-8/FC-9.
+- **Consumers**: the agent — obeys the catalog and the §3.3/§3.4/
+  §3.4a/§3.4b forms; the board — ingest per the agent-discovery §3.11
+  family + the §3.6
   transparency rendering; the FE — gate 3 (ux-blueprint MF1/MF2) for the
   roster.
 
@@ -523,6 +688,7 @@ below points at a §3 MUST or is marked «operational control».
 | **I**nformation Disclosure | a new leg reads beyond the table-named fields (catalog drift) | the closed catalog P1 + the JSON-pointer-level layout table; scan heuristics forbidden (§3.1, §3.3.2); the transparency rendering shows EVERYTHING collected — a code-vs-catalog divergence is visible to the owner (§3.6) | `models_field_shape` + table review (operational control) |
 | **I**nformation Disclosure | a credential-shaped string in a free field (`note`) | the names-only validator: the WHOLE row dropped before marshal, a loud log without the value (§3.3.6); the board detector — the second line (§4) | `no_credential_material` |
 | **I**nformation Disclosure | a credential in the URL | `base_url` normalization (§3.3.6): query/fragment/userinfo always stripped; unparsable — omit | `base_url_normalized` |
+| **I**nformation Disclosure | identifying/credential-shaped content in the new FC-8/FC-9 strings (a tool version carrying a secret, a GPU serial, telemetry) | the version — the first line ≤200 runes through the names-only validator, drop-on-shape (§3.4a); GPU — names only ≤8, validator-gated, serials/utilization never (§3.4b); the §3.5 boundary | `tooling_version_discipline`, `compute_gpu_names_only` |
 | **I**nformation Disclosure | the harness-configured probe as a channel to a foreign/credentialed endpoint | LOOPBACK only; `auth: configured` → never dialed; ≤8 targets; zero-redirect; one GET, quiet zero (§3.3.4; H3) | the probe-rule review (operational control) |
 | **S**poofing | a foreign executor reports | the route's executor-token + identity-match (inherited; agent-discovery §3.1) | route integration tests (operational control) |
 | **E**levation of Privilege | a discovery fact grants itself authority | advisory, never authority: the field creates no rows, extends no dictionaries (agent-discovery §3.1, §3.11) | board conformance (operational control) |
@@ -546,7 +712,7 @@ honestly:
 | Agent v6 (standalone `models`) | **rode the wire** (AGW-25, merged 2026-10-28) — SUPERSEDED by this contract's population rules; zero rows on the real fleet (verified live 2026-10-28 on core-51: the four v6 config files are absent; the fleet's real harnesses — zcode/copilot — carry their catalogs in agent-definition frontmatter) | vesmaro/vesma-agent, main (merge b98960e); `docs/PROTOCOL.md` §3 |
 | Agent v7 (per-harness re-key + FC-7) | **in flight** — the `feat/host-intake-contract` branch, AGW-26; the contract draft — `docs/design/host-intake-contract-draft.md` (this spec's source) | vesmaro/vesma-agent |
 | Board mirror of the new fields (ingest of per-harness `models`, `mcp_servers`; the §3.6 transparency rendering) | **not merged** — a separate vesma-eyes wave (pending; contract §9) | vesma-eyes |
-| FC-8 / FC-9 | **DEFERRED (v2)** — the owner's decision at the draft gate; activation = a minor of this contract with a gate | — |
+| FC-8 / FC-9 (tooling, compute) | **normative since discovery v8** (AGW-27, 2026-10-29; DEFERRED lifted by the owner's «делай» directive of 2026-10-29) — the normative text of this spec's §3.4a/§3.4b; the agent-side normative form — the «discovery v8 (AGW-27, 2026-10-29)» addendum in `docs/PROTOCOL.md` (landing in parallel with this amendment); container config surfaces (`exec_env` beyond `"metal"`) remain the deferred follow-up wave | vesmaro/vesma-agent, `docs/PROTOCOL.md` |
 
 `sessions[]` — outside the agent's collection surface (verified
 2026-10-28): the field exists in the board's `ExecutorDiscoveryBody`
@@ -563,8 +729,12 @@ agent the field is absent; honest absence (P4).
 Input order: (1) the spec (this document) — done; (2) the agent wave v7
 (AGW-26): the re-key + FC-7, fixtures on the GROUNDED shapes, gates +
 cascade, release v0.11.0, fleet update — the standing wave discipline
-(contract §10); (3) the board mirror wave — ingest + the transparency
-rendering; (4) stable ratification — both sides' conformance green.
+(contract §10); (2a) the discovery v8 amendment (AGW-27, 2026-10-29):
+FC-8/FC-9 (§3.4a/§3.4b) + the `discovery_models_catalogs` catalog knob —
+this spec's normative text is ready, the agent-side form (the PROTOCOL
+addendum) lands in parallel; (3) the board mirror wave — ingest + the
+transparency rendering (including the additive `tooling`/`compute`);
+(4) stable ratification — both sides' conformance green.
 Intermediate states are conformant by additivity (§7).
 
 ## 10. References
@@ -597,6 +767,16 @@ Intermediate states are conformant by additivity (§7).
   FC-7, `count` = the full total, the pi provider `pi` row with the
   `models` field omitted (omitempty), the per-row note as the OQ-5 wire
   form.
+- The discovery v8 amendment (AGW-27, 2026-10-29) — the TC-pinned
+  deltas the owner approved with «делай» on 2026-10-29: FC-8/FC-9
+  un-deferred → normative (§3.4a/§3.4b), the `discovery_host_facts`
+  knob for both, the `discovery_models_catalogs` catalog knob (§3.3.2),
+  the §3.5 boundary extension; the agent-side normative form — the
+  «discovery v8 (AGW-27, 2026-10-29)» addendum in vesma-agent's
+  `docs/PROTOCOL.md`. The wave's spec-phase budgets (brief 2026-10-29):
+  version-call timeout ≤2 s, the first version line ≤200 runes,
+  `tools[]` ≤40, `gpus` ≤8, the 8 KiB read cap per catalog file, the
+  `tooling`/`compute` fields at 8 KiB shrink-to-fit each.
 - The [glossary](../../../GLOSSARY.md), the
   [ecosystem map](../../../ECOSYSTEM.md), the
   [roadmap](../../../docs/roadmap.md).

@@ -3,6 +3,75 @@
 Формат версий: SemVer; статус контракта и дисциплина ломающих изменений —
 в [spec.md](spec.md) §7 и README репозитория.
 
+## 0.1.0-draft.3 — 2026-10-29
+
+### Changed
+
+- Поправка discovery v8 (AGW-27, 2026-10-29; директива владельца
+  «делай» 2026-10-29): FC-8 (tooling) и FC-9 (compute envelope)
+  un-deferred — статус в каталоге §3.2 `DEFERRED (v2)` → **норматив**;
+  новые нормативные секции §3.4a/§3.4b (нумерация §3.5/§3.6 не тронута
+  — решение спека-фазы против renumbering-шума в перекрёстных
+  ссылках). Агентная нормативная форма — addendum «discovery v8
+  (AGW-27, 2026-10-29)» в `docs/PROTOCOL.md` vesma-agent, lands
+  параллельно.
+- Граница §3.5 «никогда не собирается» дополнена строками
+  hardware-классов: аппаратные serials, utilization-телеметрия и PATH'и
+  owner-declared каталогов (сверх фактов строк каталога) — никогда.
+- §9: FC-8/FC-9 — норматив с discovery v8; контейнерные поверхности
+  конфигов (`exec_env` сверх `metal`) остаются отложенной волной.
+- Версия контракта `0.1.0-draft` → `0.1.0-draft.3` (шапка, §7,
+  скелет сьюта).
+
+### Added
+
+- Нормативный FC-8 (§3.4a): knob `discovery_host_facts: auto|off`
+  (дефолт `auto`; неизвестное значение — отказ старта), управляющий
+  FC-8+FC-9 совместно; `off` → поля `tooling`/`compute` отсутствуют
+  целиком. Дисциплина сбора (сам built-in список ~25–30 инструментов —
+  агентная ратификация): LookPath + ОДИН вызов версии ≤2 с, quiet zero
+  per инструмент, первая строка версии ≤200 рун через names-only
+  валидатор, drop-on-shape; провод
+  `{"tooling": {"tools": [{"name", "version"?}], "count"}}` — sorted
+  ≤40 + честный `count`, 8 KiB shrink-to-fit.
+- Нормативный FC-9 (§3.4b): провод
+  `{"compute": {"cpu_cores"?, "mem_total_bytes"?, "disk_free_bytes"?,
+  "gpus"?}}` — числа только, каждое поле omitempty НЕЗАВИСИМО (P4);
+  GPU = ОДИН вызов `nvidia-smi -L`, только строки имён ≤8,
+  валидатор-gated — никогда serials/utilization; линия приватности —
+  hardware-envelope класс, без hostname'ов и serials.
+- Каталожный knob `discovery_models_catalogs` (§3.3.2, расширение FC-6):
+  YAML-список записей `{path, harness}` — ЯВНО объявленные владельцем
+  файлы модельных каталогов (P1: агент пути не ищет сам; прецедент GCW
+  `models.yaml` — tiers primary/fallback формы `Name (vendor)`); read-cap
+  8 KiB, типизированный декод, ВСЕ строки моделей (primary+fallback);
+  provider — документированные формы (суффикс-приоритет), иначе harness
+  bucket; строки `source=config`, `auth=unknown`, note «model catalog
+  (owner-declared)»; `harness` = написание записи владельца (допуск
+  решает словарь борды); невалидная запись = skip + info-лог; едут под
+  knob'ом `discovery_models`, PATH'и каталогов на провод не едут.
+- §6: проверки `tooling_field_shape`, `tooling_version_discipline`,
+  `compute_field_shape`, `compute_gpu_names_only`,
+  `catalog_rows_shape`, `host_facts_knob_values` + позитивные кейсы
+  скелета; §8: строка threat-модели для строк FC-8/FC-9.
+- [examples/](examples/): `tooling-field.json`, `compute-envelope.json`,
+  `catalog-row-owner-declared.json` (только плейсхолдеры/публичные
+  формы, ADR-0001 §6).
+- Чеклист интегратора: HI-17…HI-20 (tooling/compute/catalog/knobs);
+  HI-01 синхронизирован с активацией FC-8/FC-9.
+
+### Decisions
+
+- Нумерация новых секций — §3.4a/§3.4b вместо сдвига §3.5/§3.6: §3.5 и
+  §3.6 перекрёстно ссылочны (чеклист, оба языка, §1/§2) — решение
+  спека-фазы против renumbering-шума (AGW-27, спека-фаза 2026-10-29).
+- Полномочия дельты: TC-pinned contract deltas 2026-10-29 (TL), owners
+  гейт — «делай» 2026-10-29 (un-defer FC-8/9 + каталожный knob);
+  зеркалируется addendum'ом «discovery v8 (AGW-27, 2026-10-29)» в
+  `docs/PROTOCOL.md` vesma-agent.
+- Негативные фикстуры для новых полей — вместе с runner-profile волной
+  (прецедент скелета; позитивные кейсы примеров заведены сразу).
+
 ## 0.1.0-draft — 2026-10-28
 
 ### Changed
