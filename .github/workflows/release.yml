@@ -21,9 +21,10 @@
 #     handling on every call;
 #   - every action is pinned to a full commit SHA (same pins as ci.yml,
 #     resolved from the upstream repository and verified 2026-10-04);
-#     no new action is introduced — the release job re-runs the
-#     deterministic conformance runner instead of downloading an
-#     inter-job artifact;
+#     no new action beyond ci.yml's already-pinned lint action (same
+#     markdownlint-cli2-action pin) — the conformance and release jobs
+#     re-run the deterministic conformance runner instead of downloading
+#     an inter-job artifact;
 #   - every job has an explicit timeout. Concurrency is grouped per ref
 #     but `cancel-in-progress` is FALSE (unlike ci.yml): cancelling a
 #     release mid-flight could leave a half-published release behind;
@@ -47,12 +48,37 @@ defaults:
     shell: bash
 
 jobs:
+  # ------------------------------------------------------------------ lint --
+  # Markdownlint gate on the TAGGED TREE, ordered before the conformance
+  # gate: a lint failure here skips every job below (needs: lint) and
+  # fails the release fast. Verbatim copy of ci.yml's `lint` job (same
+  # runner, same pinned action, same globs/config) — keep the two in sync
+  # when editing either. Rationale (issue #8): ci.yml only covers pushes
+  # and PRs, so a tagged tree that never went through a fresh main push
+  # would ship lint defects (MD028 rode the v0.2.0 tag this way).
+  lint:
+    name: markdownlint
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Check out the tagged commit
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+      - name: Lint all markdown
+        # Maintained by the markdownlint author (DavidAnson); v24 = node24.
+        # Same pin as ci.yml `lint` — keep in sync.
+        uses: DavidAnson/markdownlint-cli2-action@21c1be1b93ad9ed58fa840aacc3f279cde2a72ff  # v24.2.0
+        with:
+          globs: "**/*.md"
+          config: ".markdownlint.yaml"
+
   # ----------------------------------------------------------- conformance --
   # Unprivileged gate: MUST-pass suites must be green on the tagged tree
-  # before anything is published. This job holds only the top-level
-  # `contents: read` grant.
+  # before anything is published. Runs after the `lint` job (needs: lint),
+  # so markdownlint defects fail the release before any conformance work.
+  # This job holds only the top-level `contents: read` grant.
   conformance:
     name: conformance suites (run.py)
+    needs: lint
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
