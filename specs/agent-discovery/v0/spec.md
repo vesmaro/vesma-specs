@@ -1,8 +1,8 @@
 ---
 contract: agent-discovery
-version: 0.1.0-draft.2
+version: 0.1.0-draft.3
 status: draft
-decisions: [ADR-0001, ADR-0002, "AGW-25 — addendum «discovery v6, models fleet leg» в docs/PROTOCOL.md §3 (vesmaro/vesma-agent, main b98960e)", "gate 1 — discovery-contract-draft.md (vesmaro/vesma-eyes, feat/models-fleet-blueprint, daf969b)", "gate 2 — security-verdict.md (там же, 832cd7a)", "gate 3 — ux-blueprint.md (там же, cb166a8)", "директива владельца 2026-10-28 («контракты и документацию актуализировать» в vesma-specs)", "draft.2 — re-key per host-intake: [specs/host-intake/v0](../../host-intake/v0/spec.md) (0.1.0-draft, ADR-0003; агентный драфт docs/design/host-intake-contract-draft.md, vesma-agent feat/host-intake-contract, гейты утверждены владельцем)"]
+decisions: [ADR-0001, ADR-0002, "AGW-25 — addendum «discovery v6, models fleet leg» в docs/PROTOCOL.md §3 (vesmaro/vesma-agent, main b98960e)", "gate 1 — discovery-contract-draft.md (vesmaro/vesma-eyes, feat/models-fleet-blueprint, daf969b)", "gate 2 — security-verdict.md (там же, 832cd7a)", "gate 3 — ux-blueprint.md (там же, cb166a8)", "директива владельца 2026-10-28 («контракты и документацию актуализировать» в vesma-specs)", "draft.2 — re-key per host-intake: [specs/host-intake/v0](../../host-intake/v0/spec.md) (0.1.0-draft, ADR-0003; агентный драфт docs/design/host-intake-contract-draft.md, vesma-agent feat/host-intake-contract, гейты утверждены владельцем)", "draft.3 — поправка класс-листа credential-shape детектора (issue vesmaro/vesma-specs#10): JWT-форма и длинные смешанные прогоны, паритет агент↔борда обязателен"]
 ratified: |-
   Не ратифицирована (draft). Полномочия текста: агентная нога контракта
   уже влита как протокольная поправка AGW-25 в vesmaro/vesma-agent
@@ -19,7 +19,7 @@ ratified: |-
 
 # agent-discovery v0 — контракт discovery моделей (агент → борда)
 
-> **Статус: draft (0.1.0-draft.2).** Контракт кодифицирует уже влитую
+> **Статус: draft (0.1.0-draft.3).** Контракт кодифицирует уже влитую
 > агентную ногу — протокольную поправку AGW-25 «Models-fleet addendum —
 > discovery v6» в `docs/PROTOCOL.md` §3 исходящего ЦУП-агента
 > `vesmaro-agent` — как экосистемный контракт спек-слоя (директива
@@ -36,6 +36,15 @@ ratified: |-
 > host-intake §3.4; probe-нога расширена harness-настроенными loopback
 > base_url (host-intake §3.3.4). Форма строки §3.2 и обязанности борды
 > §3.11 не изменились.
+>
+> **Поправка draft.3 (класс-лист credential-shape детектора,
+> 2026-10-29).** §3.8 дополнен нормативным класс-листом скана — единым
+> для валидатора агента и детектора борды (паритет обязателен; issue
+> vesmaro/vesma-specs#10). Новые классы: JWT-форма (`eyJ…` с точкой) и
+> длинный смешанный прогон (≥ 32 из `[A-Za-z0-9_-]`); сравнение
+> токен-префиксов зафиксировано как регистронезависимое. Направление
+> ложных срабатываний — громкий drop, никогда не коверканье. Форма
+> провода не менялась: поправка аддитивна для обеих ног.
 
 Ключевые слова MUST / MUST NOT / SHOULD / MAY интерпретируются по
 [RFC 2119](https://www.rfc-editor.org/rfc/rfc2119). Проза — русская;
@@ -314,8 +323,8 @@ provider флота моделей — внешний model-serving endpoint, к
 
 - **MUST**: каждая эмитируемая строка (provider slug, model id,
   base_url, note) проходит names-only валидатор: длина-капы §3.6 плюс
-  credential-shape скан (token-префиксы `sk-`/`ghp_`/`xox`-…, длинные
-  hex или base64-подобные раны, key-shaped assignments) (AGW-25).
+  credential-shape скан по класс-листу ниже (AGW-25; класс-лист
+  дополнен с draft.3 — issue vesmaro/vesma-specs#10).
 - **MUST**: credential-подобная строка в неожиданном поле роняет ВСЮ
   строку installation ДО marshal (AGW-25).
 - **MUST**: drop сопровождается ГРОМКИМ локальным логом, reason
@@ -328,6 +337,29 @@ provider флота моделей — внешний model-serving endpoint, к
 - **MUST**: credential материал никогда не читается в память для
   целей отчёта и никогда не эмитится ни в какой кодировке (gate 1
   §2.2; gate 2 §2 п.3, §4.1).
+
+Класс-лист credential-shape скана — ЕДИНЫЙ для names-only валидатора
+агента и детектора борды (`models.credential_leak_suspected`); паритет
+обеих реализаций по этому списку обязателен (с draft.3; issue
+vesmaro/vesma-specs#10). Строка credential-подобна, если проходит
+ХОТЯ БЫ один класс:
+
+| Класс | Грамматика |
+| --- | --- |
+| token-префикс | строка начинается с префикса словаря — `sk-`, `ghp_`, `gho_`, `ghu_`, `ghs_`, `github_pat_`, `xoxb-`, `xoxa-`, `xoxp-`, `akia`, `bearer ` (словарь расширяется аддитивно, §7); сравнение БЕЗ УЧЁТА РЕГИСТРА — lowercase `akia…` и uppercase `AKIA…` равнозначны; только ПРЕФИКС, не подстрока (`task-…` не ловится) |
+| JWT-форма (draft.3) | строка начинается с `eyJ` — base64url начала JWT-заголовка `{"` — и содержит ≥ 1 точку (форма `header.payload.…`); длины dot-split сегментов НЕ проверяются: класс не зависит от base64-порога, и JWT с сегментами короче 40 больше не проходит |
+| hex-рана | непрерывный прогон ≥ 20 символов из `[0-9a-fA-F]` |
+| base64-подобная рана | непрерывный прогон ≥ 40 символов из `[A-Za-z0-9+/_=-]` |
+| длинный смешанный прогон (draft.3) | непрерывный прогон ≥ 32 символов из `[A-Za-z0-9_-]` — смешанные буквенно-цифровые секреты, недостающие до hex/b64-порогов |
+| key-shaped assignment | `(api[_-]?key|secret|token|password|authorization|credential)[[:space:]]*[=:]` без учёта регистра |
+
+Направление ложных срабатываний — константа всех классов: легитимная
+строка, похожая на credential (например, длинный hash-подобный model
+id), MAY уйти под класс длинного смешанного прогона — тогда строка
+роняется ГРОМКО (drop + локальный лог, см. выше). Это штатное
+безопасное направление, а не дефект: строка никогда не коверкается и
+никогда не эмитится; громкий ложный drop дешевле тихой утечки
+(AGW-25; gate 2).
 
 ### 3.9 Knob `discovery_models`
 
@@ -443,7 +475,7 @@ MUST-прогон сьюта после заведения runner-profile = ге
 | `models_sorted_cap50` | `models[]` отсортирован и ≤ 50 элементов |
 | `installations_cap64` | `installations[]` ≤ 64 строк |
 | `base_url_normalized` | `base_url` = `scheme://authority[/base-path]`; query/fragment/userinfo отсутствуют |
-| `no_credential_material` | ни одна строка документа не проходит credential-shape скан (`sk-`/`ghp_`/`xox`- префиксы, hex ≥ 40, base64 ≥ 40, key-shaped assignment) — names-only валидатор §3.8 как статическая проверка примеров. Исключение value-scan (прецедент CM `no_secret_in_vars`): пояснительный документ `credential-redaction.json` — его «до»-строки намеренно показывают, что обдирается; скану подлежат только wire-shape документы |
+| `no_credential_material` | ни одна строка документа не проходит credential-shape скан по класс-листу §3.8 (токен-префиксы без учёта регистра, JWT-форма `eyJ…`, hex ≥ 20, base64 ≥ 40, смешанный прогон ≥ 32, key-shaped assignment) — names-only валидатор §3.8 как статическая проверка примеров. Исключение value-scan (прецедент CM `no_secret_in_vars`): пояснительный документ `credential-redaction.json` — его «до»-строки намеренно показывают, что обдирается; скану подлежат только wire-shape документы |
 | `harness_dictionary_spelling` | `source: config` строки несут написание из словаря харнесов (с draft.2 словарь населения — per host-intake §3.3.2: zcode, copilot, codex, continue, claude-code, aider, pi); `source: probe` строки несут slug probe-источника (§3.2) |
 | `knob_values` | декларация knob'а — только `auto` \| `off` (исполнительный таргет — декларация конфига агента; кейс заводится вместе с борд-зеркалом) |
 

@@ -1,8 +1,8 @@
 ---
 contract: agent-discovery
-version: 0.1.0-draft.2
+version: 0.1.0-draft.3
 status: draft
-decisions: [ADR-0001, ADR-0002, "AGW-25 — addendum «discovery v6, models fleet leg» in docs/PROTOCOL.md §3 (vesmaro/vesma-agent, main (merge b98960e))", "gate 1 — discovery-contract-draft.md (vesmaro/vesma-eyes, feat/models-fleet-blueprint, daf969b)", "gate 2 — security-verdict.md (same, 832cd7a)", "gate 3 — ux-blueprint.md (same, cb166a8)", "owner directive 2026-10-28 («update the contracts and documentation» in vesma-specs)", "draft.2 — the re-key per host-intake: [specs/host-intake/v0](../../host-intake/v0/spec.md) (0.1.0-draft, ADR-0003; the agent-side draft docs/design/host-intake-contract-draft.md, vesma-agent feat/host-intake-contract, owner-approved gates)"]
+decisions: [ADR-0001, ADR-0002, "AGW-25 — addendum «discovery v6, models fleet leg» in docs/PROTOCOL.md §3 (vesmaro/vesma-agent, main (merge b98960e))", "gate 1 — discovery-contract-draft.md (vesmaro/vesma-eyes, feat/models-fleet-blueprint, daf969b)", "gate 2 — security-verdict.md (same, 832cd7a)", "gate 3 — ux-blueprint.md (same, cb166a8)", "owner directive 2026-10-28 («update the contracts and documentation» in vesma-specs)", "draft.2 — the re-key per host-intake: [specs/host-intake/v0](../../host-intake/v0/spec.md) (0.1.0-draft, ADR-0003; the agent-side draft docs/design/host-intake-contract-draft.md, vesma-agent feat/host-intake-contract, owner-approved gates)", "draft.3 — the credential-shape detector class-list amendment (issue vesmaro/vesma-specs#10): the JWT shape and long mixed runs, agent↔board parity is mandatory"]
 ratified: |-
   Not ratified (draft). Authority trail: the agent leg is already merged
   as protocol amendment AGW-25 in vesmaro/vesma-agent (main (merge b98960e)
@@ -25,7 +25,7 @@ language: en (informative mirror)
 > text prevails. The mirror is maintained in the same change as the
 > Russian text (single-commit sync policy).
 >
-> **Status: draft (0.1.0-draft.2).** The contract codifies the already
+> **Status: draft (0.1.0-draft.3).** The contract codifies the already
 > merged agent leg — protocol amendment AGW-25 «Models-fleet addendum —
 > discovery v6» in `docs/PROTOCOL.md` §3 of the outbound ЦУП agent
 > `vesmaro-agent` — as an ecosystem contract of the spec layer (owner
@@ -44,6 +44,16 @@ language: en (informative mirror)
 > the probe leg is extended with harness-configured loopback base_urls
 > (host-intake §3.3.4). The §3.2 row form and the §3.11 board duties
 > are unchanged.
+>
+> **The draft.3 amendment (the credential-shape detector class list,
+> 2026-10-29).** §3.8 is extended with the normative scan class list —
+> shared by the agent validator and the board detector (parity is
+> mandatory; issue vesmaro/vesma-specs#10). New classes: the JWT shape
+> (`eyJ…` with a dot) and the long mixed run (≥ 32 of
+> `[A-Za-z0-9_-]`); token-prefix matching is fixed as
+> case-insensitive. The false-positive direction is a loud drop, never
+> mangling. The wire form is unchanged: the amendment is additive for
+> both legs.
 
 The key words MUST / MUST NOT / SHOULD / MAY are interpreted per
 [RFC 2119](https://www.rfc-editor.org/rfc/rfc2119). Prose is English;
@@ -325,8 +335,8 @@ The form (additive; `notes` — omitempty):
 
 - **MUST**: every emitted string (provider slug, model id, base_url,
   note) passes the names-only validator: the §3.6 length caps plus a
-  credential-shape scan (token prefixes `sk-`/`ghp_`/`xox`-…, long hex
-  or base64-ish runs, key-shaped assignments) (AGW-25).
+  credential-shape scan over the class list below (AGW-25; the class
+  list extended since draft.3 — issue vesmaro/vesma-specs#10).
 - **MUST**: a credential-shaped string in an unexpected field drops the
   whole installation row BEFORE marshal (AGW-25).
 - **MUST**: the drop is accompanied by a LOUD local log whose reason
@@ -339,6 +349,30 @@ The form (additive; `notes` — omitempty):
 - **MUST**: credential material is never read into memory for reporting
   and never emitted in any encoding (gate 1 §2.2; gate 2 §2 item 3,
   §4.1).
+
+The credential-shape scan's class list is SHARED by the agent
+names-only validator and the board detector
+(`models.credential_leak_suspected`); parity of both implementations
+against this list is mandatory (since draft.3; issue
+vesmaro/vesma-specs#10). A string is credential-shaped if it matches
+AT LEAST ONE class:
+
+| Class | Grammar |
+| --- | --- |
+| token prefix | the string starts with a dictionary prefix — `sk-`, `ghp_`, `gho_`, `ghu_`, `ghs_`, `github_pat_`, `xoxb-`, `xoxa-`, `xoxp-`, `akia`, `bearer ` (the dictionary grows additively, §7); matched CASE-INSENSITIVELY — lowercase `akia…` and uppercase `AKIA…` are equivalent; PREFIX only, never a substring (`task-…` is not caught) |
+| JWT shape (draft.3) | the string starts with `eyJ` — the base64url of the JWT header start `{"` — and contains ≥ 1 dot (the `header.payload.…` shape); dot-split segment lengths are NOT checked: the class does not depend on the base64 threshold, so a JWT with segments shorter than 40 no longer passes through |
+| hex run | a contiguous run of ≥ 20 chars from `[0-9a-fA-F]` |
+| base64-ish run | a contiguous run of ≥ 40 chars from `[A-Za-z0-9+/_=-]` |
+| long mixed run (draft.3) | a contiguous run of ≥ 32 chars from `[A-Za-z0-9_-]` — mixed alphanumeric secrets that stay under the hex/base64 thresholds |
+| key-shaped assignment | `(api[_-]?key|secret|token|password|authorization|credential)[[:space:]]*[=:]` case-insensitively |
+
+The false-positive direction is a constant of every class: a
+legitimate string resembling a credential (e.g. a long hash-like model
+id) MAY fall under the long-mixed-run class — then the row is dropped
+LOUDLY (drop + the local log, see above). This is the designed safe
+direction, not a defect: the string is never mangled and never
+emitted; a loud false drop is cheaper than a silent leak (AGW-25;
+gate 2).
 
 ### 3.9 The `discovery_models` knob
 
@@ -455,7 +489,7 @@ The check vocabulary (executor — a future runner profile):
 | `models_sorted_cap50` | `models[]` sorted and ≤ 50 items |
 | `installations_cap64` | `installations[]` ≤ 64 rows |
 | `base_url_normalized` | `base_url` = `scheme://authority[/base-path]`; no query/fragment/userinfo |
-| `no_credential_material` | no string in the document passes the credential-shape scan (`sk-`/`ghp_`/`xox` prefixes, hex ≥ 40, base64 ≥ 40, key-shaped assignment) — the §3.8 names-only validator as a static check of examples. Value-scan exception (the CM `no_secret_in_vars` precedent): the explanatory document `credential-redaction.json` — its «before» lines intentionally show what gets redacted; only wire-shape documents are scanned |
+| `no_credential_material` | no string in the document passes the credential-shape scan over the §3.8 class list (case-insensitive token prefixes, the `eyJ…` JWT shape, hex ≥ 20, base64 ≥ 40, a mixed run ≥ 32, key-shaped assignment) — the §3.8 names-only validator as a static check of examples. Value-scan exception (the CM `no_secret_in_vars` precedent): the explanatory document `credential-redaction.json` — its «before» lines intentionally show what gets redacted; only wire-shape documents are scanned |
 | `harness_dictionary_spelling` | `source: config` rows carry the harness-dictionary spelling (since draft.2 the population dictionary — per host-intake §3.3.2: zcode, copilot, codex, continue, claude-code, aider, pi); `source: probe` rows carry the probe source's slug (§3.2) |
 | `knob_values` | a knob declaration is only `auto` \| `off` (executor target — the agent's config declaration; the case lands with the board mirror) |
 
