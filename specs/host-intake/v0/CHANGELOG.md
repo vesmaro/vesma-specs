@@ -53,6 +53,14 @@
   механизм; fence-транспорт депрекирован и удаляется из агента;
   агентная нормативная форма — PROTOCOL addendum, amending
   «Container-surface addendum — discovery v9» (lands параллельно).
+- Каталожный read-cap синхронизирован с агентной реализацией v0.12.1:
+  записи `discovery_models_catalogs` (§3.3.2) читаются под ОТДЕЛЬНЫМ
+  капом 64 KiB (`catalogReadLimit = 64 KiB`; grounding: реальный GCW
+  `models.yaml` — 8949 байт — не влезал в кап 8 KiB); файл сверх
+  64 KiB = honest absence записи; owner-declared явный путь — более
+  высокий bounded кап честен для него; walked-конфиг-файлы харнесов
+  сохраняют 8 KiB без изменений. Пропущенный sync: строка v8-бюджета
+  (§10) и чеклист HI-19 оставались на 8 KiB.
 - Версия контракта `0.1.0-draft.4` → `0.1.0-draft.5` (шапка, §7,
   скелет сьюта).
 

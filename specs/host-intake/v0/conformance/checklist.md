@@ -87,7 +87,9 @@ spec.md §3; ссылки HI-nn — для отчётов конформанса
       валидатор-gated; НИКАКИХ serials и utilization-телеметрии; без
       hostname'ов (§3.4b, §3.5).
 - [ ] **HI-19** Каталожный knob `discovery_models_catalogs` (§3.3.2):
-      только ЯВНЫЕ записи владельца `{path, harness}`; read-cap 8 KiB,
+      только ЯВНЫЕ записи владельца `{path, harness}`; read-cap 64 KiB
+      на запись каталога (отдельный кап — sync vesma-agent v0.12.1;
+      walked-конфиги харнесов — 8 KiB),
       типизированный декод, ВСЕ строки (primary+fallback); provider по
       документированным формам (суффикс-приоритет), иначе harness
       bucket; строки `source=config`, `auth=unknown`, note «model

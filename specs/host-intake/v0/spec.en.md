@@ -325,10 +325,20 @@ classes, fields, caps and wire form are unchanged.
   owner entries; the GCW `models.yaml` precedent — the `tiers` dict of
   `primary`/`fallback` strings of the `Name (vendor)` form; grounding:
   the GCW repository's models.yaml).
-- **MUST**: the file read under the 8 KiB read cap; a TYPED decode
+- **MUST**: the catalog file is read under a DEDICATED 64 KiB read
+  cap (the item below); a TYPED decode
   (the `tiers` structure — a dict tier → `{primary, fallback[]}`);
   ALL model strings are collected — primaries AND fallbacks (P5: the
   full catalog, not the primary only).
+- **MUST**: the catalog read cap — DEDICATED 64 KiB per
+  `discovery_models_catalogs` ENTRY (synced with the agent
+  implementation v0.12.1, `catalogReadLimit = 64 KiB`: the real GCW
+  `models.yaml` — 8949 bytes — did not fit the 8 KiB cap); the
+  entry's path is EXPLICITLY owner-declared — a higher bounded cap is
+  honest for an owner-declared path, unlike walks over foreign
+  harness configs; a file over 64 KiB = the entry's honest absence
+  (P4; skip + an info log); the walked harness config files (the
+  table above) keep the 8 KiB cap UNCHANGED.
 - **MUST**: provider attribution — by the documented string forms
   (§3.3.3, suffix-priority: the `(provider)` suffix form is tried
   first, then the `provider/model` prefix); no form parsed → the
@@ -346,7 +356,7 @@ classes, fields, caps and wire form are unchanged.
   row is an owner-declared fact — its admission is decided by the board
   dictionary, not by the agent's discovery (AGW-27).
 - **MUST**: an invalid entry (missing `path`/`harness`, unreadable or
-  non-regular file, over 8 KiB, unparsable YAML, decode mismatching the
+  non-regular file, over 64 KiB, unparsable YAML, decode mismatching the
   typed form) = skip the entry + an info log — never an error, never a
   guess (P4; quiet zero).
 - **MUST**: catalog rows ride the common FC-6 `models` field and are
@@ -950,7 +960,9 @@ Intermediate states are conformant by additivity (§7).
   «discovery v8 (AGW-27, 2026-10-29)» addendum in vesma-agent's
   `docs/PROTOCOL.md`. The wave's spec-phase budgets (brief 2026-10-29):
   version-call timeout ≤2 s, the first version line ≤200 runes,
-  `tools[]` ≤40, `gpus` ≤8, the 8 KiB read cap per catalog file, the
+  `tools[]` ≤40, `gpus` ≤8, the 8 KiB read cap per catalog file (later
+  raised to a DEDICATED 64 KiB for catalog entries — the vesma-agent
+  v0.12.1 sync, §3.3.2), the
   `tooling`/`compute` fields at 8 KiB shrink-to-fit each.
 - The discovery v9 amendment (AGW-28, 2026-10-29) — the TC-pinned
   deltas the owner approved with «делай» on 2026-10-29: the FC-6/FC-7
