@@ -8,7 +8,7 @@ wave touches — FC-6 (models keyed to discovered harnesses) and FC-7
 This is the fleet's trust and transparency surface: the complete "what
 agents collect" list is public, versioned and diffable per release.
 
-Status: **draft** (`0.1.0-draft.4`). Authority: owner directive
+Status: **draft** (`0.1.0-draft.5`). Authority: owner directive
 2026-10-28 (two clauses: the per-harness models re-key + the explicit
 collection contract); the agent-side contract draft
 (`docs/design/host-intake-contract-draft.md`, vesma-agent
@@ -18,12 +18,15 @@ fleet security-verdict red lines (832cd7a); the discovery v8 amendment
 normative, the `discovery_host_facts` knob, the
 `discovery_models_catalogs` knob); the discovery v9 amendment
 (AGW-28, 2026-10-29 — the same «делай»: the FC-6/FC-7 «metal only» red
-line lifted for config reads through distrobox container probes,
-§3.4c — running containers join the surfaces; mirrored by the
-PROTOCOL.md addendum «Container-surface addendum — discovery v9
-(AGW-28, 2026-10-29)» in vesma-agent). The agent v7 wave (AGW-26) is
-in flight; the agent v9 container-surface wave (`feat/container-surface`)
-is in flight; the board mirror wave is pending.
+line lifted for container homes, §3.4c); the discovery v10 amendment
+(AGW-29, 2026-10-29 — the owner's architectural directive «Не надо
+заходить в контейнер, чтобы найти файлы его — все есть на хосте (как
+подключаемый том)!»: the §3.4c mechanism replaced with DIRECT
+host-path reads of `<root>/.distrobox/<box>/home`; the fence
+transport of draft.4, released in vesma v0.5.0, is deprecated and
+removed from the agent; mirrored by the PROTOCOL.md addendum amending
+«Container-surface addendum — discovery v9» in vesma-agent). The agent
+v7 wave (AGW-26) is in flight; the board mirror wave is pending.
 
 ## Normative spec
 
@@ -65,11 +68,14 @@ governs).
    validator (drop, never mangle), `base_url` normalization, auth from
    field presence only, row drop before marshal + loud log on leak
    suspicion, no agent-side events; `exec_env: metal` plus — since
-   discovery v9 (AGW-28) — `distrobox:<name>` for config reads through
-   container probes (§3.4c: RUNNING containers only, the probe script
-   generated from the same layout table, per-file `head -c 8192` +
-   base64 fenced blocks, ≤64 files per container home, ≤25 s per
-   config-carrying container, knobs unchanged).
+   discovery v9 (AGW-28) — `distrobox:<name>` for config reads in
+   container homes (§3.4c: direct host-path reads of
+   `<root>/.distrobox/*/home` since discovery v10/AGW-29 — plain
+   bounded file reads of fingerprint-discovered homes, no transport,
+   no `distrobox enter`; ≤64 files per container home, 8 KiB per file;
+   the container-home walk and the models/mcp reads ride
+   `discovery_models`, `discovery_distrobox` gates only the v4 CLI
+   leg).
 8. **Report MCP server names only** (FC-7, §3.4): the additive top-level
    `mcp_servers` field — `{harness, exec_env, servers[] ≤30 sorted,
    count = full total}`; pi `mcp-cache.json` keys as names, values never
