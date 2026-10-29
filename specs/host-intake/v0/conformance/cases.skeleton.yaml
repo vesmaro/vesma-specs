@@ -21,7 +21,7 @@
 
 suite: host-intake-basics
 contract: host-intake
-version: 0.1.0-draft.3
+version: 0.1.0-draft.4
 
 cases:
   - id: zcode-frontmatter-installation-valid
@@ -87,6 +87,30 @@ cases:
       - auth_enum
       - row_caps
       - catalog_rows_shape
+      - no_credential_material
+    expect: pass
+
+  - id: container-installation-row-valid
+    severity: must
+    target: examples/container-installation-row.json
+    checks:
+      - models_field_shape
+      - fc6_harness_attribution
+      - provider_parse_forms
+      - auth_enum
+      - row_caps
+      - container_rows_shape
+      - no_credential_material
+    expect: pass
+
+  - id: mcp-servers-container-entry-valid
+    severity: must
+    target: examples/mcp-servers-container-entry.json
+    checks:
+      - mcp_servers_field_shape
+      - mcp_names_cap30
+      - mcp_names_only
+      - container_mcp_shape
       - no_credential_material
     expect: pass
 

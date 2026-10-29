@@ -3,6 +3,82 @@
 Формат версий: SemVer; статус контракта и дисциплина ломающих изменений —
 в [spec.md](spec.md) §7 и README репозитория.
 
+## 0.1.0-draft.4 — 2026-10-29
+
+### Changed
+
+- Поправка discovery v9 (AGW-28, 2026-10-29; директива владельца
+  «делай» 2026-10-29): красная линия FC-6/FC-7 «metal only» (§3.3.6)
+  СНЯТА для чтения конфигов через distrobox container probes —
+  running-контейнеры присоединяются к поверхностям сбора. Новая
+  нормативная секция §3.4c (нумерация §3.5/§3.6 не тронута — прецедент
+  §3.4a/§3.4b против renumbering-шума). Механизм пробы =
+  ратифицированная v4 distrobox-дисциплина (FC-4), расширенная bounded
+  транспортом. Агентная нормативная форма — addendum «Container-surface
+  addendum — discovery v9 (AGW-28, 2026-10-29)» в `docs/PROTOCOL.md`
+  vesma-agent, lands параллельно (ветка `feat/container-surface`).
+- Per-surface идентичность config-fact строк (§3.3.1, словарь §2):
+  кортеж `(provider, base_url, model, harness, exec_env)`; ОДИН И ТОТ
+  ЖЕ provider+model на metal и в контейнере = ДВЕ строки; v4-дедуп
+  «один namespace — одна правда» остаётся домом окружений (FC-2), не
+  config-строк. Капы FC-6 стали СУММАРНЫМИ по поверхностям: 64 строки /
+  16 KiB вместе, `models[]` ≤50 остался per-строка (§3.3.5).
+- Граница §3.5 дополнена контейнерно-транспортной строкой: из
+  контейнеров — ТОЛЬКО bounded head-only байты НАЗВАННЫХ файлов
+  (`head -c 8192`, base64, fenced-блоки, ≤64 файлов на контейнерный
+  дом), никогда целые файлы, ничего вне таблицы, никогда из
+  остановленных контейнеров.
+- §9: агентная v9 (container-surface) — в полёте на момент поправки
+  (честно): `feat/container-surface` (AGW-28); pod-поверхности
+  (`pod:<name>`) остаются последующей волной — «metal only» снят
+  ТОЛЬКО для distrobox probes.
+- Версия контракта `0.1.0-draft.3` → `0.1.0-draft.4` (шапка, §7,
+  скелет сьюта).
+
+### Added
+
+- Нормативный §3.4c: running-контейнеры ТОЛЬКО (остановленный = честный
+  `not-running`, никогда не бутится); скрипт пробы ГЕНЕРИРУЕТСЯ из ТОЙ
+  ЖЕ built-in таблицы §3.3.2 (второго реестра нет — дрейф невозможен по
+  построению); per-file транспорт `head -c 8192` + base64 + ОДИН
+  fenced-блок на файл; ≤64 файлов на контейнерный дом; per-container
+  таймбюджет в v4-семействе «30 с нога / 20 с проба» — config-carrying
+  до 25 с пробы (документировано этой поправкой); декод — ТЕ ЖЕ сканеры,
+  что на metal, names-only валидатор и капы без изменений; pi-маркер в
+  контейнере — `test -f` existence-only, байты `auth.json` никогда не
+  читаются; тихая деградация: distrobox CLI отсутствует → вся
+  контейнерная нога quiet-zero (документированный laptop-кейс), сбоющий
+  контейнер = v4-машина честных вердиктов; knobs без изменений —
+  `discovery_models` + `discovery_distrobox` (оба `auto`), новых
+  knob'ов нет.
+- FC-7 из контейнеров (§3.4): контейнерный `mcp-cache.json` → элемент
+  `exec_env="distrobox:<name>"`, detector ENTRY-LEVEL (элемент на пару
+  harness × exec_env), капы без изменений.
+- §5: [examples/container-installation-row.json](examples/container-installation-row.json)
+  (контейнерная строка FC-6, per-surface идентичность) и
+  [examples/mcp-servers-container-entry.json](examples/mcp-servers-container-entry.json)
+  (metal-pi и container-pi = два элемента).
+- §6: проверки `container_rows_shape` и `container_mcp_shape` +
+  позитивные кейсы скелета; §8: строки threat-модели контейнерной пробы
+  (drift/целые файлы/вне таблицы; раздутый вывод проб).
+- Чеклист интегратора: секция волны discovery v9 — HI-21…HI-24;
+  HI-10 синхронизирован со снятием «metal only» (§3.3.6).
+
+### Decisions
+
+- Красная линия снята ИМЕННО для distrobox probes: «metal only» был
+  волновым ограничением поверх замороженного словаря `exec_env`
+  (`metal | distrobox:<name> | pod:<name>`, agent-discovery §2) —
+  значения контейнеров легальны словарём с v4, поэтому снятие
+  расширяет НАСЕЛЕНИЕ, не форму строки (§7, аддитивно).
+- Полномочия дельты: TC-pinned contract deltas 2026-10-29 (TL), гейт
+  владельца — «делай» 2026-10-29 (container-surface волна AGW-28);
+  зеркалируется addendum'ом «Container-surface addendum — discovery v9
+  (AGW-28, 2026-10-29)» в `docs/PROTOCOL.md` vesma-agent.
+- Негативные фикстуры контейнерных полей — вместе с runner-profile
+  волной (прецедент draft/draft.3; позитивные кейсы примеров заведены
+  сразу).
+
 ## 0.1.0-draft.3 — 2026-10-29
 
 ### Changed
