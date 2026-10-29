@@ -359,12 +359,12 @@ AT LEAST ONE class:
 
 | Class | Grammar |
 | --- | --- |
-| token prefix | the string starts with a dictionary prefix — `sk-`, `ghp_`, `gho_`, `ghu_`, `ghs_`, `github_pat_`, `xoxb-`, `xoxa-`, `xoxp-`, `akia`, `bearer ` (the dictionary grows additively, §7); matched CASE-INSENSITIVELY — lowercase `akia…` and uppercase `AKIA…` are equivalent; PREFIX only, never a substring (`task-…` is not caught) |
+| token prefix | the string starts with a dictionary prefix — `sk-`, `ghp_`, `gho_`, `ghu_`, `ghs_`, `github_pat_`, `xoxb-`, `xoxa-`, `xoxp-`, `akia`, `bearer` (with a trailing space in the dictionary; the dictionary grows additively, §7); matched CASE-INSENSITIVELY — lowercase `akia…` and uppercase `AKIA…` are equivalent; PREFIX only, never a substring (`task-…` is not caught) |
 | JWT shape (draft.3) | the string starts with `eyJ` — the base64url of the JWT header start `{"` — and contains ≥ 1 dot (the `header.payload.…` shape); dot-split segment lengths are NOT checked: the class does not depend on the base64 threshold, so a JWT with segments shorter than 40 no longer passes through |
 | hex run | a contiguous run of ≥ 20 chars from `[0-9a-fA-F]` |
 | base64-ish run | a contiguous run of ≥ 40 chars from `[A-Za-z0-9+/_=-]` |
 | long mixed run (draft.3) | a contiguous run of ≥ 32 chars from `[A-Za-z0-9_-]` — mixed alphanumeric secrets that stay under the hex/base64 thresholds |
-| key-shaped assignment | `(api[_-]?key|secret|token|password|authorization|credential)[[:space:]]*[=:]` case-insensitively |
+| key-shaped assignment | `(api[_-]?key\|secret\|token\|password\|authorization\|credential)[[:space:]]*[=:]` case-insensitively |
 
 The false-positive direction is a constant of every class: a
 legitimate string resembling a credential (e.g. a long hash-like model
