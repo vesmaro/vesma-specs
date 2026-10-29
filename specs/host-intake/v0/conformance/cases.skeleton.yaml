@@ -21,7 +21,7 @@
 
 suite: host-intake-basics
 contract: host-intake
-version: 0.1.0-draft.4
+version: 0.1.0-draft.5
 
 cases:
   - id: zcode-frontmatter-installation-valid
