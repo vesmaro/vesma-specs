@@ -1,8 +1,8 @@
 ---
 contract: host-intake
-version: 0.1.0-draft.3
+version: 0.1.0-draft.4
 status: draft
-decisions: [ADR-0001, ADR-0002, "owner directive 2026-10-28 (two clauses: per-harness models re-key + the explicit collection-surface contract)", "the agent-side contract draft — docs/design/host-intake-contract-draft.md (vesmaro/vesma-agent, the feat/host-intake-contract branch); the draft's gates are owner-approved (FC-6+FC-7 this wave; the loopback probe approved; dual-form emission approved; FC-8/9 initially DEFERRED to v2)", "gates carried: fleet security-verdict (vesma-eyes, feat/models-fleet-blueprint, 832cd7a) — the red lines", "the AGW-25/AGW-26 lineage (discovery v6 → v7 re-key)", "the discovery v8 amendment (AGW-27, 2026-10-29; the owner's «делай» directive 2026-10-29): FC-8/FC-9 un-deferred → normative (§3.4a/§3.4b), the discovery_host_facts knob, the discovery_models_catalogs knob (owner-declared model catalogs)"]
+decisions: [ADR-0001, ADR-0002, "owner directive 2026-10-28 (two clauses: per-harness models re-key + the explicit collection-surface contract)", "the agent-side contract draft — docs/design/host-intake-contract-draft.md (vesmaro/vesma-agent, the feat/host-intake-contract branch); the draft's gates are owner-approved (FC-6+FC-7 this wave; the loopback probe approved; dual-form emission approved; FC-8/9 initially DEFERRED to v2)", "gates carried: fleet security-verdict (vesma-eyes, feat/models-fleet-blueprint, 832cd7a) — the red lines", "the AGW-25/AGW-26 lineage (discovery v6 → v7 re-key)", "the discovery v8 amendment (AGW-27, 2026-10-29; the owner's «делай» directive 2026-10-29): FC-8/FC-9 un-deferred → normative (§3.4a/§3.4b), the discovery_host_facts knob, the discovery_models_catalogs knob (owner-declared model catalogs)", "the discovery v9 amendment (AGW-28, 2026-10-29; the owner's «делай» directive 2026-10-29): the FC-6/FC-7 «metal only» red line LIFTED for config reads through distrobox container probes (§3.4c) — running containers join the surfaces; per-surface row identity (provider, base_url, model, harness, exec_env); FC-7 from containers (entry-level detector); the pi marker inside containers — existence-only `test -f`; quiet degradation without the distrobox CLI; knobs unchanged (discovery_models + discovery_distrobox)"]
 ratified: |-
   Not ratified (draft). Authority trail: owner directive 2026-10-28 —
   two clauses (per-harness models re-key; the explicit collection
@@ -16,12 +16,14 @@ ratified: |-
   (832cd7a, models-fleet gate 2); the protocol lineage is AGW-25
   (discovery v6, merged) → AGW-26 (v7 re-key) → AGW-27 (discovery v8,
   2026-10-29 — this spec's amendment: FC-8/FC-9 normative, the
-  discovery_host_facts and discovery_models_catalogs knobs; the owner's
+  discovery_host_facts and discovery_models_catalogs knobs) → AGW-28
+  (discovery v9, 2026-10-29 — this spec's amendment: the «metal only»
+  red line lifted for distrobox container probes, §3.4c; the owner's
   «делай» directive of 2026-10-29; the agent-side normative form — the
-  «discovery v8 (AGW-27, 2026-10-29)» addendum in vesma-agent's
-  docs/PROTOCOL.md, landing in parallel). Stable ratification — the
-  first conformant implementation of the catalog legs by the agent
-  (v7+) and a green conformance run.
+  «Container-surface addendum — discovery v9 (AGW-28, 2026-10-29)»
+  addendum in vesma-agent's docs/PROTOCOL.md, landing in parallel).
+  Stable ratification — the first conformant implementation of the
+  catalog legs by the agent (v7+) and a green conformance run.
 language: en (informative mirror)
 ---
 
@@ -32,15 +34,19 @@ language: en (informative mirror)
 > text prevails. The mirror is maintained in the same change as the
 > Russian text (single-commit sync policy).
 >
-> **Status: draft (0.1.0-draft.3).** The contract fixes the COMPLETE
+> **Status: draft (0.1.0-draft.4).** The contract fixes the COMPLETE
 > explicit catalog of what the outbound ЦУП agent (`vesmaro-agent`)
 > collects on a host — the fleet's trust and transparency surface
 > (clause 2 of the owner directive 2026-10-28) — and normatively defines
 > the new/re-keyed legs: FC-6 (models per-harness — the re-key
 > superseding the v6 standalone table of AGW-25), FC-7 (mcp_servers),
-> and — since the discovery v8 amendment (AGW-27, 2026-10-29; the
+> since the discovery v8 amendment (AGW-27, 2026-10-29; the
 > owner's «делай») — FC-8 (tooling, §3.4a) and FC-9 (compute envelope,
-> §3.4b), whose DEFERRED status is lifted. Anything not named in the
+> §3.4b), whose DEFERRED status is lifted, and — since the discovery v9
+> amendment (AGW-28, 2026-10-29; the owner's «делай») — FC-6/FC-7
+> config reads through distrobox container probes (§3.4c): the «metal
+> only» red line is lifted for containers, running containers join the
+> surfaces. Anything not named in the
 > catalog of §3.2 is not collected. Form changes after ratification go
 > through the SemVer process only (ADR-0001 §2).
 
@@ -50,10 +56,12 @@ identifiers, fields and enum values are EN. Every requirement traces to
 the agent-side contract draft («contract §…» =
 `docs/design/host-intake-contract-draft.md`, its gates owner-approved on
 2026-10-28), the carried security-verdict («gate 2», 832cd7a), the
-AGW-25/AGW-26 protocol lineage, or the discovery v8 amendment (AGW-27,
-2026-10-29 — the TC-pinned deltas the owner approved with «делай» on
-2026-10-29; the agent-side normative form — the «discovery v8 (AGW-27,
-2026-10-29)» addendum in vesma-agent's `docs/PROTOCOL.md`); the text
+AGW-25/AGW-26 protocol lineage, or the discovery v8/v9 amendments
+(AGW-27 and AGW-28, 2026-10-29 — the TC-pinned deltas the owner
+approved with «делай» on 2026-10-29; the agent-side normative form —
+the «discovery v8 (AGW-27, 2026-10-29)» and «Container-surface
+addendum — discovery v9 (AGW-28, 2026-10-29)» addenda in vesma-agent's
+`docs/PROTOCOL.md`); the text
 marks them. Budgets marked «(brief 2026-10-28)» and
 «(brief 2026-10-29)» are spec-phase wave budgets laid over the approved
 gates (listed in §10).
@@ -89,14 +97,20 @@ field of the report maps to exactly one FC id (§3.6).
 - owner-declared model catalogs — the `discovery_models_catalogs` knob
   as an extension of the FC-6 per-harness table (§3.3.2; discovery v8,
   AGW-27);
+- container config surfaces — FC-6/FC-7 config reads through distrobox
+  container probes: running containers join the surfaces, per-surface
+  row identity, the probe mechanism = the ratified v4 distrobox
+  discipline extended with bounded transport (§3.4c; discovery v9,
+  AGW-28);
 - the board's transparency surface: rendering "what agents collect"
   FROM this contract, per agent version; the field → FC map (§3.6);
 - the honest implementation status (§9).
 
 **Out of scope (neighbouring domains):**
 
-- container config surfaces (`exec_env` beyond `"metal"`) — the
-  follow-up wave (§3.3.6, §9);
+- pod config surfaces (`exec_env` = `pod:<name>`) — the follow-up
+  wave; the discovery v9 amendment (AGW-28) lifts «metal only» ONLY
+  for distrobox container probes (§3.3.6, §3.4c, §9);
 - the wire discipline of the EXISTING `models` field (the row form,
   `base_url` normalization, snapshot/no-wipe, board ingest duties) — the
   norm of [agent-discovery](../../agent-discovery/v0/spec.md) v0; this
@@ -131,12 +145,13 @@ redefined here. Contract-local terms:
 |---|---|
 | fact class (FC) | A catalog class: one unit of the "what the agent collects" surface. Each FC carries: what is collected, the host source, the emission form, caps, status (live / re-key / DEFERRED). The §3.2 catalog is a closed list; adding a class = a contract amendment with an owner gate (P1). |
 | per-harness attribution | The structural rule of FC-6/FC-7: a fact row may carry only such a `harness` as the agent ACTUALLY discovered on this host via the inventory (FC-1/FC-2). The models/MCP scan runs OVER the inventory results — a row for an undiscovered harness is impossible by construction (contract §3.1). |
+| per-surface row identity | The identity of an FC-6/FC-7 config-fact row — the tuple `(provider, base_url, model, harness, exec_env)` (the discovery v9 amendment, AGW-28): the SAME provider+model configured on metal AND in a container = TWO rows — config facts are per-surface. The v4 «one namespace, one truth» dedupe applies to ENVIRONMENT homes (the FC-2 exec_env merge), not to config-fact rows (§3.3.1, §3.4c). |
 | never collected | The catalog's verbatim boundary: file contents (outside the named per-class exceptions), project/workspace names, prompts and session content, environment-variable VALUES, network traffic, credential material in any form (§3.5). |
 | transparency surface | The board's rendering of "what agents collect" FROM this contract, per agent version: one card per FC id (what, why, caps, privacy line); built via the contract↔agent version handshake (§3.6; contract §7). |
 | harness bucket | The FC-6 provider attribution when NO documented string form parses: provider = the harness slug; the reason is a local-log fact, never the wire; an advisory name board-side (§3.3.3). Provider guessing is forbidden (contract §3.2; draft gate OQ-3: never guess). |
 | dual-form emission | The OQ-3-approved emission form of FC-6: `models[]` carries the RAW frontmatter/config strings verbatim; the parsed provider rides the row's `provider` field — and only when the documented form parses (§3.3.3). |
 | DEFERRED (v2) | A catalog-class status: the class is described (what, source, caps), implementation deferred by the owner's decision; the agent does NOT collect it until activation (§3.2, §9). Initially carried by FC-8/FC-9; the deferral was lifted by the discovery v8 amendment (AGW-27, 2026-10-29, the owner's «делай») — the status is unused in the catalog now and stays in the status vocabulary for possible future deferrals. |
-| leg knob | A leg's configuration switch in the agent config with enum values (the agent-discovery §3.9 precedent): `auto` — the leg runs; `off` — the leg's fields are absent from the wire entirely; an unknown value — refuse to start (never a silent fallback). This contract's legs carry two knobs: `discovery_models` (FC-6/FC-7, §3.3/§3.4) and `discovery_host_facts` (FC-8/FC-9, §3.4a/§3.4b); the FC-6 extension — the `discovery_models_catalogs` list (§3.3.2). |
+| leg knob | A leg's configuration switch in the agent config with enum values (the agent-discovery §3.9 precedent): `auto` — the leg runs; `off` — the leg's fields are absent from the wire entirely; an unknown value — refuse to start (never a silent fallback). This contract's legs carry two knobs: `discovery_models` (FC-6/FC-7, §3.3/§3.4) and `discovery_host_facts` (FC-8/FC-9, §3.4a/§3.4b); the FC-6 extension — the `discovery_models_catalogs` list (§3.3.2). Container reads of FC-6/FC-7 (§3.4c, v9) ride the SAME knobs with NO new ones: `discovery_models` AND `discovery_distrobox` (the v4 knob of the FC-4 container leg) both in `auto`. |
 
 ## 3. Contract
 
@@ -185,8 +200,8 @@ deferred by the owner (draft gate).
 | FC-3 | `environments[].capabilities` | Names-only harness inventory: specialists, skills, plugins, instructions + counts + booleans | dir walks + 2 named content reads (pi `packages[]`, the zcode gcw marker) | names/counts/booleans | 50/50/30/30, 8 KiB | live (v3) |
 | FC-4 | `distrobox_containers` | Per-container honest verdicts; exec_env merge identity | distrobox list/probe (read-only) | facts | 30 s leg | live (v4) |
 | FC-5 | `runtime`, `k8s_nodes/pods/verdicts` | Runtime-surface honesty; content-free cluster lists | multi-signal detect; stdlib REST | facts | 30 s leg | live (v5) |
-| FC-6 | `models` per-harness | Per DISCOVERED harness: configured providers (name, base_url normalized, auth enum), available models (what the config/catalog names + anonymous local-server availability), default model | the §3.3.2 per-harness layout table | names/enums/normalized URLs | 64 rows, 50/row, 16 KiB, 8 KiB/file | **re-key (v7, AGW-26)** — supersedes the v6 standalone table |
-| FC-7 | `mcp_servers` per harness | MCP/extension server NAMES + transport kind | documented caches/configs (pi `mcp-cache.json`; zcode/copilot mcp sections where documented) | names/kinds only — never argv, env, URLs | ≤30 names/harness, 8 KiB | **approved (v7)** — new |
+| FC-6 | `models` per-harness | Per DISCOVERED harness: configured providers (name, base_url normalized, auth enum), available models (what the config/catalog names + anonymous local-server availability), default model | the §3.3.2 per-harness layout table; since v9 (AGW-28) — the same files inside running distrobox containers via the §3.4c probes | names/enums/normalized URLs | 64 rows (across surfaces), 50/row, 16 KiB (across surfaces), 8 KiB/file | **re-key (v7, AGW-26)** — supersedes the v6 standalone table; container surfaces since v9 (AGW-28) |
+| FC-7 | `mcp_servers` per harness | MCP/extension server NAMES + transport kind | documented caches/configs (pi `mcp-cache.json`; zcode/copilot mcp sections where documented); since v9 (AGW-28) — the same caches inside running distrobox containers (entry-level detector, §3.4c) | names/kinds only — never argv, env, URLs | ≤30 names per element (harness × exec_env), 8 KiB/element | **approved (v7)** — new; container entries since v9 (AGW-28) |
 | FC-8 | tooling | Presence + version of a FIXED built-in host-tool list (git, podman, docker, python3, node, go, …) | LookPath + ONE version call ≤2 s (brief 2026-10-29) | names/versions; the version — first line ≤200 runes through the names-only validator, drop-on-shape | ≤40 tools sorted + honest `count`; 8 KiB shrink-to-fit | **normative (v8, AGW-27)** — §3.4a |
 | FC-9 | compute envelope | CPU cores, RAM total, disk free on the state volume, GPU presence (names only) | /proc + statvfs + ONE `nvidia-smi -L` call (brief 2026-10-29) | numbers only; GPU names — strings ≤8, validator-gated; never serials/utilization | fields omitempty INDEPENDENTLY (P4); one-shot per pass | **normative (v8, AGW-27)** — §3.4b |
 
@@ -195,7 +210,11 @@ deferred by the owner (draft gate).
 gate (P1: adding a collected class is always gated). The discovery v8
 amendment (AGW-27, 2026-10-29; the owner's «делай») lifted DEFERRED
 from FC-8/FC-9 — both classes are normative (§3.4a, §3.4b) and
-governed by the `discovery_host_facts: auto|off` knob (§3.4a).
+governed by the `discovery_host_facts: auto|off` knob (§3.4a). The
+discovery v9 amendment (AGW-28, 2026-10-29; the same «делай»
+directive) extended the FC-6/FC-7 SOURCES with running distrobox
+containers (§3.4c) — the classes and fields are unchanged, the FC-6
+caps became surface-spanning totals.
 
 **The field → FC map** (complete; the basis of the §3.6 rendering):
 
@@ -226,6 +245,14 @@ governed by the `discovery_host_facts: auto|off` knob (§3.4a).
   fold into the §3.3.2 per-harness table as the rows of those harnesses;
   the table becomes ATTACHED to the fingerprint inventory — one built-in
   registry with per-harness sections (contract §0).
+- **MUST** (discovery v9, AGW-28): a config-fact row's identity — the
+  per-surface tuple `(provider, base_url, model, harness, exec_env)`:
+  the SAME provider+model configured on metal AND inside a container =
+  TWO rows (one per surface) — config facts are per-surface.
+  **MUST NOT**: cross-surface deduplication of rows; the v4 «one
+  namespace, one truth» principle (the dedupe identity from agent-side
+  `os.Stat`) applies to ENVIRONMENT homes (FC-2, the exec_env merge),
+  NOT to config-fact rows.
 
 #### 3.3.2 The per-harness layout table (built-in, typed decodes, the v3 discipline)
 
@@ -237,7 +264,7 @@ governed by the `discovery_host_facts: auto|off` knob (§3.4a).
 | continue | `~/.continue/config.json` | `models[].{provider, model, apiBase, apiKey}` | the `apiKey` field present → configured | v6, carried (AGW-25) |
 | claude-code | `~/.claude/settings.json` | `model`; from `env` — only KEY NAMES with the `ANTHROPIC_` prefix | any `ANTHROPIC_*` name → configured; none → unknown | v6, carried (contract §3.2; AGW-25) |
 | aider | `~/.aider.conf.yml` | `model`, `openai-api-base`, `openai-api-key` | `openai-api-key` present → configured; absent → unknown | v6, carried (AGW-25) |
-| pi | `<home>/.pi/agent/` | no documented model catalog today → honest absence (model rows: none); `auth.json` EXISTENCE → the pi auth fact | `auth.json` exists → configured (the value is NEVER read); no file → unknown | 2026-10-28: `auth.json` present on core-51's pi (contract §3.2); emission: one provider `pi` row, the `models` field omitted (omitempty; an empty list would be a zero-and-ran claim — the key is not emitted) (brief 2026-10-28) |
+| pi | `<home>/.pi/agent/` | no documented model catalog today → honest absence (model rows: none); `auth.json` EXISTENCE → the pi auth fact | `auth.json` exists → configured (the value is NEVER read); no file → unknown; inside a container (v9, AGW-28) the marker = `test -f` existence-only — the container-probe transport never reads the file's bytes (§3.4c) | 2026-10-28: `auth.json` present on core-51's pi (contract §3.2); emission: one provider `pi` row, the `models` field omitted (omitempty; an empty list would be a zero-and-ran claim — the key is not emitted) (brief 2026-10-28) |
 
 - **MUST**: the table is built-in and versioned in the agent; reads go
   ONLY through the named fields at JSON-pointer/section-path level;
@@ -367,9 +394,15 @@ The documented string forms of frontmatter/config model rows (contract
 - **MUST**: `provider` ≤ 60 chars; `models[]` sorted ≤ 50 per row;
   `installations[]` ≤ 64 rows; the `models` object ≤ 16 KiB marshaled;
   the per-file read cap — a hard 8 KiB (contract §2 FC-6, §3.4; AGW-25).
+- **MUST** (discovery v9, AGW-28): the `installations[]` and `models`
+  object caps are SPANNING ACROSS SURFACES: 64 rows and 16 KiB —
+  TOGETHER on metal and in all containers (the per-surface rows of
+  §3.3.1 get no separate caps); `models[]` ≤ 50 stays per-row.
 - **MUST**: the zcode/copilot frontmatter-first read: ≤64 agent
   definition files per pass (brief 2026-10-28), each under the 8 KiB
-  read cap.
+  read cap; the container probe (§3.4c, v9): ≤64 files per container
+  home — the same budget per EACH surface separately (transport, not
+  an object cap).
 - **MUST**: the object shrinks to fit BEFORE send (shrink-to-fit);
   truncation rides the affected row's `note`; an over-cap send is
   impossible by construction (AGW-25; contract §3.4).
@@ -399,8 +432,14 @@ CHANGES (contract §3.4 "carried verbatim"):
   (ingest); the agent's duties are the drop and the local log.
 - **MUST**: credential material is never read into memory for reporting
   and never emitted in any encoding (P3; gate 2 §2 item 3, §4.1).
-- **MUST**: `exec_env` — only `"metal"` in this wave; container config
-  surfaces ride the follow-up wave (contract §3.4).
+- **MUST**: `exec_env` — `"metal"` and, since the discovery v9
+  amendment (AGW-28, 2026-10-29; the owner's «делай»),
+  `"distrobox:<name>"` for config reads through the §3.4c container
+  probes: the FC-6/FC-7 «metal only» red line is LIFTED for distrobox
+  containers — the probe mechanism = the ratified v4 distrobox
+  discipline extended with bounded transport (§3.4c); pod config
+  surfaces (`pod:<name>`) stay outside the surface (contract §3.4;
+  the discovery v9 amendment).
 
 ### 3.4 FC-7 — mcp_servers per harness (normative)
 
@@ -415,8 +454,11 @@ CHANGES (contract §3.4 "carried verbatim"):
 
 - **MUST**: the element = `{harness, exec_env, servers[], count}`;
   structural attribution (§3.3.1): `harness` — a discovered harness
-  only; `exec_env` — only `"metal"` in this wave.
-- **MUST**: `servers[]` — sorted names ≤30 per harness (contract §4);
+  only; `exec_env` — `"metal"` and, since the discovery v9 amendment
+  (AGW-28), `"distrobox:<name>"`: container entries ride the same
+  form — the detector is ENTRY-LEVEL (one element per the
+  harness × exec_env pair; §3.4c).
+- **MUST**: `servers[]` — sorted names ≤30 per element (contract §4);
   **MUST**: `count` — the FULL total of names found, even when
   `servers[]` is truncated at 30 (an honest counter; brief 2026-10-28).
 - **MUST**: the sources — documented caches/configs ONLY, typed decodes:
@@ -425,7 +467,11 @@ CHANGES (contract §3.4 "carried verbatim"):
   never decoded (the landed AGW-26 shape; the contract draft's list
   wording `{version, servers[]}` was wrong and is being fixed on the
   agent-repo side); zcode/copilot mcp sections — where documented
-  (contract §4).
+  (contract §4); since v9 (AGW-28) — the SAME caches inside running
+  distrobox containers: a container pi's `mcp-cache.json` → an element
+  with `exec_env="distrobox:<name>"`, the detector ENTRY-LEVEL
+  (a container's and the metal cache of one harness = two elements,
+  one per surface; caps unchanged, §3.4c).
 - **MUST NOT**: argv, env, URLs and any cache/config values are never
   decoded or emitted — names and transport kind only (contract §2 FC-7,
   §4).
@@ -493,7 +539,8 @@ docker, python3, node, go, …).
   (§3.3.5); on truncation the `count` stays full (§3.4).
 - Container-runtime tools (podman/docker) are collected as
   PRESENCE/VERSION facts — this class touches no container config
-  surfaces (`exec_env` stays `"metal"`; §3.3.6, §9).
+  surfaces: container reads are the FC-6/FC-7 domain (§3.4c;
+  §3.3.6, §9); FC-8/FC-9 have no `exec_env` dimension.
 
 ### 3.4b FC-9 — compute envelope (normative; discovery v8, AGW-27)
 
@@ -528,6 +575,57 @@ facts (§3.5).
   `discovery_host_facts: auto|off`; quiet zero per fact; one-shot per
   pass, no timer of its own).
 
+### 3.4c Container config surfaces — distrobox probes (FC-6/FC-7; discovery v9, AGW-28)
+
+Status: the discovery v9 amendment (AGW-28, 2026-10-29; the owner's
+«делай» directive of 2026-10-29) lifted the FC-6/FC-7 «metal only» red
+line (§3.3.6) for config reads through distrobox container probes —
+running containers join the collection surfaces. The agent-side
+normative form — the «Container-surface addendum — discovery v9
+(AGW-28, 2026-10-29)» addendum in vesma-agent's `docs/PROTOCOL.md`
+(landing in parallel). The probe mechanism is the RATIFIED v4
+distrobox discipline (FC-4) extended with bounded transport; pod
+surfaces (`pod:<name>`) stay outside the surface (§1).
+
+- **MUST**: the container probe — RUNNING containers ONLY: a stopped
+  container is an honest `not-running` fact and is NEVER booted
+  (entering a stopped container is a side effect discovery never
+  takes; the v4 precedent).
+- **MUST**: the probe script is GENERATED from the SAME built-in
+  layout table §3.3.2 — the structural invariant «the same method as
+  on metal»: a second path registry does not exist, table drift
+  between metal and containers is impossible by construction.
+- **MUST**: the per-file bounded transport: a config file's content is
+  extracted as `head -c 8192` (the same hard 8 KiB read cap), encoded
+  base64, ONE file = ONE fenced output block; the agent side decodes
+  it TYPED — the SAME scanners as on metal (the documented string
+  forms §3.3.2/§3.3.3); the names-only validator and the caps are
+  unchanged.
+- **MUST**: the budget — ≤64 files per container home (§3.3.5) and a
+  per-container time budget inside the v4 family «30 s leg / 20 s
+  probe»: a config-carrying container gets up to 25 s of probe (the
+  budget is documented by this amendment; a blown budget = an honest
+  container verdict, not a leg error).
+- **MUST**: the pi auth marker inside a container — `test -f`
+  existence-only (§3.3.2): the probe transport never reads the bytes
+  of `auth.json` — a boolean fact, not content.
+- **MUST**: quiet degradation: the distrobox CLI absent → the WHOLE
+  container leg quiet-zero (the documented laptop case: no containers
+  — no container facts; not an error, not a retry); a failing
+  container = the v4 honest-verdict machine (per-container honest
+  verdict).
+- **MUST**: knobs unchanged — container reads ride the EXISTING
+  `discovery_models` (FC-6/FC-7) and `discovery_distrobox` (the v4
+  knob of the FC-4 container leg): both in `auto`; the amendment
+  introduces no new knobs (P5; the agent-discovery §3.9 precedent).
+- **MUST NOT**: pod config surfaces are not read (honest absence); a
+  stopped container is never booted; beyond the files the §3.3.2 table
+  names, the transport reads NOTHING (the §3.5 boundary holds in the
+  container verbatim).
+- **MUST**: container rows carry `exec_env="distrobox:<name>"`; row
+  identity and caps — per §3.3.1/§3.3.5 (per-surface rows; caps span
+  surfaces); FC-7 — the entry-level detector (§3.4).
+
 ### 3.5 Never collected (the verbatim boundary)
 
 **Never collected** (contract §2, verbatim): file contents (outside the
@@ -539,7 +637,12 @@ v8 amendment (AGW-27) the boundary gains explicit lines for the FC-8/
 FC-9 hardware classes: **never collected** are hardware serials,
 utilization telemetry and load telemetry of any kind; the PATHs of
 owner-declared model catalogs never ride the wire — only the catalog
-row facts (§3.3.2, §3.4b).
+row facts (§3.3.2, §3.4b). Since the discovery v9 amendment (AGW-28)
+the boundary gains the container-transport line: from containers only
+bounded head-only bytes of NAMED files are transported (the §3.3.2
+table: `head -c 8192`, base64, fenced blocks, ≤64 files per container
+home — §3.4c) — NEVER whole files, NOTHING outside the table, NEVER
+from stopped containers.
 
 - **MUST NOT**: no catalog class reads or emits anything from the list;
   a conflict between the catalog and this boundary resolves in favour of
@@ -577,7 +680,7 @@ are the same.
 
 | Code | Application to this contract's fields |
 |---|---|
-| `422` | `models` over 16 KiB marshaled; `installations[]` > 64; `models[]` > 50; an `mcp_servers` element over 8 KiB; `servers[]` > 30; `tooling`/`compute` over 8 KiB; `tools[]` > 40; `gpus` > 8; an unknown form enum value — honest rejection, never a silent trim (the agent's shrink-to-fit makes an over-cap send an agent defect) |
+| `422` | `models` over 16 KiB marshaled (across surfaces, §3.4c); `installations[]` > 64 (across surfaces); `models[]` > 50; an `mcp_servers` element over 8 KiB; `servers[]` > 30; `tooling`/`compute` over 8 KiB; `tools[]` > 40; `gpus` > 8; an unknown form enum value — honest rejection, never a silent trim (the agent's shrink-to-fit makes an over-cap send an agent defect) |
 | `404` | the FC-6/FC-7/FC-8/FC-9 leg stays silent below info on a board without the route — additivity creates no schedule and no retries (§3.1 P5) |
 
 ## 5. Examples
@@ -595,6 +698,8 @@ endpoints only — no real tokens, owner-machine paths or hostnames
 | `examples/tooling-field.json` | the additive top-level `tooling` (FC-8, §3.4a): `{tools[], count}` — `{name, version?}` entries, `version` omitempty for a tool with no version obtained, `count` = the full total, sorted |
 | `examples/compute-envelope.json` | the additive top-level `compute` (FC-9, §3.4b): numbers only, fields independently omitempty, `gpus` — names only (never serials/utilization) |
 | `examples/catalog-row-owner-declared.json` | an FC-6 row from an owner-declared catalog (the `discovery_models_catalogs` knob, §3.3.2): `source: config`, `auth: unknown`, the note «model catalog (owner-declared)», the catalog's primary+fallback strings, the provider from the documented suffix form |
+| `examples/container-installation-row.json` | a container-sourced FC-6 row (§3.4c, discovery v9 AGW-28): the same provider+model as the metal zcode row but `exec_env: "distrobox:<name>"` — the per-surface identity of §3.3.1 = a DISTINCT row; the transport — bounded head-only bytes of a named file (§3.5) |
+| `examples/mcp-servers-container-entry.json` | a container `mcp_servers` element (§3.4, §3.4c): the entry-level detector — metal pi and a distrobox pi = TWO elements (one per the harness × exec_env pair); names only, `count` = the full total per element |
 | `examples/credential-redaction.json` | the discipline before/after: `base_url` normalization; a harness-configured loopback `base_url` WITHOUT a marker → an anonymous probe allowed; with a marker → never dialed; a credential string in an unexpected field → the row dropped before marshal |
 
 ## 6. Conformance
@@ -623,7 +728,7 @@ The check vocabulary (executor — a future runner profile):
 | `base_url_normalized` | a present `base_url` = `scheme://authority[/base-path]`, no query/fragment/userinfo (§3.3.6) |
 | `row_caps` | `provider` ≤ 60; `models[]` sorted ≤ 50; `installations[]` ≤ 64; truncation — in the `note` (§3.3.5) |
 | `no_credential_material` | the §3.3.6 names-only validator as a static scan of wire-shape documents; the explanatory `credential-redaction.json` — outside the scan (the CM `no_secret_in_vars` / agent-discovery §6 precedent) |
-| `mcp_servers_field_shape` | elements `{harness, exec_env, servers[], count}`; `count` — the full total; `exec_env` = `"metal"` (§3.4) |
+| `mcp_servers_field_shape` | elements `{harness, exec_env, servers[], count}`; `count` — the full total; `exec_env` ∈ `"metal"` \| `"distrobox:<name>"` (§3.4, §3.4c) |
 | `mcp_names_cap30` | `servers[]` sorted ≤ 30 per harness (§3.4) |
 | `mcp_names_only` | no argv/env/URL-shaped strings in `servers[]`/`transports` — names and kinds only (§3.4) |
 | `knob_values` | a `discovery_models` knob declaration — only `auto` \| `off`; governs FC-6 and FC-7 jointly (§3.4) |
@@ -633,6 +738,8 @@ The check vocabulary (executor — a future runner profile):
 | `compute_gpu_names_only` | `gpus` — strings ≤ 8, clean per the validator; no serial-/utilization-shaped strings (§3.4b) |
 | `catalog_rows_shape` | owner-declared catalog rows: `source=config`, `auth=unknown`, the note «model catalog (owner-declared)»; `harness` = the owner entry's spelling; the catalog PATH absent from the wire (§3.3.2) |
 | `host_facts_knob_values` | a `discovery_host_facts` knob declaration — only `auto` \| `off`; governs FC-8 and FC-9 jointly (§3.4a) |
+| `container_rows_shape` | container-sourced FC-6 rows carry `exec_env="distrobox:<name>"`; the same provider+model on metal and in a container = TWO rows (per-surface identity §3.3.1); `installations[]` ≤ 64 and the `models` object ≤ 16 KiB — across surfaces (§3.3.5, §3.4c) |
+| `container_mcp_shape` | container `mcp_servers` elements carry `exec_env="distrobox:<name>"`; one element per the harness × exec_env pair (entry-level detector); element caps unchanged — ≤30 names, 8 KiB (§3.4, §3.4c) |
 
 Cases: positive — the §5 wire examples (`examples/…`;
 `expect: pass`, `severity: must`; the explanatory
@@ -641,7 +748,7 @@ Cases: positive — the §5 wire examples (`examples/…`;
 
 ## 7. Compatibility
 
-- **SemVer**: `0.1.0-draft.3`; stable ratification — the first conformant
+- **SemVer**: `0.1.0-draft.4`; stable ratification — the first conformant
   agent implementation (v7) and a green conformance run. A breaking
   change = MAJOR + a `max(90 days, 2 minor releases)` window with dual
   support; below 1.0 the window is 14 days (ADR-0001 §2).
@@ -658,7 +765,12 @@ Cases: positive — the §5 wire examples (`examples/…`;
   (per-harness attribution, frontmatter rows, `base_url` omitempty for
   endpoint-less sources) with the row form UNCHANGED: an old board reads
   the new rows as ordinary installations — additively (§3.1 P5;
-  agent-discovery §7).
+  agent-discovery §7). Container rows (v9, AGW-28) do NOT change the
+  row form: `exec_env="distrobox:<name>"` is a legal value of the
+  FROZEN `exec_env` vocabulary (agent-discovery §2, the discovery v4
+  precedent), so a board without container support reads them as
+  ordinary rows of the same form; the «metal only» lift extends the
+  POPULATION, not the form — additive (§3.4c).
 - **REMOVING a named field = MAJOR** (inherited); extending the
   per-harness table (a new harness, a new named field) — a minor change
   with committee notification; activating DEFERRED classes — a minor
@@ -690,9 +802,11 @@ below points at a §3 MUST or is marked «operational control».
 | **I**nformation Disclosure | a credential in the URL | `base_url` normalization (§3.3.6): query/fragment/userinfo always stripped; unparsable — omit | `base_url_normalized` |
 | **I**nformation Disclosure | identifying/credential-shaped content in the new FC-8/FC-9 strings (a tool version carrying a secret, a GPU serial, telemetry) | the version — the first line ≤200 runes through the names-only validator, drop-on-shape (§3.4a); GPU — names only ≤8, validator-gated, serials/utilization never (§3.4b); the §3.5 boundary | `tooling_version_discipline`, `compute_gpu_names_only` |
 | **I**nformation Disclosure | the harness-configured probe as a channel to a foreign/credentialed endpoint | LOOPBACK only; `auth: configured` → never dialed; ≤8 targets; zero-redirect; one GET, quiet zero (§3.3.4; H3) | the probe-rule review (operational control) |
+| **I**nformation Disclosure | the container probe (v9, AGW-28) reads/carries beyond the named set: generator drift, whole files, files outside the table | the probe script is GENERATED from the SAME built-in table §3.3.2 — no second registry (§3.4c); per-file `head -c 8192` + base64 fenced blocks, ≤64 files/home; the pi marker — `test -f` only; the §3.5 boundary holds in the container verbatim; RUNNING-only (a stopped container is never booted) | `container_rows_shape`, `container_mcp_shape`, the probe-generator review (operational control) |
 | **S**poofing | a foreign executor reports | the route's executor-token + identity-match (inherited; agent-discovery §3.1) | route integration tests (operational control) |
 | **E**levation of Privilege | a discovery fact grants itself authority | advisory, never authority: the field creates no rows, extends no dictionaries (agent-discovery §3.1, §3.11) | board conformance (operational control) |
 | **D**enial of Service | a bloated report (frontmatter ≤64 files × legs) chokes the board | shrink-to-fit (§3.3.5); the family's honest 422 (§4); the hourly cadence without its own timer | `row_caps`, `mcp_names_cap30` |
+| **D**enial of Service | bloated container-probe output (many containers × many files) chokes the leg/board | per-file bounded transport (§3.4c); ≤64 files per home; the per-container budget ≤25 s (the v4 family); the `models`/`mcp_servers` caps surface-spanning/per-element + shrink-to-fit; quiet degradation without the CLI (§3.4c) | `row_caps`, `container_rows_shape` |
 | **R**epudiation | «who dropped the row / who sent a credential?» | drops audited, incidents named, the local log loud (§3.3.6, §4) | operational control (the board's audit trail) |
 | **T**ampering | the transparency rendering lies about the surface (catalog drift between the board's and the agent's contract versions) | the agent↔contract version handshake (§3.6); the field → FC map complete (§3.2); a field without an FC id = a defect | operational control (handshake tests) |
 
@@ -712,7 +826,8 @@ honestly:
 | Agent v6 (standalone `models`) | **rode the wire** (AGW-25, merged 2026-10-28) — SUPERSEDED by this contract's population rules; zero rows on the real fleet (verified live 2026-10-28 on core-51: the four v6 config files are absent; the fleet's real harnesses — zcode/copilot — carry their catalogs in agent-definition frontmatter) | vesmaro/vesma-agent, main (merge b98960e); `docs/PROTOCOL.md` §3 |
 | Agent v7 (per-harness re-key + FC-7) | **in flight** — the `feat/host-intake-contract` branch, AGW-26; the contract draft — `docs/design/host-intake-contract-draft.md` (this spec's source) | vesmaro/vesma-agent |
 | Board mirror of the new fields (ingest of per-harness `models`, `mcp_servers`; the §3.6 transparency rendering) | **not merged** — a separate vesma-eyes wave (pending; contract §9) | vesma-eyes |
-| FC-8 / FC-9 (tooling, compute) | **normative since discovery v8** (AGW-27, 2026-10-29; DEFERRED lifted by the owner's «делай» directive of 2026-10-29) — the normative text of this spec's §3.4a/§3.4b; the agent-side normative form — the «discovery v8 (AGW-27, 2026-10-29)» addendum in `docs/PROTOCOL.md` (landing in parallel with this amendment); container config surfaces (`exec_env` beyond `"metal"`) remain the deferred follow-up wave | vesmaro/vesma-agent, `docs/PROTOCOL.md` |
+| FC-8 / FC-9 (tooling, compute) | **normative since discovery v8** (AGW-27, 2026-10-29; DEFERRED lifted by the owner's «делай» directive of 2026-10-29) — the normative text of this spec's §3.4a/§3.4b; the agent-side normative form — the «discovery v8 (AGW-27, 2026-10-29)» addendum in `docs/PROTOCOL.md` (landing in parallel with this amendment); FC-6/FC-7 container config surfaces — below (v9) | vesmaro/vesma-agent, `docs/PROTOCOL.md` |
+| Agent v9 (container-surface: FC-6/FC-7 through distrobox probes, §3.4c) | **in flight** at amendment time (stated honestly): the `feat/container-surface` branch, AGW-28; the agent-side normative form — the «Container-surface addendum — discovery v9 (AGW-28, 2026-10-29)» addendum in `docs/PROTOCOL.md` (landing in parallel); pod surfaces (`pod:<name>`) remain the follow-up wave | vesmaro/vesma-agent, `feat/container-surface` |
 
 `sessions[]` — outside the agent's collection surface (verified
 2026-10-28): the field exists in the board's `ExecutorDiscoveryBody`
@@ -732,8 +847,13 @@ cascade, release v0.11.0, fleet update — the standing wave discipline
 (contract §10); (2a) the discovery v8 amendment (AGW-27, 2026-10-29):
 FC-8/FC-9 (§3.4a/§3.4b) + the `discovery_models_catalogs` catalog knob —
 this spec's normative text is ready, the agent-side form (the PROTOCOL
-addendum) lands in parallel; (3) the board mirror wave — ingest + the
-transparency rendering (including the additive `tooling`/`compute`);
+addendum) lands in parallel; (2b) the discovery v9 amendment
+(AGW-28, 2026-10-29): the container-surface §3.4c — this spec's
+normative text is ready, the agent wave (`feat/container-surface`) is
+in flight, the PROTOCOL addendum lands in parallel; (3) the board
+mirror wave — ingest + the
+transparency rendering (including the additive `tooling`/`compute`
+and the container rows);
 (4) stable ratification — both sides' conformance green.
 Intermediate states are conformant by additivity (§7).
 
@@ -777,6 +897,23 @@ Intermediate states are conformant by additivity (§7).
   version-call timeout ≤2 s, the first version line ≤200 runes,
   `tools[]` ≤40, `gpus` ≤8, the 8 KiB read cap per catalog file, the
   `tooling`/`compute` fields at 8 KiB shrink-to-fit each.
+- The discovery v9 amendment (AGW-28, 2026-10-29) — the TC-pinned
+  deltas the owner approved with «делай» on 2026-10-29: the FC-6/FC-7
+  «metal only» red line lifted for config reads through distrobox
+  container probes (§3.4c; running containers only, the script
+  generated from the SAME §3.3.2 table, per-file `head -c 8192` +
+  base64 fenced blocks, ≤64 files per container home, the
+  per-container budget inside the v4 30 s-leg/20 s-probe family —
+  config-carrying up to 25 s of probe); per-surface row identity
+  (§3.3.1) and surface-spanning caps (§3.3.5); FC-7 from containers —
+  the entry-level detector (§3.4); the pi marker in a container —
+  `test -f` existence-only (§3.3.2); quiet degradation without the
+  distrobox CLI (§3.4c); knobs unchanged (`discovery_models` +
+  `discovery_distrobox`); the §3.5 boundary extension (the
+  container-transport line); the agent-side normative form — the
+  «Container-surface addendum — discovery v9 (AGW-28, 2026-10-29)»
+  addendum in vesma-agent's `docs/PROTOCOL.md` (in flight,
+  `feat/container-surface`).
 - The [glossary](../../../GLOSSARY.md), the
   [ecosystem map](../../../ECOSYSTEM.md), the
   [roadmap](../../../docs/roadmap.md).

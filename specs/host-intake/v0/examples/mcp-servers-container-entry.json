@@ -1,0 +1,26 @@
+{
+  "mcp_servers": [
+    {
+      "harness": "pi",
+      "exec_env": "metal",
+      "servers": [
+        "context7",
+        "playwright"
+      ],
+      "count": 2
+    },
+    {
+      "harness": "pi",
+      "exec_env": "distrobox:lab-box",
+      "servers": [
+        "context7",
+        "filesystem"
+      ],
+      "transports": {
+        "context7": "http",
+        "filesystem": "stdio"
+      },
+      "count": 2
+    }
+  ]
+}

@@ -45,7 +45,8 @@ spec.md §3; ссылки HI-nn — для отчётов конформанса
 - [ ] **HI-10** Красные линии v6: names-only валидатор (drop, never
       mangle); credential-подобная строка в неожиданном поле → drop всей
       строки до marshal + громкий лог без значения; агент событий не
-      эмитит; `exec_env` = `"metal"` (§3.3.6).
+      эмитит; `exec_env` = `"metal"` и — с волны discovery v9 (AGW-28) —
+      `"distrobox:<name>"` для config reads через пробы §3.4c (§3.3.6).
 - [ ] **HI-11** FC-7: `mcp_servers` — аддитивный top-level; pi
       `mcp-cache.json` — только имена (dict-KEYS), значения не
       декодируются; argv/env/URL нет; knob `discovery_models: auto|off`
@@ -96,3 +97,28 @@ spec.md §3; ссылки HI-nn — для отчётов конформанса
       `discovery_host_facts` принимают ТОЛЬКО `auto` \| `off`;
       неизвестное значение knob'а = отказ старта, не тихий fallback
       (§3.4, §3.4a; прецедент agent-discovery §3.9).
+
+## Агент — волна discovery v9 (AGW-28, 2026-10-29)
+
+- [ ] **HI-21** Контейнерная проба = running-контейнеры ТОЛЬКО:
+      остановленный контейнер — честный факт `not-running`, НИКОГДА не
+      бутится; distrobox CLI отсутствует → вся контейнерная нога
+      quiet-zero (laptop-кейс), сбоющий контейнер = v4-машина честных
+      вердиктов (§3.4c).
+- [ ] **HI-22** Скрипт пробы ГЕНЕРИРУЕТСЯ из ТОЙ ЖЕ built-in таблицы
+      §3.3.2 (второго реестра нет); per-file транспорт `head -c 8192` +
+      base64 + один fenced-блок на файл; ≤64 файлов на контейнерный
+      дом; per-container бюджет в v4-семействе (config-carrying до 25 с
+      пробы); декод — ТЕ ЖЕ сканеры, names-only валидатор и капы без
+      изменений (§3.4c).
+- [ ] **HI-23** Per-surface идентичность строк: строки из контейнеров
+      несут `exec_env="distrobox:<name>"`; ОДИН provider+model на metal
+      И в контейнере = ДВЕ строки; капы `installations[]`/`models` —
+      СУММАРНЫЕ по поверхностям (64 / 16 KiB вместе); FC-7 — элементы
+      на пару harness × exec_env (entry-level detector), капы элемента
+      без изменений; pi-маркер в контейнере — `test -f` existence-only
+      (§3.3.1, §3.3.5, §3.4, §3.4c).
+- [ ] **HI-24** Кнопки без новых: контейнерные чтения исполняются
+      ТОЛЬКО при `discovery_models: auto` И `discovery_distrobox: auto`
+      (v4-knob); ни одного нового knob'а волна не ввела; pod-поверхности
+      (`pod:<name>`) не читаются (§3.4c, §1).

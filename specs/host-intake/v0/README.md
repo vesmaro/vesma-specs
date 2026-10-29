@@ -8,7 +8,7 @@ wave touches — FC-6 (models keyed to discovered harnesses) and FC-7
 This is the fleet's trust and transparency surface: the complete "what
 agents collect" list is public, versioned and diffable per release.
 
-Status: **draft** (`0.1.0-draft.3`). Authority: owner directive
+Status: **draft** (`0.1.0-draft.4`). Authority: owner directive
 2026-10-28 (two clauses: the per-harness models re-key + the explicit
 collection contract); the agent-side contract draft
 (`docs/design/host-intake-contract-draft.md`, vesma-agent
@@ -16,9 +16,14 @@ collection contract); the agent-side contract draft
 fleet security-verdict red lines (832cd7a); the discovery v8 amendment
 (AGW-27, 2026-10-29 — the owner's «делай»: FC-8/FC-9 un-deferred to
 normative, the `discovery_host_facts` knob, the
-`discovery_models_catalogs` knob; mirrored by the PROTOCOL.md addendum
-«discovery v8 (AGW-27, 2026-10-29)» in vesma-agent). The agent v7 wave
-(AGW-26) is in flight; the board mirror wave is pending.
+`discovery_models_catalogs` knob); the discovery v9 amendment
+(AGW-28, 2026-10-29 — the same «делай»: the FC-6/FC-7 «metal only» red
+line lifted for config reads through distrobox container probes,
+§3.4c — running containers join the surfaces; mirrored by the
+PROTOCOL.md addendum «Container-surface addendum — discovery v9
+(AGW-28, 2026-10-29)» in vesma-agent). The agent v7 wave (AGW-26) is
+in flight; the agent v9 container-surface wave (`feat/container-surface`)
+is in flight; the board mirror wave is pending.
 
 ## Normative spec
 
@@ -59,7 +64,12 @@ governs).
 7. **Carry the v6 red lines verbatim** (§3.3.6): the names-only
    validator (drop, never mangle), `base_url` normalization, auth from
    field presence only, row drop before marshal + loud log on leak
-   suspicion, no agent-side events, `exec_env: metal`.
+   suspicion, no agent-side events; `exec_env: metal` plus — since
+   discovery v9 (AGW-28) — `distrobox:<name>` for config reads through
+   container probes (§3.4c: RUNNING containers only, the probe script
+   generated from the same layout table, per-file `head -c 8192` +
+   base64 fenced blocks, ≤64 files per container home, ≤25 s per
+   config-carrying container, knobs unchanged).
 8. **Report MCP server names only** (FC-7, §3.4): the additive top-level
    `mcp_servers` field — `{harness, exec_env, servers[] ≤30 sorted,
    count = full total}`; pi `mcp-cache.json` keys as names, values never
@@ -108,8 +118,10 @@ governs).
 
 Worked examples: [examples/](examples/) — a zcode frontmatter row, the
 pi auth-marker row, the `mcp_servers` field, a credential-redaction
-before/after, the `tooling` field, the `compute` envelope, and an
-owner-declared catalog row.
+before/after, the `tooling` field, the `compute` envelope, an
+owner-declared catalog row, a container-sourced installation row
+(per-surface identity: the same provider+model on metal and in a
+distrobox = two rows), and a container `mcp_servers` entry.
 
 ## How to verify
 
